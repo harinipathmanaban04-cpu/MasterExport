@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Plus, Search, Eye, X, Building, Mail, Phone, MapPin, FileText, CheckCircle2 } from 'lucide-react';
 import { get, post, put, del } from '../api';
 import Modal from '../components/Modal';
+import { useCurrency } from '../context/CurrencyContext';
 
 const defaultCustomers = [
   {
@@ -75,6 +76,18 @@ const defaultCustomers = [
 ];
 
 export default function Customers() {
+  const { currency: globalCurrency, currencySymbol: globalSymbol } = useCurrency();
+
+  const resolveCurrencySymbol = (curr) => {
+    if (!curr) return globalSymbol || '₹';
+    if (curr === 'INR') return '₹';
+    if (curr === 'USD') return '$';
+    if (curr === 'EUR') return '€';
+    if (curr === 'GBP') return '£';
+    if (curr === 'AED') return 'AED ';
+    return curr;
+  };
+
   const [customers, setCustomers] = useState(defaultCustomers);
   const [search, setSearch] = useState('');
   const [countryFilter, setCountryFilter] = useState('');
@@ -138,7 +151,7 @@ export default function Customers() {
       phone: fd.get('phone'),
       address: fd.get('address'),
       taxNumber: fd.get('taxNumber') || 'TRN 100234567890003',
-      currency: fd.get('currency') || 'USD',
+      currency: fd.get('currency') || globalCurrency || 'INR',
       paymentTerms: fd.get('paymentTerms') || 'Net 30',
       outstandingBalance: 0,
       status: 'Active'
@@ -281,12 +294,12 @@ export default function Customers() {
                       <td>{c.country}</td>
                       <td>{c.contactPerson}</td>
                       <td>
-                        <span style={{ fontWeight: 600, color: '#4b5563' }}>{c.currency || 'USD'}</span>
+                        <span style={{ fontWeight: 600, color: '#4b5563' }}>{c.currency || 'INR'}</span>
                       </td>
                       <td>{c.paymentTerms || 'Net 30'}</td>
                       <td>
                         <strong style={{ color: c.outstandingBalance > 0 ? '#ca8a04' : '#1e1e2d', fontSize: '13px' }}>
-                          ${Number(c.outstandingBalance || 0).toLocaleString()}
+                          {resolveCurrencySymbol(c.currency)}{Number(c.outstandingBalance || 0).toLocaleString(c.currency === 'INR' || !c.currency ? 'en-IN' : undefined)}
                         </strong>
                       </td>
                       <td style={{ textAlign: 'right' }}>
@@ -382,7 +395,7 @@ export default function Customers() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
                   <div className="customer-field-group">
                     <label>Currency</label>
-                    <div className="value">{selectedCustomer.currency || 'USD'}</div>
+                    <div className="value">{selectedCustomer.currency || 'INR'}</div>
                   </div>
                   <div className="customer-field-group">
                     <label>Pay terms</label>
@@ -392,7 +405,7 @@ export default function Customers() {
 
                 <div className="customer-balance-box">
                   <span>Outstanding balance</span>
-                  <strong>${Number(selectedCustomer.outstandingBalance || 35000).toLocaleString()}</strong>
+                  <strong>{resolveCurrencySymbol(selectedCustomer.currency)}{Number(selectedCustomer.outstandingBalance || 35000).toLocaleString(selectedCustomer.currency === 'INR' || !selectedCustomer.currency ? 'en-IN' : undefined)}</strong>
                 </div>
               </div>
             )}
@@ -402,14 +415,14 @@ export default function Customers() {
                 <div style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
                   <strong>SO-1024</strong> • Basmati Rice 1121
                   <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', marginTop: '3px' }}>
-                    <span>$50,000</span>
+                    <span>{resolveCurrencySymbol(selectedCustomer.currency)}50,000</span>
                     <span style={{ color: '#6c5ce7', fontWeight: 600 }}>Confirmed</span>
                   </div>
                 </div>
                 <div style={{ padding: '8px 0' }}>
                   <strong>SO-1018</strong> • Export Consignment
                   <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', marginTop: '3px' }}>
-                    <span>$22,500</span>
+                    <span>{resolveCurrencySymbol(selectedCustomer.currency)}22,500</span>
                     <span style={{ color: '#10b981', fontWeight: 600 }}>Completed</span>
                   </div>
                 </div>
@@ -421,8 +434,8 @@ export default function Customers() {
                 <div style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
                   <strong>INV-301</strong> • Proforma
                   <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', marginTop: '3px' }}>
-                    <span>Total: $50,000</span>
-                    <span style={{ color: '#ca8a04', fontWeight: 600 }}>Due: $35,000</span>
+                    <span>Total: {resolveCurrencySymbol(selectedCustomer.currency)}50,000</span>
+                    <span style={{ color: '#ca8a04', fontWeight: 600 }}>Due: {resolveCurrencySymbol(selectedCustomer.currency)}35,000</span>
                   </div>
                 </div>
               </div>
@@ -472,12 +485,12 @@ export default function Customers() {
               </div>
               <div className="field">
                 <label>Billing Currency</label>
-                <select name="currency" defaultValue="USD">
-                  <option>USD</option>
-                  <option>EUR</option>
-                  <option>GBP</option>
-                  <option>AED</option>
-                  <option>INR</option>
+                <select name="currency" defaultValue="INR">
+                  <option value="INR">INR (₹)</option>
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                  <option value="AED">AED (د.إ)</option>
                 </select>
               </div>
               <div className="field">

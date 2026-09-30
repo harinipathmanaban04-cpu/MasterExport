@@ -5,27 +5,29 @@ import {
   Package,
   DollarSign,
   Plus,
-  Eye,
-  ArrowRight
+  Eye
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Status } from '../components/Layout';
 import { get } from '../api';
+import { useCurrency } from '../context/CurrencyContext';
 
 const defaultOrders = [
-  { id: 'SO-1024', customer: 'ABC Trading LLC', avatar: 'AT', avatarClass: 'purple', amount: '$50,000', status: 'Preparing' },
-  { id: 'SO-1025', customer: 'Apex Imports', avatar: 'AI', avatarClass: 'blue', amount: '$28,000', status: 'Ready to Ship' },
-  { id: 'SO-1026', customer: 'Tokyo Trading', avatar: 'TT', avatarClass: 'teal', amount: '$12,500', status: 'Confirmed' }
+  { id: 'SO-1024', customer: 'ABC Trading LLC', avatar: 'AT', avatarClass: 'purple', amount: 50000, status: 'Preparing' },
+  { id: 'SO-1025', customer: 'Apex Imports', avatar: 'AI', avatarClass: 'blue', amount: 28000, status: 'Ready to Ship' },
+  { id: 'SO-1026', customer: 'Tokyo Trading', avatar: 'TT', avatarClass: 'teal', amount: 12500, status: 'Confirmed' }
 ];
 
 const defaultQuotations = [
-  { id: 'QUO-2026-0001', customer: 'Global Foods Ltd', destination: 'Hamburg, Germany 🇩🇪', amount: '€47,500', status: 'Sent' },
-  { id: 'QUO-2026-0004', customer: 'Top Imports Ltd', destination: 'Tokyo, Japan 🇯🇵', amount: '$57,720', status: 'Sent' },
-  { id: 'QUO-2026-0006', customer: 'Oceanic Trading', destination: 'Los Angeles, USA 🇺🇸', amount: '$76,000', status: 'Accepted' }
+  { id: 'QUO-2026-0001', customer: 'Global Foods Ltd', destination: 'Hamburg, Germany 🇩🇪', amount: 47500, status: 'Sent' },
+  { id: 'QUO-2026-0004', customer: 'Top Imports Ltd', destination: 'Tokyo, Japan 🇯🇵', amount: 57720, status: 'Sent' },
+  { id: 'QUO-2026-0006', customer: 'Oceanic Trading', destination: 'Los Angeles, USA 🇺🇸', amount: 76000, status: 'Accepted' }
 ];
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { currency, currencySymbol, formatAmount } = useCurrency();
+
   const [stats, setStats] = useState({
     activeOrders: '24',
     ordersGrowth: '▲ 12% this month',
@@ -33,7 +35,7 @@ export default function Dashboard() {
     customersNote: '4 active markets',
     products: '35',
     productsNote: 'Export catalog items',
-    monthlySales: '$185,000',
+    monthlySalesRaw: 185000,
     salesGrowth: '▲ 8.4% vs last month'
   });
 
@@ -54,7 +56,7 @@ export default function Dashboard() {
           activeOrders: String(d.activeOrders || 24),
           customers: String(custList?.length || d.customers || 12),
           products: String(prodList?.length || d.products || 35),
-          monthlySales: `$${Number(d.monthlySales || 185000).toLocaleString()}`
+          monthlySalesRaw: Number(d.monthlySales || 185000)
         }));
       }
 
@@ -67,7 +69,8 @@ export default function Dashboard() {
             customer: ord.customer,
             avatar: ord.customer ? ord.customer.slice(0, 2).toUpperCase() : 'CU',
             avatarClass: 'purple',
-            amount: `$${Number(ord.totalAmount || 0).toLocaleString()}`,
+            amount: Number(ord.totalAmount || 0),
+            currency: ord.currency,
             status: ord.status || 'Confirmed'
           }));
         if (orders.length > 0) setRecentOrders(orders);
@@ -78,7 +81,8 @@ export default function Dashboard() {
           id: q.quotationNo || q._id,
           customer: q.customer,
           destination: q.destination || 'Export Port',
-          amount: `${q.currency === 'EUR' ? '€' : '$'}${Number(q.grandTotal || q.totalAmount || 0).toLocaleString()}`,
+          amount: Number(q.grandTotal || q.totalAmount || 0),
+          currency: q.currency,
           status: q.status || 'Draft'
         }));
         if (quotes.length > 0) setRecentQuotations(quotes);
@@ -92,10 +96,10 @@ export default function Dashboard() {
       <div className="dash-head">
         <div className="dash-copy">
           <h1 style={{ fontSize: '24px', fontWeight: 800, margin: '0 0 6px', color: '#1e1e2d' }}>
-            Good morning, Harini👋
+            Good morning, Admin 👋
           </h1>
           <p style={{ margin: 0, color: '#7e8299', fontSize: '13.5px' }}>
-            Here's how your export business is doing today
+            Here's how your export business is doing today · Displaying in <strong>{currency} ({currencySymbol})</strong>
           </p>
         </div>
         <button
@@ -154,15 +158,15 @@ export default function Dashboard() {
           <span className="stat-arrow" style={{ marginLeft: 'auto', color: '#cbd5e1', fontSize: '16px' }}>›</span>
         </div>
 
-        {/* Monthly Sales */}
+        {/* Monthly Sales - INR Default */}
         <div className="stat-card" style={{ background: '#ffffff', borderRadius: '14px', border: '1px solid var(--border)', padding: '16px 18px', minWidth: 0 }}>
           <div className="stat-icon green" style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#dcfce7', color: '#15803d', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-            <DollarSign size={20} />
+            <span style={{ fontSize: '20px', fontWeight: 800 }}>{currencySymbol}</span>
           </div>
           <div className="stat-copy" style={{ minWidth: 0, flex: 1 }}>
             <span style={{ fontSize: '12px', fontWeight: 600, color: '#7e8299' }}>Monthly Sales</span>
-            <strong style={{ fontSize: '24px', fontWeight: 800, color: '#1e1e2d', lineHeight: 1.15, margin: '2px 0', whiteSpace: 'nowrap' }}>
-              {stats.monthlySales}
+            <strong style={{ fontSize: '22px', fontWeight: 800, color: '#1e1e2d', lineHeight: 1.15, margin: '2px 0', whiteSpace: 'nowrap' }}>
+              {formatAmount(stats.monthlySalesRaw)}
             </strong>
             <small style={{ fontSize: '11px', fontWeight: 600, color: '#10b981' }}>{stats.salesGrowth}</small>
           </div>
@@ -199,7 +203,7 @@ export default function Dashboard() {
 
           <div className="pipeline-step">
             <div className="pipeline-circle">42</div>
-            <span className="pipeline-label">Completed </span>
+            <span className="pipeline-label">Completed</span>
           </div>
         </div>
       </div>
@@ -220,7 +224,7 @@ export default function Dashboard() {
                 <tr>
                   <th style={{ padding: '8px 10px' }}>ORDER ID</th>
                   <th style={{ padding: '8px 10px' }}>CUSTOMER</th>
-                  <th style={{ padding: '8px 10px' }}>AMOUNT</th>
+                  <th style={{ padding: '8px 10px' }}>AMOUNT ({currency})</th>
                   <th style={{ padding: '8px 10px' }}>STATUS</th>
                   <th style={{ width: '32px', padding: '8px 4px' }} />
                 </tr>
@@ -240,7 +244,9 @@ export default function Dashboard() {
                       </div>
                     </td>
                     <td style={{ padding: '9px 10px' }}>
-                      <strong style={{ color: '#1e1e2d', fontSize: '12.5px', whiteSpace: 'nowrap' }}>{ord.amount}</strong>
+                      <strong style={{ color: '#1e1e2d', fontSize: '12.5px', whiteSpace: 'nowrap' }}>
+                        {formatAmount(ord.amount, ord.currency)}
+                      </strong>
                     </td>
                     <td style={{ padding: '9px 10px' }}>
                       <Status>{ord.status}</Status>
@@ -275,7 +281,7 @@ export default function Dashboard() {
                 <tr>
                   <th style={{ padding: '8px 10px' }}>QUOTATION ID</th>
                   <th style={{ padding: '8px 10px' }}>CUSTOMER</th>
-                  <th style={{ padding: '8px 10px' }}>AMOUNT</th>
+                  <th style={{ padding: '8px 10px' }}>AMOUNT ({currency})</th>
                   <th style={{ padding: '8px 10px' }}>STATUS</th>
                 </tr>
               </thead>
@@ -291,7 +297,9 @@ export default function Dashboard() {
                       <strong style={{ fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>{quo.customer}</strong>
                     </td>
                     <td style={{ padding: '9px 10px' }}>
-                      <strong style={{ color: '#1e1e2d', fontSize: '12.5px', whiteSpace: 'nowrap' }}>{quo.amount}</strong>
+                      <strong style={{ color: '#1e1e2d', fontSize: '12.5px', whiteSpace: 'nowrap' }}>
+                        {formatAmount(quo.amount, quo.currency)}
+                      </strong>
                     </td>
                     <td style={{ padding: '9px 10px' }}>
                       <Status>{quo.status}</Status>

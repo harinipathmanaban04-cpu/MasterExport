@@ -396,7 +396,7 @@ app.post('/api/quotations/:id/convert-to-order', async (req, res) => {
           origin: saleRow.origin || 'Nhava Sheva Port, Mumbai, India',
           destination: saleRow.destination,
           products: saleRow.products || [],
-          currency: saleRow.currency || 'USD',
+          currency: saleRow.currency || 'INR',
           incoterm: saleRow.incoterm || 'CIF',
           freight: saleRow.freight || 0,
           paymentTerms: saleRow.paymentTerms || 'Net 30',
@@ -462,7 +462,7 @@ app.post('/api/quotations/:id/convert-to-order', async (req, res) => {
         unitPrice: it.unitPrice,
         total: it.lineTotal
       })),
-      currency: quotation.currency || 'USD',
+      currency: quotation.currency || 'INR',
       incoterm: quotation.incoterm || 'CIF',
       freight: quotation.shippingCharges || 0,
       paymentTerms: quotation.paymentTerms || 'Net 30',
@@ -485,7 +485,7 @@ const ORDER_STAGES = ['Confirmed', 'Preparing', 'Ready to Ship', 'Shipped', 'Del
 // Existing Sales Workflow Endpoints
 app.post('/api/sales/prepare-quotation', async (req, res) => {
   try {
-    const { enquiryId, customer, destination, products: items = [], currency = 'USD', incoterm = 'FOB', freight = 0, paymentTerms = 'Net 30', validity = '30 Days', notes } = req.body;
+    const { enquiryId, customer, destination, products: items = [], currency = 'INR', incoterm = 'FOB', freight = 0, paymentTerms = 'Net 30', validity = '30 Days', notes } = req.body;
     
     // Auto-generate quotation number
     const quotationNo = await generateUniqueQuotationNo();
@@ -586,7 +586,7 @@ app.post('/api/sales/convert-to-order', async (req, res) => {
       origin: quotation.origin || 'Nhava Sheva Port, Mumbai, India',
       destination: quotation.destination,
       products: quotation.products || quotation.items,
-      currency: quotation.currency || 'USD',
+      currency: quotation.currency || 'INR',
       incoterm: quotation.incoterm || 'FOB',
       freight: quotation.freight || quotation.shippingCharges || 0,
       paymentTerms: quotation.paymentTerms || 'Net 30',

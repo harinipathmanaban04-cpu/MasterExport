@@ -40,6 +40,7 @@ import { PageHeader, StatCard, Status, Toolbar } from '../components/Layout';
 import Modal from '../components/Modal';
 import { generateQuotationPdf } from '../utils/generateQuotationPdf';
 import Logo from '../components/Logo';
+import { useCurrency } from '../context/CurrencyContext';
 
 const flagMap = {
   UAE: '🇦🇪',
@@ -82,6 +83,18 @@ const EMPTY_LINE_ITEM = {
 };
 
 export default function Sales({ initialTab = 'All' }) {
+  const { currency: globalCurrency, currencySymbol: globalSymbol, formatAmount } = useCurrency();
+
+  const resolveCurrencySymbol = (curr) => {
+    if (!curr) return globalSymbol || '₹';
+    if (curr === 'INR') return '₹';
+    if (curr === 'USD') return '$';
+    if (curr === 'EUR') return '€';
+    if (curr === 'GBP') return '£';
+    if (curr === 'AED') return 'AED ';
+    return curr;
+  };
+
   const [data, setData] = useState([]);
   const [quotationsList, setQuotationsList] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -128,7 +141,7 @@ export default function Sales({ initialTab = 'All' }) {
     phone: '',
     address: '',
     destination: '',
-    currency: 'USD',
+    currency: 'INR',
     incoterm: 'CIF',
     shippingCharges: 0,
     paymentTerms: 'Net 30',
@@ -269,7 +282,7 @@ export default function Sales({ initialTab = 'All' }) {
       phone: prefill?.phone || customers[0]?.phone || '',
       address: prefill?.address || customers[0]?.address || '',
       destination: prefill?.destination || customers[0]?.address || 'Dubai, UAE',
-      currency: prefill?.currency || customers[0]?.currency || 'USD',
+      currency: prefill?.currency || customers[0]?.currency || globalCurrency || 'INR',
       incoterm: prefill?.incoterm || 'CIF',
       shippingCharges: prefill?.freight || 2500,
       paymentTerms: prefill?.paymentTerms || customers[0]?.paymentTerms || 'Net 30',
@@ -540,7 +553,7 @@ export default function Sales({ initialTab = 'All' }) {
     const fd = new FormData(e.currentTarget);
     const customer = fd.get('customer');
     const destination = fd.get('destination');
-    const currency = fd.get('currency') || 'USD';
+    const currency = fd.get('currency') || globalCurrency || 'INR';
     const notes = fd.get('notes');
     const productName = fd.get('productName');
     const quantity = Number(fd.get('quantity') || 1);
@@ -801,7 +814,7 @@ export default function Sales({ initialTab = 'All' }) {
                   ) : (
                     filteredQuotationsRows.map((q) => {
                       const meta = getCustomerMeta(q.customer);
-                      const currencySymbol = q.currency === 'EUR' ? '€' : q.currency === 'GBP' ? '£' : '$';
+                      const currencySymbol = resolveCurrencySymbol(q.currency);
                       const itemsStr =
                         q.items && q.items.length > 0
                           ? q.items.map((it) => `${it.name} · ${it.quantity} ${it.unit || ''}`).join(', ')
@@ -856,7 +869,7 @@ export default function Sales({ initialTab = 'All' }) {
                           <td>
                             <strong style={{ color: '#111827', fontSize: '13px' }}>
                               {currencySymbol}
-                              {Number(q.grandTotal || q.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              {Number(q.grandTotal || q.totalAmount || 0).toLocaleString(q.currency === 'INR' || !q.currency ? 'en-IN' : undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </strong>
                           </td>
                           <td style={{ fontSize: '12px', color: '#4b5563' }}>{q.validUntil || '-'}</td>
@@ -1058,7 +1071,7 @@ export default function Sales({ initialTab = 'All' }) {
             <StatCard
               icon={CircleDollarSign}
               label="Total Order Value"
-              value="$185,000"
+              value={formatAmount(185000)}
               note="Confirmed pipeline"
               tone="purple"
             />
@@ -1128,12 +1141,13 @@ export default function Sales({ initialTab = 'All' }) {
                     filteredSalesRows.map((so) => {
                       const meta = getCustomerMeta(so.customer);
                       const isSelected = selectedOrder && (selectedOrder.orderNo === so.orderNo || selectedOrder._id === so._id);
-                      const currencySymbol = so.currency === 'EUR' ? '€' : so.currency === 'GBP' ? '£' : '$';
+                      const currencySymbol = resolveCurrencySymbol(so.currency);
                       const totalVal = Number(so.totalAmount || 45000);
                       const advVal = Number(so.advanceReceived !== undefined ? so.advanceReceived : totalVal * 0.3);
                       const balVal = Number(so.balanceDue !== undefined ? so.balanceDue : totalVal * 0.7);
                       const advPct = totalVal > 0 ? Math.round((advVal / totalVal) * 100) : 30;
                       const balPct = 100 - advPct;
+                      const isINR = so.currency === 'INR' || !so.currency;
 
                       return (
                         <tr
@@ -1164,13 +1178,13 @@ export default function Sales({ initialTab = 'All' }) {
                           </td>
                           <td>
                             <strong style={{ color: '#111827', fontSize: '13px' }}>
-                              {currencySymbol}{totalVal.toLocaleString()}
+                              {currencySymbol}{totalVal.toLocaleString(isINR ? 'en-IN' : undefined)}
                             </strong>
                           </td>
                           <td>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                               <strong style={{ color: '#15803d', fontSize: '12.5px' }}>
-                                {currencySymbol}{advVal.toLocaleString()}
+                                {currencySymbol}{advVal.toLocaleString(isINR ? 'en-IN' : undefined)}
                               </strong>
                               <span style={{ background: '#dcfce7', color: '#15803d', fontSize: '10px', padding: '1px 5px', borderRadius: '4px', fontWeight: 700 }}>
                                 {advPct}%
@@ -1180,7 +1194,7 @@ export default function Sales({ initialTab = 'All' }) {
                           <td>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                               <strong style={{ color: '#374151', fontSize: '12.5px' }}>
-                                {currencySymbol}{balVal.toLocaleString()}
+                                {currencySymbol}{balVal.toLocaleString(isINR ? 'en-IN' : undefined)}
                               </strong>
                               <span style={{ background: '#f3f4f6', color: '#4b5563', fontSize: '10px', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>
                                 {balPct}%
@@ -1266,7 +1280,7 @@ export default function Sales({ initialTab = 'All' }) {
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', paddingBottom: '8px' }}>
                     <span style={{ color: '#6b7280' }}>Items:</span>
                     <span style={{ fontWeight: 600, color: '#111827', textAlign: 'right' }}>
-                      {selectedOrder.products?.map((p) => `${p.name} · ${p.quantity} ${p.unit || ''} @ $${p.unitPrice}`).join(', ') || 'Basmati Rice 1121 · 25 MT @ $1,100'}
+                      {selectedOrder.products?.map((p) => `${p.name} · ${p.quantity} ${p.unit || ''} @ ${resolveCurrencySymbol(selectedOrder.currency)}${Number(p.unitPrice || 0).toLocaleString(selectedOrder.currency === 'INR' || !selectedOrder.currency ? 'en-IN' : undefined)}`).join(', ') || `Basmati Rice 1121 · 25 MT @ ${resolveCurrencySymbol(selectedOrder.currency)}1,100`}
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', paddingBottom: '8px' }}>
@@ -1276,8 +1290,8 @@ export default function Sales({ initialTab = 'All' }) {
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6', paddingBottom: '8px' }}>
                     <span style={{ color: '#6b7280' }}>Advance rec'd:</span>
                     <strong style={{ color: '#15803d' }}>
-                      {selectedOrder.currency === 'EUR' ? '€' : '$'}
-                      {Number(selectedOrder.advanceReceived !== undefined ? selectedOrder.advanceReceived : (selectedOrder.totalAmount || 45000) * 0.3).toLocaleString()} (Wire transfer 23 Apr)
+                      {resolveCurrencySymbol(selectedOrder.currency)}
+                      {Number(selectedOrder.advanceReceived !== undefined ? selectedOrder.advanceReceived : (selectedOrder.totalAmount || 45000) * 0.3).toLocaleString(selectedOrder.currency === 'INR' || !selectedOrder.currency ? 'en-IN' : undefined)} (Wire transfer 23 Apr)
                     </strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1496,7 +1510,7 @@ export default function Sales({ initialTab = 'All' }) {
                           <td style={{ fontSize: '12.5px', color: '#4b5563' }}>{itemsStr}</td>
                           <td>
                             <strong style={{ color: '#111827', fontSize: '13px' }}>
-                              ${Number(enq.totalAmount || 0).toLocaleString()}
+                              {resolveCurrencySymbol(enq.currency)}{Number(enq.totalAmount || 0).toLocaleString(enq.currency === 'INR' || !enq.currency ? 'en-IN' : undefined)}
                             </strong>
                           </td>
                           <td>
@@ -1810,7 +1824,7 @@ export default function Sales({ initialTab = 'All' }) {
                               style={{ padding: '6px 2px', fontSize: '11px', border: '1px solid #dce8e6', borderRadius: '6px' }}
                             >
                               <option value="percent">%</option>
-                              <option value="amount">$</option>
+                              <option value="amount">{resolveCurrencySymbol(quotationForm.currency)}</option>
                             </select>
                           </div>
                         </td>
@@ -1825,7 +1839,7 @@ export default function Sales({ initialTab = 'All' }) {
                           />
                         </td>
                         <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 600, color: '#0c4650' }}>
-                          ${Number(item.lineTotal || 0).toFixed(2)}
+                          {resolveCurrencySymbol(quotationForm.currency)}{Number(item.lineTotal || 0).toFixed(2)}
                         </td>
                         <td style={{ padding: '8px 6px', textAlign: 'center' }}>
                           <button
@@ -1856,10 +1870,11 @@ export default function Sales({ initialTab = 'All' }) {
                       value={quotationForm.currency}
                       onChange={(e) => setQuotationForm({ ...quotationForm, currency: e.target.value })}
                     >
+                      <option value="INR">INR (₹)</option>
                       <option value="USD">USD ($)</option>
                       <option value="EUR">EUR (€)</option>
                       <option value="GBP">GBP (£)</option>
-                      <option value="AED">AED</option>
+                      <option value="AED">AED (د.إ)</option>
                     </select>
                   </div>
                   <div className="field">
@@ -1921,30 +1936,30 @@ export default function Sales({ initialTab = 'All' }) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12.5px', color: '#4a676d' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span>Subtotal:</span>
-                      <strong>${liveFinancials.subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                      <strong>{resolveCurrencySymbol(quotationForm.currency)}{liveFinancials.subtotal.toLocaleString(quotationForm.currency === 'INR' || !quotationForm.currency ? 'en-IN' : undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
                     </div>
 
                     {liveFinancials.totalDiscount > 0 && (
                       <div style={{ display: 'flex', justifyContent: 'space-between', color: '#c44d4d' }}>
                         <span>Total Discount:</span>
-                        <strong>-${liveFinancials.totalDiscount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                        <strong>-{resolveCurrencySymbol(quotationForm.currency)}{liveFinancials.totalDiscount.toLocaleString(quotationForm.currency === 'INR' || !quotationForm.currency ? 'en-IN' : undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
                       </div>
                     )}
 
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span>Taxable Amount:</span>
-                      <span>${liveFinancials.taxableAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      <span>{resolveCurrencySymbol(quotationForm.currency)}{liveFinancials.taxableAmount.toLocaleString(quotationForm.currency === 'INR' || !quotationForm.currency ? 'en-IN' : undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span>Tax / VAT:</span>
-                      <span>${liveFinancials.taxTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      <span>{resolveCurrencySymbol(quotationForm.currency)}{liveFinancials.taxTotal.toLocaleString(quotationForm.currency === 'INR' || !quotationForm.currency ? 'en-IN' : undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '4px' }}>
                       <span>Shipping / Freight:</span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span>$</span>
+                        <span>{resolveCurrencySymbol(quotationForm.currency)}</span>
                         <input
                           type="number"
                           min="0"
@@ -1961,7 +1976,7 @@ export default function Sales({ initialTab = 'All' }) {
                 <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '2px solid #087a68', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                   <span style={{ fontSize: '14px', fontWeight: 700, color: '#0c4650' }}>Grand Total:</span>
                   <span style={{ fontSize: '20px', fontWeight: 800, color: '#087a68' }}>
-                    ${liveFinancials.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {resolveCurrencySymbol(quotationForm.currency)}{liveFinancials.grandTotal.toLocaleString(quotationForm.currency === 'INR' || !quotationForm.currency ? 'en-IN' : undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
@@ -2123,7 +2138,7 @@ export default function Sales({ initialTab = 'All' }) {
               </div>
               <div className="doc-address-block">
                 <h4>COMMERCIAL & LOGISTICS TERMS:</h4>
-                Currency: <strong>{previewDocModal.currency || 'USD'}</strong>
+                Currency: <strong>{previewDocModal.currency || 'INR'}</strong>
                 <br />
                 Incoterm: <strong>{previewDocModal.incoterm || 'CIF'}</strong>
                 <br />
@@ -2167,16 +2182,16 @@ export default function Sales({ initialTab = 'All' }) {
                       {it.quantity} {it.unit || 'PCS'}
                     </td>
                     <td style={{ textAlign: 'right' }}>
-                      ${Number(it.unitPrice || 0).toFixed(2)}
+                      {resolveCurrencySymbol(previewDocModal.currency)}{Number(it.unitPrice || 0).toFixed(2)}
                     </td>
                     <td style={{ textAlign: 'center' }}>
-                      {it.discount > 0 ? (it.discountType === 'amount' ? `$${it.discount}` : `${it.discount}%`) : '-'}
+                      {it.discount > 0 ? (it.discountType === 'amount' ? `${resolveCurrencySymbol(previewDocModal.currency)}${it.discount}` : `${it.discount}%`) : '-'}
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       {it.taxRate > 0 ? `${it.taxRate}%` : '-'}
                     </td>
                     <td style={{ textAlign: 'right', fontWeight: 600 }}>
-                      ${Number(it.lineTotal || (it.quantity * it.unitPrice)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {resolveCurrencySymbol(previewDocModal.currency)}{Number(it.lineTotal || (it.quantity * it.unitPrice)).toLocaleString(previewDocModal.currency === 'INR' || !previewDocModal.currency ? 'en-IN' : undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                   </tr>
                 ))}
@@ -2187,29 +2202,29 @@ export default function Sales({ initialTab = 'All' }) {
               <div className="doc-totals">
                 <div className="doc-totals-row">
                   <span>Subtotal:</span>
-                  <span>${Number(previewDocModal.subtotal || previewDocModal.grandTotal || previewDocModal.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span>{resolveCurrencySymbol(previewDocModal.currency)}{Number(previewDocModal.subtotal || previewDocModal.grandTotal || previewDocModal.totalAmount || 0).toLocaleString(previewDocModal.currency === 'INR' || !previewDocModal.currency ? 'en-IN' : undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 {previewDocModal.totalDiscount > 0 && (
                   <div className="doc-totals-row">
                     <span>Discount:</span>
-                    <span>-${Number(previewDocModal.totalDiscount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span>-{resolveCurrencySymbol(previewDocModal.currency)}{Number(previewDocModal.totalDiscount).toLocaleString(previewDocModal.currency === 'INR' || !previewDocModal.currency ? 'en-IN' : undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                 )}
                 {previewDocModal.taxTotal > 0 && (
                   <div className="doc-totals-row">
                     <span>Tax:</span>
-                    <span>${Number(previewDocModal.taxTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span>{resolveCurrencySymbol(previewDocModal.currency)}{Number(previewDocModal.taxTotal).toLocaleString(previewDocModal.currency === 'INR' || !previewDocModal.currency ? 'en-IN' : undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                 )}
                 {(previewDocModal.shippingCharges > 0 || previewDocModal.freight > 0) && (
                   <div className="doc-totals-row">
                     <span>Freight ({previewDocModal.incoterm || 'CIF'}):</span>
-                    <span>${Number(previewDocModal.shippingCharges || previewDocModal.freight || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span>{resolveCurrencySymbol(previewDocModal.currency)}{Number(previewDocModal.shippingCharges || previewDocModal.freight || 0).toLocaleString(previewDocModal.currency === 'INR' || !previewDocModal.currency ? 'en-IN' : undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                 )}
                 <div className="doc-totals-row grand-total">
                   <span>Grand Total:</span>
-                  <span>${Number(previewDocModal.grandTotal || previewDocModal.totalAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span>{resolveCurrencySymbol(previewDocModal.currency)}{Number(previewDocModal.grandTotal || previewDocModal.totalAmount || 0).toLocaleString(previewDocModal.currency === 'INR' || !previewDocModal.currency ? 'en-IN' : undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
               </div>
             </div>
@@ -2302,7 +2317,8 @@ export default function Sales({ initialTab = 'All' }) {
 
               <div className="field">
                 <label>Currency</label>
-                <select name="currency" defaultValue="USD">
+                <select name="currency" defaultValue="INR">
+                  <option value="INR">INR (₹)</option>
                   <option value="USD">USD ($)</option>
                   <option value="EUR">EUR (€)</option>
                   <option value="GBP">GBP (£)</option>
@@ -2395,11 +2411,12 @@ export default function Sales({ initialTab = 'All' }) {
 
               <div className="field">
                 <label>Currency</label>
-                <select name="currency" defaultValue={editSalesModal.currency || 'USD'}>
-                  <option>USD</option>
-                  <option>EUR</option>
-                  <option>GBP</option>
-                  <option>AED</option>
+                <select name="currency" defaultValue={editSalesModal.currency || 'INR'}>
+                  <option value="INR">INR (₹)</option>
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                  <option value="AED">AED (د.إ)</option>
                 </select>
               </div>
 

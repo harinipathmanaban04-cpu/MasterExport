@@ -10,7 +10,17 @@ export function generateQuotationPdf(quotation) {
     format: 'a4'
   });
 
-  const currencySymbol = quotation.currency === 'EUR' ? '€' : quotation.currency === 'GBP' ? '£' : '$';
+  const currCode = quotation.currency || 'INR';
+  const currencySymbol =
+    currCode === 'INR'
+      ? 'INR '
+      : currCode === 'EUR'
+      ? '€'
+      : currCode === 'GBP'
+      ? '£'
+      : currCode === 'AED'
+      ? 'AED '
+      : '$';
   const primaryColor = [8, 122, 104]; // #087a68 Emerald brand
   const darkTeal = [12, 70, 80];     // #0c4650
   const textColor = [40, 60, 65];
@@ -116,7 +126,7 @@ export function generateQuotationPdf(quotation) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
   doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-  doc.text(`Currency: ${quotation.currency || 'USD'} (${currencySymbol})`, 112, yPos + 12);
+  doc.text(`Currency: ${currCode} (${currencySymbol.trim()})`, 112, yPos + 12);
   doc.text(`Incoterm: ${quotation.incoterm || 'CIF'}`, 112, yPos + 17);
   doc.text(`Payment Terms: ${quotation.paymentTerms || 'Net 30'}`, 112, yPos + 21);
   doc.text(`Delivery Port: ${quotation.destination || 'Destination Port'}`, 112, yPos + 25);

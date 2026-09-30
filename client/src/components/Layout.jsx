@@ -1,96 +1,34 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
-  Users,
-  Package,
-  LineChart,
-  Bell,
   Search,
-  Menu,
-  X,
   Plus,
   CalendarDays,
-  RotateCcw,
-  Globe,
-  Sparkles
+  RotateCcw
 } from 'lucide-react';
-import Logo from './Logo';
 import AmbientBackground from './AmbientBackground';
-
-const nav = [
-  ['/', 'Dashboard', LayoutDashboard],
-  ['/customers', 'Customers', Users],
-  ['/products', 'Products', Package],
-  ['/sales', 'Sales', LineChart]
-];
+import Sidebar from './sidebar/Sidebar';
+import Navbar from './navbar/Navbar';
+import { useCurrency } from '../context/CurrencyContext';
 
 export default function Layout({ children }) {
   const [open, setOpen] = useState(false);
-  const location = useLocation();
+  const { currency, setCurrency, currencies } = useCurrency();
 
   return (
     <div className="app-shell">
       <AmbientBackground />
-      <aside className={`sidebar ${open ? 'open' : ''}`}>
-        <div className="side-brand">
-          <Logo />
-          <button className="mobile-close" onClick={() => setOpen(false)}>
-            <X size={20} />
-          </button>
-        </div>
-        <nav>
-          {nav.map(([to, label, Icon]) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === '/'}
-              onClick={() => setOpen(false)}
-              className={({ isActive }) => (isActive ? 'active' : '')}
-            >
-              <Icon size={18} />
-              <span>{label}</span>
-            </NavLink>
-          ))}
-        </nav>
-
-        {/* Sidebar Persistent Tip Card matching PDF */}
-        <div className="sidebar-tip-card">
-          <div className="tip-header">
-            <Sparkles size={15} className="tip-sparkle" />
-            <strong>Enter once, reuse everywhere</strong>
-          </div>
-          <p>We auto-fill customer, product and price details for you.</p>
-        </div>
-      </aside>
+      <Sidebar open={open} onClose={() => setOpen(false)} />
 
       {open && <div className="overlay" onClick={() => setOpen(false)} />}
 
       <main className="main">
-        <header className="topbar">
-          <button className="mobile-menu" onClick={() => setOpen(true)}>
-            <Menu size={20} />
-          </button>
-          <div className="global-search">
-            <Search size={16} />
-            <input placeholder="Search order, customer, SKU..." />
-          </div>
-          <div className="top-actions">
-            <button className="topbar-pill" type="button">
-              <Globe size={14} />
-              <span>English</span>
-            </button>
-            <div className="currency-selector">$ USD ▾</div>
-            <button className="icon-btn" title="Notifications" type="button">
-              <Bell size={18} />
-              <span className="dot-badge" />
-            </button>
-            <div className="user-pill">
-              <div className="user-avatar-circle">A</div>
-              <span className="user-name">Admin</span>
-            </div>
-          </div>
-        </header>
+        <Navbar
+          onOpen={() => setOpen(true)}
+          currency={currency}
+          setCurrency={setCurrency}
+          currencies={currencies}
+        />
         <div className="content">{children}</div>
       </main>
     </div>
