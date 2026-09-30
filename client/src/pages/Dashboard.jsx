@@ -92,7 +92,7 @@ export default function Dashboard() {
       <div className="dash-head">
         <div className="dash-copy">
           <h1 style={{ fontSize: '24px', fontWeight: 800, margin: '0 0 6px', color: '#1e1e2d' }}>
-            Good morning, Admin 👋
+            Good morning, Harini👋
           </h1>
           <p style={{ margin: 0, color: '#7e8299', fontSize: '13.5px' }}>
             Here's how your export business is doing today
