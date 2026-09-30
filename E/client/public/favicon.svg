@@ -1,0 +1,55 @@
+<svg viewBox="90 20 440 370" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="favGold" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#b17b2b" />
+      <stop offset="50%" stop-color="#c59239" />
+      <stop offset="100%" stop-color="#f3c262" />
+    </linearGradient>
+    <linearGradient id="favEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#08382e" />
+      <stop offset="50%" stop-color="#0d4d42" />
+      <stop offset="100%" stop-color="#0a3930" />
+    </linearGradient>
+    <radialGradient id="favGlobe" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="70%" stop-color="#d5dce0" />
+      <stop offset="100%" stop-color="#b6c2c8" />
+    </radialGradient>
+  </defs>
+
+  <g transform="translate(195, 20)">
+    <circle cx="100" cy="100" r="92" fill="url(#favGlobe)" stroke="#8e9da5" stroke-width="2" />
+    <ellipse cx="100" cy="100" rx="46" ry="92" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.85" />
+    <ellipse cx="100" cy="100" rx="92" ry="42" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.85" />
+    <path d="M 28 62 C 34 50, 48 44, 62 48 C 66 54, 58 64, 52 70 C 46 76, 38 78, 32 72 Z" fill="#6f7c84" />
+    <path d="M 46 95 C 52 90, 60 92, 62 100 C 64 112, 54 130, 46 142 Z" fill="#6f7c84" />
+    <path d="M 94 72 C 104 68, 122 70, 128 84 C 132 102, 124 125, 116 138 Z" fill="#6f7c84" />
+    <path d="M 118 46 C 132 40, 158 45, 172 60 C 168 76, 152 82, 136 82 Z" fill="#6f7c84" />
+  </g>
+
+  <path d="M 125 180 C 135 110, 200 48, 310 40 C 265 55, 175 105, 155 185 C 145 225, 185 265, 270 262 C 340 260, 420 205, 475 140 L 465 130 L 515 105 L 505 160 L 488 146 C 430 215, 345 278, 260 280 C 160 282, 115 235, 125 180 Z" fill="url(#favGold)" />
+  <path d="M 110 210 C 120 265, 165 305, 255 304 C 340 302, 410 265, 460 210 C 445 220, 395 255, 330 268 C 245 285, 165 270, 135 225 C 120 202, 115 170, 120 155 C 112 170, 108 190, 110 210 Z" fill="url(#favEmerald)" />
+
+  <g transform="translate(230, 240)">
+    <path d="M 15 75 L 30 110 L 225 110 C 245 110, 275 95, 290 70 L 220 72 L 15 75 Z" fill="#0a282e" />
+    <path d="M 28 42 L 62 42 L 62 75 L 28 75 Z" fill="#0a282e" />
+    <rect x="70" y="48" width="38" height="24" rx="1" fill="#ca8f44" stroke="#8e5e22" stroke-width="1" />
+    <rect x="112" y="48" width="38" height="24" rx="1" fill="#0d4d42" stroke="#08382e" stroke-width="1" />
+    <rect x="88" y="24" width="38" height="24" rx="1" fill="#ca8f44" stroke="#8e5e22" stroke-width="1" />
+    <rect x="130" y="24" width="38" height="24" rx="1" fill="#0d4d42" stroke="#08382e" stroke-width="1" />
+    <rect x="238" y="58" width="34" height="34" rx="1" fill="#ca8f44" stroke="#8e5e22" stroke-width="1" />
+    <rect x="274" y="66" width="30" height="26" rx="1" fill="#0d4d42" stroke="#08382e" stroke-width="1" />
+    <path d="M 5 118 C 30 112, 70 125, 120 118 C 170 112, 220 126, 280 116" stroke="#9db2ba" stroke-width="4" stroke-linecap="round" fill="none" />
+    <path d="M 35 128 C 75 122, 130 134, 180 126 C 220 120, 255 130, 295 122" stroke="#7b919a" stroke-width="3" stroke-linecap="round" fill="none" />
+  </g>
+
+  <g transform="translate(415, 125)">
+    <line x1="50" y1="0" x2="50" y2="45" stroke="#0a282e" stroke-width="3" />
+    <circle cx="50" cy="48" r="6" fill="#0a282e" />
+    <line x1="50" y1="58" x2="22" y2="76" stroke="#0a282e" stroke-width="2" />
+    <line x1="50" y1="58" x2="78" y2="76" stroke="#0a282e" stroke-width="2" />
+    <g transform="rotate(-6 50 90)">
+      <rect x="20" y="74" width="58" height="34" rx="1.5" fill="#ca8f44" stroke="#7e531e" stroke-width="1.5" />
+    </g>
+  </g>
+</svg>
