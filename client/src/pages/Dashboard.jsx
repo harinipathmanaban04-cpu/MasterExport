@@ -199,7 +199,7 @@ export default function Dashboard() {
 
           <div className="pipeline-step">
             <div className="pipeline-circle">42</div>
-            <span className="pipeline-label">Completed</span>
+            <span className="pipeline-label">Completed succesfully</span>
           </div>
         </div>
       </div>
