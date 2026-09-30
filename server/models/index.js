@@ -9,7 +9,7 @@ const customerSchema = new mongoose.Schema({
   phone: String,
   address: String,
   taxNumber: String,
-  currency: { type: String, default: 'USD' },
+  currency: { type: String, default: 'INR' },
   paymentTerms: { type: String, default: 'Net 30' },
   outstandingBalance: { type: Number, default: 0 },
   status: { type: String, default: 'Active' }
@@ -58,7 +58,7 @@ const salesSchema = new mongoose.Schema({
     unitPrice: { type: Number, default: 0 },
     total: { type: Number, default: 0 }
   }],
-  currency: { type: String, default: 'USD' },
+  currency: { type: String, default: 'INR' },
   incoterm: { type: String, default: 'FOB' },
   freight: { type: Number, default: 0 },
   paymentTerms: { type: String, default: 'Net 30' },
@@ -99,7 +99,7 @@ const quotationSchema = new mongoose.Schema({
   destination: String,
   origin: { type: String, default: 'Nhava Sheva, Mumbai, India' },
   items: [quotationItemSchema],
-  currency: { type: String, default: 'USD' },
+  currency: { type: String, default: 'INR' },
   subtotal: { type: Number, default: 0 },
   totalDiscount: { type: Number, default: 0 },
   taxableAmount: { type: Number, default: 0 },

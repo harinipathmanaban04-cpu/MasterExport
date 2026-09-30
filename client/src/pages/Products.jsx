@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Plus, Search, Edit, Trash2, Sparkles } from 'lucide-react';
 import { get, post, put, del } from '../api';
 import Modal from '../components/Modal';
+import { useCurrency } from '../context/CurrencyContext';
 
 const defaultProducts = [
   {
@@ -46,6 +47,7 @@ const defaultProducts = [
 ];
 
 export default function Products() {
+  const { currencySymbol, formatAmount } = useCurrency();
   const [products, setProducts] = useState(defaultProducts);
   const [search, setSearch] = useState('');
   const [unitFilter, setUnitFilter] = useState('');
@@ -228,7 +230,7 @@ export default function Products() {
                   </td>
                   <td>
                     <strong style={{ color: '#1e1e2d', fontSize: '13px' }}>
-                      ${Number(p.price || 0).toFixed(2)}
+                      {formatAmount(p.price || 0)}
                     </strong>
                   </td>
                   <td>
@@ -352,7 +354,7 @@ export default function Products() {
                 <input name="hsCode" defaultValue={editProduct?.hsCode || '1006.30.20'} placeholder="e.g. 1006.30.20" />
               </div>
               <div className="field">
-                <label>Base Price ($) *</label>
+                <label>Base Price ({currencySymbol}) *</label>
                 <input name="price" type="number" step="0.01" defaultValue={editProduct?.price || 950} required />
               </div>
               <div className="field">
