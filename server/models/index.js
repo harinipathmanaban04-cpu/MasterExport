@@ -120,56 +120,7 @@ const quotationSchema = new mongoose.Schema({
   orderNo: String
 }, { timestamps: true });
 
-const shipmentSchema = new mongoose.Schema({
-  shipmentNo: { type: String, required: true },
-  orderNo: String,
-  customer: String,
-  origin: String,
-  destination: String,
-  route: String,
-  transportMode: { type: String, default: 'Sea' },
-  containerNo: String,
-  carrier: String,
-  etd: String,
-  eta: String,
-  trackingNo: String,
-  docs: [String],
-  status: { type: String, default: 'Preparing' }
-}, { timestamps: true });
-
-const invoiceSchema = new mongoose.Schema({
-  invoiceNo: { type: String, required: true },
-  type: { type: String, default: 'Commercial Invoice' },
-  customer: String,
-  orderNo: String,
-  issueDate: String,
-  dueDate: String,
-  totalAmount: { type: Number, default: 0 },
-  paidAmount: { type: Number, default: 0 },
-  paymentMethod: String,
-  paymentReference: String,
-  status: { type: String, default: 'Unpaid' }
-}, { timestamps: true });
-
-const settingsSchema = new mongoose.Schema({
-  companyName: { type: String, default: 'Master Export Pro' },
-  email: { type: String, default: 'john.doe@company.com' },
-  phone: { type: String, default: '+1 234 567 8900' },
-  address: { type: String, default: '123 Trade Center, Business Bay\nNew York, NY 10001, USA' },
-  gst: { type: String, default: '123456789' },
-  businessType: { type: String, default: 'Exporter' },
-  website: { type: String, default: 'www.masterexportpro.com' },
-  language: { type: String, default: 'English' },
-  timezone: { type: String, default: '(GMT-05:00) New York' },
-  dateFormat: { type: String, default: 'MM/DD/YYYY' },
-  currency: { type: String, default: 'USD ($)' },
-  paymentTerms: { type: String, default: 'Net 30' }
-}, { timestamps: true });
-
 export const Customer = mongoose.model('Customer', customerSchema);
 export const Product = mongoose.model('Product', productSchema);
 export const Sale = mongoose.model('Sale', salesSchema);
 export const Quotation = mongoose.model('Quotation', quotationSchema);
-export const Shipment = mongoose.model('Shipment', shipmentSchema);
-export const Invoice = mongoose.model('Invoice', invoiceSchema);
-export const Settings = mongoose.model('Settings', settingsSchema);

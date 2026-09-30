@@ -139,7 +139,7 @@ export default function Products() {
   return (
     <div className="products-page">
       {/* Header matching PDF Page 3 */}
-      <div className="dash-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px' }}>
+      <div className="dash-head">
         <div>
           <h1 style={{ fontSize: '24px', fontWeight: 800, margin: '0 0 4px', color: '#1e1e2d' }}>
             Product Master
@@ -161,8 +161,8 @@ export default function Products() {
       </div>
 
       {/* Filter bar matching PDF Page 3 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' }}>
-        <div className="global-search" style={{ width: '320px', background: '#ffffff', border: '1px solid var(--border)' }}>
+      <div className="filter-toolbar">
+        <div className="global-search filter-search" style={{ background: '#ffffff', border: '1px solid var(--border)' }}>
           <Search size={16} />
           <input
             placeholder="Search SKU, name, or HS Code..."

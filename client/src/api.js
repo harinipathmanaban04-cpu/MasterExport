@@ -48,8 +48,6 @@ export async function del(path) {
 export const prepareQuotation = (data) => post('/sales/prepare-quotation', data);
 export const convertToOrder = (quotationId) => post('/sales/convert-to-order', { quotationId });
 export const advanceOrderStage = (id, status) => put(`/sales/${id}/advance-stage`, status ? { status } : {});
-export const createShipmentFromOrder = (id, data) => post(`/sales/${id}/create-shipment`, data || {});
-export const createInvoiceFromOrder = (id, data) => post(`/sales/${id}/create-invoice`, data || {});
 export const resetAllData = () => post('/reset-data', {});
 
 // Dedicated Quotations API

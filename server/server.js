@@ -2,8 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import { Customer, Product, Sale, Quotation, Shipment, Invoice, Settings } from './models/index.js';
-import { customers, products, sales, initialQuotations, shipments, invoices, settings } from './data.js';
+import { Customer, Product, Sale, Quotation } from './models/index.js';
+import { customers, products, sales, initialQuotations } from './data.js';
 
 dotenv.config();
 const app = express();
@@ -13,9 +13,7 @@ app.use(express.json());
 const modelMap = {
   customers: Customer,
   products: Product,
-  sales: Sale,
-  shipments: Shipment,
-  invoices: Invoice
+  sales: Sale
 };
 
 // Generic CRUD
@@ -630,81 +628,18 @@ app.put('/api/sales/:id/advance-stage', async (req, res) => {
   }
 });
 
-app.post('/api/sales/:id/create-shipment', async (req, res) => {
-  try {
-    const sale = await Sale.findById(req.params.id);
-    if (!sale) return res.status(404).json({ message: 'Order not found' });
-
-    const count = await Shipment.countDocuments();
-    const shipmentNo = `SHP-000${count + 1}`;
-
-    const shipment = await Shipment.create({
-      shipmentNo,
-      orderNo: sale.orderNo || `SO-${sale._id.toString().slice(-4).toUpperCase()}`,
-      customer: sale.customer,
-      origin: sale.origin || 'Nhava Sheva, Mumbai, India',
-      destination: sale.destination,
-      transportMode: req.body.transportMode || 'Sea',
-      containerNo: req.body.containerNo || `MSKU${Math.floor(1000000 + Math.random() * 9000000)}`,
-      carrier: req.body.carrier || 'Maersk Line',
-      etd: req.body.etd || new Date().toISOString().slice(0, 10),
-      eta: req.body.eta || new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10),
-      trackingNo: `TRK-${Math.floor(100000 + Math.random() * 900000)}`,
-      status: 'Preparing'
-    });
-
-    res.status(201).json(shipment);
-  } catch (e) {
-    res.status(400).json({ message: e.message });
-  }
-});
-
-app.post('/api/sales/:id/create-invoice', async (req, res) => {
-  try {
-    const sale = await Sale.findById(req.params.id);
-    if (!sale) return res.status(404).json({ message: 'Order not found' });
-
-    const count = await Invoice.countDocuments();
-    const invoiceNo = `INV-000${count + 1}`;
-
-    const invoice = await Invoice.create({
-      invoiceNo,
-      type: req.body.type || 'Commercial Invoice',
-      customer: sale.customer,
-      orderNo: sale.orderNo || `SO-${sale._id.toString().slice(-4).toUpperCase()}`,
-      issueDate: new Date().toISOString().slice(0, 10),
-      dueDate: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10),
-      totalAmount: sale.totalAmount || 0,
-      paidAmount: 0,
-      paymentMethod: 'Bank Transfer',
-      status: 'Unpaid'
-    });
-
-    res.status(201).json(invoice);
-  } catch (e) {
-    res.status(400).json({ message: e.message });
-  }
-});
-
 // Dashboard metrics
 app.get('/api/dashboard', async (req, res) => {
   try {
-    const [cs, ps, ss, sh, is] = await Promise.all([
+    const [cs, ps, ss, qs] = await Promise.all([
       Customer.find(),
       Product.find(),
       Sale.find().sort({ createdAt: -1 }),
-      Shipment.find(),
-      Invoice.find()
+      Quotation.find().sort({ createdAt: -1 })
     ]);
 
     const activeOrdersList = ss.filter(x => x.type === 'Sales Order' && x.status !== 'Completed');
-    const activeOrders = activeOrdersList.length > 0 ? activeOrdersList.length + 21 : 24;
-
-    const pendingShipmentsList = sh.filter(x => ['Preparing', 'In Transit'].includes(x.status));
-    const pendingShipments = pendingShipmentsList.length > 0 ? pendingShipmentsList.length + 4 : 8;
-
-    const outstandingFromInvoices = is.reduce((sum, inv) => sum + Math.max(0, (inv.totalAmount || 0) - (inv.paidAmount || 0)), 0);
-    const outstandingPayments = outstandingFromInvoices > 0 ? outstandingFromInvoices : 45000;
+    const activeOrders = activeOrdersList.length > 0 ? activeOrdersList.length : 24;
 
     const salesSum = ss.reduce((sum, s) => sum + (s.totalAmount || 0), 0);
     const totalSales = salesSum > 0 ? salesSum : 185000;
@@ -712,105 +647,15 @@ app.get('/api/dashboard', async (req, res) => {
     const recentOrders = ss.filter(x => x.type === 'Sales Order').slice(0, 5);
 
     res.json({
-      activeOrders: 24,
-      pendingShipments: 8,
-      outstandingPayments: 45000,
+      activeOrders,
       monthlySales: 185000,
       totalSales,
-      customers: 12,
-      products: 35,
-      shipments: 6,
-      invoices: 18,
+      customers: cs.length || 12,
+      products: ps.length || 35,
       recentSales: recentOrders.length > 0 ? recentOrders : ss.slice(0, 5)
     });
   } catch (e) {
     res.status(500).json({ message: e.message });
-  }
-});
-
-// Reports metrics
-app.get('/api/reports', async (req, res) => {
-  try {
-    const [ss, is, sh, cs, ps] = await Promise.all([
-      Sale.find(),
-      Invoice.find(),
-      Shipment.find(),
-      Customer.find(),
-      Product.find()
-    ]);
-
-    const totalSales = 185430;
-    const paid = 180450;
-    const outstanding = 65350;
-
-    res.json({
-      totalSales: 920000,
-      salesGrowth: '+8.4%',
-      pendingFulfillment: 8,
-      shippedFulfillment: 6,
-      deliveredFulfillment: 24,
-      collectedPayments: 210000,
-      overduePayments: 70000,
-      paymentHealthPercent: 75,
-      profitEstimator: {
-        salesRevenue: 920000,
-        productCost: 640000,
-        shippingCost: 88000,
-        otherExpenses: 28000,
-        netProfit: 164000
-      },
-      topCustomers: [
-        { rank: '🥇', name: 'ABC Trading', amount: '$310k' },
-        { rank: '🥈', name: 'EuroFoods', amount: '$240k' },
-        { rank: '🥉', name: 'Apex', amount: '$180k' }
-      ],
-      salesByMonth: [
-        { name: 'May', value: 140000 },
-        { name: 'Jun', value: 175000 },
-        { name: 'Jul', value: 160000 },
-        { name: 'Aug', value: 210000 },
-        { name: 'Sep', value: 235000 }
-      ],
-      category: [
-        { name: 'Agricultural Products', value: 28, color: '#6c5ce7' },
-        { name: 'Seafood', value: 22, color: '#3ca994' },
-        { name: 'Textiles', value: 18, color: '#4fa8df' },
-        { name: 'Footwear', value: 15, color: '#7a66df' },
-        { name: 'Furniture', value: 10, color: '#e5ad42' },
-        { name: 'Others', value: 7, color: '#889e9d' }
-      ],
-      payment: [
-        { name: 'Collected', value: 75, color: '#10b981' },
-        { name: 'Outstanding', value: 25, color: '#f59e0b' }
-      ]
-    });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
-});
-
-// Settings endpoints
-app.get('/api/settings', async (req, res) => {
-  try {
-    let row = await Settings.findOne();
-    if (!row) row = await Settings.create(settings);
-    res.json(row);
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
-});
-
-app.put('/api/settings', async (req, res) => {
-  try {
-    let row = await Settings.findOne();
-    if (!row) {
-      row = await Settings.create(req.body);
-    } else {
-      row = await Settings.findByIdAndUpdate(row._id, req.body, { new: true });
-    }
-    res.json(row);
-  } catch (e) {
-    res.status(400).json({ message: e.message });
   }
 });
 
@@ -821,19 +666,13 @@ app.post('/api/reset-data', async (req, res) => {
       Customer.deleteMany({}),
       Product.deleteMany({}),
       Sale.deleteMany({}),
-      Quotation.deleteMany({}),
-      Shipment.deleteMany({}),
-      Invoice.deleteMany({}),
-      Settings.deleteMany({})
+      Quotation.deleteMany({})
     ]);
 
     await Customer.insertMany(customers);
     await Product.insertMany(products);
     await Sale.insertMany(sales);
     await Quotation.insertMany(initialQuotations);
-    await Shipment.insertMany(shipments);
-    await Invoice.insertMany(invoices);
-    await Settings.create(settings);
 
     res.json({ ok: true, message: 'All data successfully reset to seed data' });
   } catch (e) {
@@ -848,16 +687,11 @@ async function seed() {
     [Customer, customers],
     [Product, products],
     [Sale, sales],
-    [Quotation, initialQuotations],
-    [Shipment, shipments],
-    [Invoice, invoices]
+    [Quotation, initialQuotations]
   ]) {
     if (await M.countDocuments() === 0) {
       await M.insertMany(data);
     }
-  }
-  if (await Settings.countDocuments() === 0) {
-    await Settings.create(settings);
   }
 }
 

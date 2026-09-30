@@ -5,11 +5,6 @@ import {
   Users,
   Package,
   LineChart,
-  FileCheck2,
-  Ship,
-  FileText,
-  BarChart3,
-  Settings as SettingsIcon,
   Bell,
   Search,
   Menu,
@@ -27,11 +22,7 @@ const nav = [
   ['/', 'Dashboard', LayoutDashboard],
   ['/customers', 'Customers', Users],
   ['/products', 'Products', Package],
-  ['/sales', 'Sales', LineChart],
-  ['/shipments', 'Shipments', Ship],
-  ['/invoices', 'Invoices & Payments', FileText],
-  ['/reports', 'Reports', BarChart3],
-  ['/settings', 'Settings', SettingsIcon]
+  ['/sales', 'Sales', LineChart]
 ];
 
 export default function Layout({ children }) {
@@ -59,7 +50,6 @@ export default function Layout({ children }) {
             >
               <Icon size={18} />
               <span>{label}</span>
-              {label === 'Shipments' && <span className="nav-badge">3</span>}
             </NavLink>
           ))}
         </nav>

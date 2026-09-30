@@ -641,7 +641,7 @@ export default function Sales({ initialTab = 'All' }) {
       )}
 
       {/* Tabs Switcher matching PDF Page 4 & 5 */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
+      <div className="tabs-bar">
         <button
           className={`tab-pill ${isEnquiriesTab ? 'active' : ''}`}
           onClick={() => {
@@ -693,7 +693,7 @@ export default function Sales({ initialTab = 'All' }) {
           >
             <span style={{ fontSize: '16px' }}>💡</span>
             <div>
-              <strong>Quotations convert to Sales Orders with a single click.</strong> Keep track of accepted vs pending quotes and generate proforma invoices immediately.
+              <strong>Quotations convert to Sales Orders with a single click.</strong> Keep track of accepted vs pending quotes and convert them directly to confirmed sales orders.
             </div>
           </div>
 
@@ -1195,21 +1195,10 @@ export default function Sales({ initialTab = 'All' }) {
                               <button
                                 className="action-pill-btn"
                                 style={{ background: '#f5f3ff', color: '#6c5ce7', borderColor: '#ddd6fe', fontWeight: 600 }}
-                                title="Pre-fill shipment with order details"
-                                onClick={() => {
-                                  showNotice(`Order ${so.orderNo} dispatched to Shipments module.`);
-                                  handleAdvanceStage(so, 'Ready to Ship');
-                                }}
+                                title="Advance order to next workflow stage"
+                                onClick={() => handleAdvanceStage(so)}
                               >
-                                Ship 🚢
-                              </button>
-                              <button
-                                className="action-pill-btn"
-                                style={{ background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0', fontWeight: 600 }}
-                                title="Create / View Invoice"
-                                onClick={() => setPreviewDocModal(so)}
-                              >
-                                Invoice 📄
+                                Advance ⚡
                               </button>
                               <button
                                 className="small-btn"
@@ -1259,7 +1248,7 @@ export default function Sales({ initialTab = 'All' }) {
 
           {/* Selected Order Information & Order Journey Panel matching PDF Page 5 */}
           {selectedOrder && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) minmax(360px, 1.4fr)', gap: '18px' }}>
+            <div className="order-details-journey-grid">
               {/* Left Column: Order Information */}
               <div className="panel" style={{ padding: '20px' }}>
                 <h3 style={{ margin: '0 0 14px', fontSize: '14.5px', fontWeight: 700, color: '#111827' }}>
@@ -1377,7 +1366,7 @@ export default function Sales({ initialTab = 'All' }) {
                   }}
                 >
                   <span>✨</span>
-                  <span>Single click <strong>"Ship"</strong> pre-fills the shipment with customer, product and container details.</span>
+                  <span>Single click <strong>"Advance"</strong> progresses the order smoothly through preparation, QA, and fulfillment.</span>
                 </div>
               </div>
             </div>
