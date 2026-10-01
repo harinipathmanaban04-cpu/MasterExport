@@ -2,140 +2,108 @@ import React from 'react';
 
 /**
  * AmbientBackground Component
- * Renders the clean, neat, professional executive ERP background:
- * - Fluid SVG flowing silk waves in Emerald Teal and Warm Gold at the top-right
- * - Soft secondary waves at the bottom-left matching the ChatGPT reference PDF
- * - Soft ambient gradients and micro-grid texture for enterprise depth
+ * Renders the signature executive green & golden-orange ambient waves and swooshes
+ * matching the official Master Export Pro logo theme seen in the reference screenshot.
  */
 export default function AmbientBackground() {
   return (
     <div className="ambient-background" aria-hidden="true">
-      {/* Top-Right Flowing Silk Waves matching reference design */}
+      {/* Top-Right Signature Logo Waves (Emerald Green & Golden Orange) */}
       <svg
         className="ambient-svg-top"
-        viewBox="0 0 620 380"
+        viewBox="0 0 750 440"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* Official Emerald Gradient matching logo */}
-          <linearGradient id="waveEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#0d4d42" stopOpacity="0.18" />
-            <stop offset="50%" stopColor="#107b68" stopOpacity="0.10" />
-            <stop offset="100%" stopColor="#062b24" stopOpacity="0.02" />
+          <linearGradient id="waveLogoGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#0c5a48" stopOpacity="0.45" />
+            <stop offset="60%" stopColor="#087a68" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#10b981" stopOpacity="0.05" />
           </linearGradient>
 
-          {/* Official Gold Gradient matching logo */}
-          <linearGradient id="waveGold" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#c59239" stopOpacity="0.22" />
-            <stop offset="60%" stopColor="#dda74a" stopOpacity="0.14" />
-            <stop offset="100%" stopColor="#b17b2b" stopOpacity="0.03" />
+          <linearGradient id="waveLogoGold" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#d97706" stopOpacity="0.55" />
+            <stop offset="55%" stopColor="#f59e0b" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#fbbf24" stopOpacity="0.06" />
           </linearGradient>
 
-          {/* Accent Glow Filter */}
-          <filter id="softBlur" x="-10%" y="-10%" width="120%" height="120%">
-            <feGaussianBlur stdDeviation="8" />
-          </filter>
+          <linearGradient id="ribbonFillGold" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#d97706" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.04" />
+          </linearGradient>
+
+          <linearGradient id="ribbonFillGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#0c5a48" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#087a68" stopOpacity="0.03" />
+          </linearGradient>
         </defs>
 
-        {/* Ambient Warm Back Glow */}
-        <circle cx="480" cy="90" r="160" fill="url(#waveGold)" opacity="0.3" filter="url(#softBlur)" />
-        <circle cx="340" cy="60" r="140" fill="url(#waveEmerald)" opacity="0.35" filter="url(#softBlur)" />
-
-        {/* Outer Emerald Ribbon Curve */}
+        {/* Soft Golden Ambient Ribbon */}
         <path
-          d="M 120 0 C 260 40, 420 120, 520 260 C 560 315, 595 365, 620 380 L 620 0 Z"
-          fill="url(#waveEmerald)"
+          d="M 280 -60 C 420 110, 600 200, 780 150 C 650 260, 490 210, 310 -20 Z"
+          fill="url(#ribbonFillGold)"
         />
 
-        {/* Smooth Emerald Contour Stroke */}
+        {/* Soft Green Ambient Ribbon */}
         <path
-          d="M 120 0 C 260 40, 420 120, 520 260 C 560 315, 595 365, 620 380"
-          stroke="#0d4d42"
-          strokeWidth="3"
-          strokeOpacity="0.25"
-          strokeLinecap="round"
+          d="M 140 -30 C 280 140, 480 260, 760 230 C 600 310, 380 280, 190 70 Z"
+          fill="url(#ribbonFillGreen)"
         />
 
-        {/* Flowing Gold Ribbon Curve */}
+        {/* Fine Dash-Dotted Gold Orbit Line */}
         <path
-          d="M 240 0 C 350 50, 470 140, 550 250 C 590 305, 610 345, 620 360 L 620 0 Z"
-          fill="url(#waveGold)"
+          d="M 120 -40 C 300 90, 520 200, 760 130"
+          stroke="url(#waveLogoGold)"
+          strokeWidth="1.5"
+          strokeDasharray="5 3"
+          opacity="0.55"
         />
 
-        {/* Smooth Gold Contour Stroke */}
+        {/* Prominent Sweeping Emerald Green Curve (from Logo) */}
         <path
-          d="M 240 0 C 350 50, 470 140, 550 250 C 590 305, 610 345, 620 360"
-          stroke="#c59239"
+          d="M 90 10 C 260 170, 470 290, 780 260"
+          stroke="url(#waveLogoGreen)"
           strokeWidth="2.5"
-          strokeOpacity="0.35"
-          strokeLinecap="round"
         />
 
-        {/* Subtle Fine Accent Rings */}
-        <ellipse
-          cx="490"
-          cy="110"
-          rx="180"
-          ry="75"
-          stroke="#0d4d42"
-          strokeWidth="1.5"
-          strokeOpacity="0.12"
-          strokeDasharray="4 6"
-          transform="rotate(-22 490 110)"
-        />
-        <ellipse
-          cx="460"
-          cy="95"
-          rx="140"
-          ry="55"
-          stroke="#c59239"
-          strokeWidth="1.5"
-          strokeOpacity="0.16"
-          transform="rotate(-18 460 95)"
+        {/* Prominent Sweeping Golden Orange Curve (from Logo) */}
+        <path
+          d="M 170 -30 C 330 110, 550 220, 800 190"
+          stroke="url(#waveLogoGold)"
+          strokeWidth="2.2"
         />
       </svg>
 
-      {/* Bottom-Left Flowing Silk Ribbon (as seen in PDF pages 2, 4, 5, 8) */}
+      {/* Bottom Ambient Golden & Green Waves */}
       <svg
         className="ambient-svg-bottom"
-        viewBox="0 0 480 280"
+        viewBox="0 0 600 320"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <linearGradient id="waveEmeraldBtm" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#0d4d42" stopOpacity="0.15" />
-            <stop offset="100%" stopColor="#107b68" stopOpacity="0.02" />
+          <linearGradient id="waveBtmGreen" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#0c5a48" stopOpacity="0.22" />
+            <stop offset="100%" stopColor="#10b981" stopOpacity="0.02" />
           </linearGradient>
-          <linearGradient id="waveGoldBtm" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#c59239" stopOpacity="0.16" />
-            <stop offset="100%" stopColor="#dda74a" stopOpacity="0.03" />
+          <linearGradient id="waveBtmGold" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#d97706" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.03" />
           </linearGradient>
         </defs>
 
-        {/* Emerald Arc at Bottom Left */}
+        {/* Subtle Green Flow */}
         <path
-          d="M 0 280 C 80 230, 200 180, 360 210 C 420 220, 460 245, 480 260 L 0 280 Z"
-          fill="url(#waveEmeraldBtm)"
-        />
-        <path
-          d="M 0 280 C 80 230, 200 180, 360 210 C 420 220, 460 245, 480 260"
-          stroke="#0d4d42"
-          strokeWidth="2"
-          strokeOpacity="0.2"
+          d="M -50 260 C 140 150, 320 210, 540 110 C 440 250, 230 300, -50 330 Z"
+          fill="url(#waveBtmGreen)"
         />
 
-        {/* Gold Accent Arc */}
+        {/* Subtle Gold Curve Line */}
         <path
-          d="M 0 280 C 60 250, 150 210, 290 235 C 340 245, 380 265, 400 280 L 0 280 Z"
-          fill="url(#waveGoldBtm)"
-        />
-        <path
-          d="M 0 280 C 60 250, 150 210, 290 235 C 340 245, 380 265, 400 280"
-          stroke="#c59239"
-          strokeWidth="1.8"
-          strokeOpacity="0.25"
+          d="M -70 300 C 120 170, 290 220, 500 140"
+          stroke="url(#waveBtmGold)"
+          strokeWidth="2"
         />
       </svg>
     </div>

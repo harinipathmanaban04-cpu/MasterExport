@@ -213,7 +213,7 @@ export default function Customers() {
           onChange={(e) => setCountryFilter(e.target.value)}
           style={{
             height: '38px',
-            padding: '0 14px',
+            padding: '0 32px 0 14px',
             borderRadius: '20px',
             border: '1px solid var(--border)',
             background: '#ffffff',
@@ -224,7 +224,7 @@ export default function Customers() {
             cursor: 'pointer'
           }}
         >
-          <option value="">All Countries ▾</option>
+          <option value="">All Countries</option>
           <option value="UAE">UAE 🇦🇪</option>
           <option value="Netherlands">Netherlands 🇳🇱</option>
           <option value="USA">USA 🇺🇸</option>
@@ -236,7 +236,7 @@ export default function Customers() {
           onChange={(e) => setStatusFilter(e.target.value)}
           style={{
             height: '38px',
-            padding: '0 14px',
+            padding: '0 32px 0 14px',
             borderRadius: '20px',
             border: '1px solid var(--border)',
             background: '#ffffff',
@@ -248,7 +248,7 @@ export default function Customers() {
           }}
         >
           <option value="">All Statuses</option>
-          <option value="Active">Status: Active ▾</option>
+          <option value="Active">Status: Active</option>
           <option value="Inactive">Status: Inactive</option>
         </select>
       </div>
@@ -256,7 +256,7 @@ export default function Customers() {
       {/* Split Screen Layout matching PDF Page 2 */}
       <div className="customer-page-layout">
         {/* Main Customers Table */}
-        <div className="customer-main-table panel" style={{ background: '#ffffff', borderRadius: '14px', border: '1px solid var(--border)', padding: '18px 20px' }}>
+        <div className="customer-main-table panel" style={{ background: '#ffffff', borderRadius: '20px', border: '1px solid rgba(226, 232, 240, 0.85)', padding: '22px 24px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)' }}>
           <div className="table-wrap">
             <table className="data-table">
               <thead>
@@ -416,7 +416,7 @@ export default function Customers() {
                   <strong>SO-1024</strong> • Basmati Rice 1121
                   <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', marginTop: '3px' }}>
                     <span>{resolveCurrencySymbol(selectedCustomer.currency)}50,000</span>
-                    <span style={{ color: '#6c5ce7', fontWeight: 600 }}>Confirmed</span>
+                    <span style={{ color: '#0c5a48', fontWeight: 600 }}>Confirmed</span>
                   </div>
                 </div>
                 <div style={{ padding: '8px 0' }}>

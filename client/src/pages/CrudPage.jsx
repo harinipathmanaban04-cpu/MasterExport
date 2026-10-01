@@ -167,7 +167,7 @@ export default function CrudPage({ type }) {
       <div className="stats module-stats">
         {c.stats.map((s, i) => {
           const IconComp = statIcons[type][i];
-          const tone = i === 1 ? 'blue' : i === 2 ? 'orange' : i === 3 ? 'purple' : 'green';
+          const tone = i === 1 ? 'blue' : i === 2 ? 'orange' : i === 3 ? 'green' : 'green';
           return (
             <StatCard
               key={s[0]}

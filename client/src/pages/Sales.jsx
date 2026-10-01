@@ -692,15 +692,15 @@ export default function Sales({ initialTab = 'All' }) {
           {/* Tip Banner */}
           <div
             style={{
-              background: '#f5f3ff',
-              border: '1px solid #ddd6fe',
+              background: '#fbfdfc',
+              border: '1px solid #d0ebe4',
               borderRadius: '10px',
               padding: '12px 18px',
               display: 'flex',
               alignItems: 'center',
               gap: '10px',
               marginBottom: '20px',
-              color: '#5b21b6',
+              color: '#0c5a48',
               fontSize: '13px'
             }}
           >
@@ -830,7 +830,7 @@ export default function Sales({ initialTab = 'All' }) {
                           <td>
                             <button
                               className="order-link"
-                              style={{ background: 'none', border: 'none', padding: 0, fontWeight: 700, color: '#6c5ce7', cursor: 'pointer' }}
+                              style={{ background: 'none', border: 'none', padding: 0, fontWeight: 700, color: '#0c5a48', cursor: 'pointer' }}
                               onClick={() => setPreviewDocModal(q)}
                             >
                               {q.quotationNo}
@@ -1001,7 +1001,7 @@ export default function Sales({ initialTab = 'All' }) {
                       return (
                         <tr key={enq._id || enq.enquiryNo}>
                           <td>
-                            <strong style={{ color: '#6c5ce7', fontSize: '12.5px' }}>{enq.enquiryNo}</strong>
+                            <strong style={{ color: '#0c5a48', fontSize: '12.5px' }}>{enq.enquiryNo}</strong>
                           </td>
                           <td style={{ color: '#4b5563', fontSize: '12px' }}>
                             {enq.createdAt ? new Date(enq.createdAt).toISOString().slice(0, 10) : '26 Apr 2025'}
@@ -1073,7 +1073,7 @@ export default function Sales({ initialTab = 'All' }) {
               label="Total Order Value"
               value={formatAmount(185000)}
               note="Confirmed pipeline"
-              tone="purple"
+              tone="green"
             />
           </div>
 
@@ -1159,7 +1159,7 @@ export default function Sales({ initialTab = 'All' }) {
                           onClick={() => setSelectedOrderId(so.orderNo || so._id)}
                         >
                           <td>
-                            <strong style={{ color: '#6c5ce7', fontSize: '13px' }}>{so.orderNo}</strong>
+                            <strong style={{ color: '#0c5a48', fontSize: '13px' }}>{so.orderNo}</strong>
                           </td>
                           <td style={{ color: '#4b5563', fontSize: '12px' }}>
                             {so.createdAt ? new Date(so.createdAt).toISOString().slice(0, 10) : '22 Apr 2025'}
@@ -1208,7 +1208,7 @@ export default function Sales({ initialTab = 'All' }) {
                             <div className="actions" style={{ justifyContent: 'flex-end', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
                               <button
                                 className="action-pill-btn"
-                                style={{ background: '#f5f3ff', color: '#6c5ce7', borderColor: '#ddd6fe', fontWeight: 600 }}
+                                style={{ background: '#fef3c7', color: '#d97706', borderColor: '#fde68a', fontWeight: 600 }}
                                 title="Advance order to next workflow stage"
                                 onClick={() => handleAdvanceStage(so)}
                               >
@@ -1334,14 +1334,14 @@ export default function Sales({ initialTab = 'All' }) {
                               width: '28px',
                               height: '28px',
                               borderRadius: '50%',
-                              background: isPassed ? '#10b981' : isActive ? '#6c5ce7' : '#ffffff',
-                              border: `2px solid ${isPassed ? '#10b981' : isActive ? '#6c5ce7' : '#d1d5db'}`,
+                              background: isPassed ? '#10b981' : isActive ? '#0c5a48' : '#ffffff',
+                              border: `2px solid ${isPassed ? '#10b981' : isActive ? '#0c5a48' : '#d1d5db'}`,
                               display: 'grid',
                               placeItems: 'center',
                               color: isPassed || isActive ? '#ffffff' : '#9ca3af',
                               fontSize: '11px',
                               fontWeight: 700,
-                              boxShadow: isActive ? '0 0 0 4px rgba(108, 92, 231, 0.2)' : 'none',
+                              boxShadow: isActive ? '0 0 0 4px rgba(12, 90, 72, 0.22)' : 'none',
                               transition: 'all 0.2s ease'
                             }}
                           >
@@ -1352,7 +1352,7 @@ export default function Sales({ initialTab = 'All' }) {
                               fontSize: '11px',
                               marginTop: '6px',
                               fontWeight: isActive ? 700 : 500,
-                              color: isActive ? '#6c5ce7' : isPassed ? '#10b981' : '#6b7280',
+                              color: isActive ? '#0c5a48' : isPassed ? '#10b981' : '#6b7280',
                               textAlign: 'center',
                               whiteSpace: 'nowrap'
                             }}
@@ -1420,7 +1420,7 @@ export default function Sales({ initialTab = 'All' }) {
               label="Conversion Rate"
               value="68%"
               note="Enquiry to Order ratio"
-              tone="purple"
+              tone="orange"
             />
           </div>
 
@@ -1490,7 +1490,7 @@ export default function Sales({ initialTab = 'All' }) {
                       return (
                         <tr key={enq._id || enq.enquiryNo}>
                           <td>
-                            <strong style={{ color: '#6c5ce7', fontSize: '13px' }}>{enq.enquiryNo}</strong>
+                            <strong style={{ color: '#0c5a48', fontSize: '13px' }}>{enq.enquiryNo}</strong>
                           </td>
                           <td style={{ color: '#4b5563', fontSize: '12px' }}>
                             {enq.createdAt ? new Date(enq.createdAt).toISOString().slice(0, 10) : '25 Apr 2025'}
