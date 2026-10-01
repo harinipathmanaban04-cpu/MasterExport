@@ -178,7 +178,7 @@ export default function Products() {
           onChange={(e) => setUnitFilter(e.target.value)}
           style={{
             height: '38px',
-            padding: '0 14px',
+            padding: '0 32px 0 14px',
             borderRadius: '20px',
             border: '1px solid var(--border)',
             background: '#ffffff',
@@ -189,7 +189,7 @@ export default function Products() {
             cursor: 'pointer'
           }}
         >
-          <option value="">All Units ▾</option>
+          <option value="">All Units</option>
           <option value="MT">MT</option>
           <option value="KG">KG</option>
           <option value="ROLL">ROLL</option>
@@ -199,7 +199,7 @@ export default function Products() {
       </div>
 
       {/* Product Table matching PDF Page 3 */}
-      <div className="panel" style={{ background: '#ffffff', borderRadius: '14px', border: '1px solid var(--border)', padding: '18px 20px', marginBottom: '20px' }}>
+      <div className="panel" style={{ background: '#ffffff', borderRadius: '20px', border: '1px solid rgba(226, 232, 240, 0.85)', padding: '22px 24px', marginBottom: '24px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)' }}>
         <div className="table-wrap">
           <table className="data-table">
             <thead>
@@ -236,8 +236,8 @@ export default function Products() {
                   <td>
                     <span
                       style={{
-                        background: '#f0eefb',
-                        color: '#6c5ce7',
+                        background: '#e8f5f1',
+                        color: '#0c5a48',
                         padding: '3px 8px',
                         borderRadius: '12px',
                         fontSize: '11px',
@@ -247,7 +247,7 @@ export default function Products() {
                         gap: '4px'
                       }}
                     >
-                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#6c5ce7' }} />
+                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#0c5a48' }} />
                       {p.unit}
                     </span>
                   </td>

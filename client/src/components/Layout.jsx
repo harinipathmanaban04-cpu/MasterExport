@@ -62,16 +62,16 @@ export const PageHeader = ({ eyebrow, title, description, action, actions, date 
 );
 
 export const StatCard = ({ icon: Icon = LayoutDashboard, label, value, note, tone = 'green' }) => (
-  <div className="stat-card">
+  <div className={`stat-card tone-${tone}`}>
+    <div className="stat-decor-disc" />
     <div className={`stat-icon ${tone}`}>
       <Icon size={20} />
     </div>
     <div className="stat-copy">
       <span>{label}</span>
       <strong>{value}</strong>
-      <small>{note}</small>
+      {note && <small>{note}</small>}
     </div>
-    <span className="stat-arrow">›</span>
   </div>
 );
 
