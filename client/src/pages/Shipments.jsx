@@ -320,7 +320,7 @@ export default function Shipments() {
   };
 
   return (
-    <div className="shipments-page" style={{ maxWidth: '1440px', margin: '0 auto', width: '100%' }}>
+    <div className="shipments-page" style={{ width: '100%' }}>
       {/* Header with Exact Objective */}
       <PageHeader
         eyebrow="EXPORT DELIVERY MANAGEMENT"

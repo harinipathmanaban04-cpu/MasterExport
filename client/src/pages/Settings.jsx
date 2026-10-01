@@ -108,7 +108,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="settings-page" style={{ maxWidth: '1440px', margin: '0 auto', width: '100%' }}>
+    <div className="settings-page" style={{ width: '100%' }}>
       {/* Page Header */}
       <PageHeader
         eyebrow="SYSTEM CONFIGURATION"
