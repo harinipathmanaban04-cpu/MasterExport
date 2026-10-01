@@ -15,8 +15,6 @@ import Logo from '../Logo';
 const nav = [
   ['/', 'Dashboard', LayoutDashboard],
   ['/customers', 'Customers', Users],
-  ['/products', 'Products', Package],
-  ['/sales', 'Sales', LineChart],
   ['/shipments', 'Shipments', Ship],
   ['/settings', 'Settings', SettingsIcon]
 ];
