@@ -1,5 +1,5 @@
 import React from 'react';
-import officialLogoImg from 'C:/Users/acer/.gemini/antigravity/brain/b57e4b4b-d008-4dce-9e30-bafe11b5ab1d/.user_uploaded/media_1790669433217.png';
+import officialLogoImg from '../assets_logo.png';
 
 /**
  * Master Export Pro - Official Logo Component
