@@ -1,5 +1,5 @@
 import React from 'react';
-import officialLogoImg from 'C:/Users/acer/.gemini/antigravity/brain/4fef5259-b1db-4268-be82-ad5e4878eed1/.user_uploaded/media_1790837716970.png';
+import officialLogoImg from '../assets_logo.png';
 
 /**
  * Master Export Pro - Official Logo Component
@@ -104,7 +104,7 @@ export default function Logo({
           className="brand-official-logo"
           style={{
             width: width || '100%',
-            maxWidth: '200px',
+            maxWidth: '160px',
             height: height || 'auto',
             objectFit: 'contain',
             display: 'block',

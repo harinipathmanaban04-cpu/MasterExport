@@ -5,6 +5,7 @@ import {
   Users,
   Package,
   LineChart,
+  Ship,
   Sparkles,
   X
 } from 'lucide-react';
@@ -14,7 +15,8 @@ const nav = [
   ['/', 'Dashboard', LayoutDashboard],
   ['/customers', 'Customers', Users],
   ['/products', 'Products', Package],
-  ['/sales', 'Sales', LineChart]
+  ['/sales', 'Sales', LineChart],
+  ['/shipments', 'Shipments', Ship]
 ];
 
 export default function Sidebar({ open, onClose }) {
@@ -49,6 +51,7 @@ export default function Sidebar({ open, onClose }) {
           </div>
           <strong>Enter once, reuse everywhere</strong>
           <p>We auto-fill customer, product and price details for you.</p>
+          <p>Media Wave Technologies</p>
         </div>
       </aside>
     </>

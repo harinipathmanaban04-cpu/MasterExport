@@ -62,3 +62,11 @@ export const createQuotation = (data) => post('/quotations', data);
 export const updateQuotation = (id, data) => put(`/quotations/${id}`, data);
 export const deleteQuotation = (id) => del(`/quotations/${id}`);
 export const convertQuotationToOrder = (id, data = {}) => post(`/quotations/${id}/convert-to-order`, data);
+
+// Shipments API
+export const getShipments = () => get('/shipments');
+export const getShipmentById = (id) => get(`/shipments/${id}`);
+export const createShipment = (data) => post('/shipments', data);
+export const updateShipment = (id, data) => put(`/shipments/${id}`, data);
+export const deleteShipment = (id) => del(`/shipments/${id}`);
+
