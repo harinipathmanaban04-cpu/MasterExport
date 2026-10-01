@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import Customers from './pages/Customers';
 import Products from './pages/Products';
 import Sales from './pages/Sales';
+import Shipments from './pages/Shipments';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/sales" element={<Sales />} />
         <Route path="/sales/quotations" element={<Sales initialTab="Quotation" />} />
         <Route path="/quotations" element={<Sales initialTab="Quotation" />} />
+        <Route path="/shipments" element={<Shipments />} />
       </Routes>
     </Layout>
   );

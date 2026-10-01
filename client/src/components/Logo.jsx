@@ -104,7 +104,7 @@ export default function Logo({
           className="brand-official-logo"
           style={{
             width: width || '100%',
-            maxWidth: '200px',
+            maxWidth: '160px',
             height: height || 'auto',
             objectFit: 'contain',
             display: 'block',
