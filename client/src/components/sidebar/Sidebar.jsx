@@ -49,6 +49,7 @@ export default function Sidebar({ open, onClose }) {
             <strong>Enter once, reuse everywhere</strong>
           </div>
           <p>We auto-fill customer, product and price details for you.</p>
+          <p>Media Wave Technologies</p>
         </div>
       </aside>
     </>
