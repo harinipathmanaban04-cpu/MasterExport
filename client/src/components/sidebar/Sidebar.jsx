@@ -6,6 +6,7 @@ import {
   Package,
   LineChart,
   Ship,
+  Settings as SettingsIcon,
   Sparkles,
   X
 } from 'lucide-react';
@@ -16,7 +17,8 @@ const nav = [
   ['/customers', 'Customers', Users],
   ['/products', 'Products', Package],
   ['/sales', 'Sales', LineChart],
-  ['/shipments', 'Shipments', Ship]
+  ['/shipments', 'Shipments', Ship],
+  ['/settings', 'Settings', SettingsIcon]
 ];
 
 export default function Sidebar({ open, onClose }) {
