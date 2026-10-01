@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Building2,
-  Ship,
-  FileText,
   Bell,
   Save,
   RotateCcw,
@@ -151,9 +149,7 @@ export default function Settings() {
       {/* Tabbed Navigation Pills (Matching Shipments Toolbar style) */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', paddingBottom: '6px', marginBottom: '18px', scrollbarWidth: 'none' }}>
         {[
-          { id: 'company', label: 'Company & Compliance', icon: Building2 },
-          { id: 'logistics', label: 'Logistics & Shipping Defaults', icon: Ship },
-          { id: 'documents', label: 'Documentation & Prefixes', icon: FileText },
+          { id: 'company', label: 'Company Profile & Compliance', icon: Building2 },
           { id: 'notifications', label: 'Notifications & Automation', icon: Bell }
         ].map((tab) => {
           const Icon = tab.icon;
@@ -268,80 +264,6 @@ export default function Settings() {
                 />
               </div>
 
-              <div className="field full">
-                <label>Registered Office Address *</label>
-                <textarea
-                  name="address"
-                  rows={2}
-                  value={formData.address}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: Logistics & Shipping Defaults */}
-        {activeTab === 'logistics' && (
-          <div className="settings-card">
-            <div className="settings-card-header">
-              <div>
-                <h3>Logistics & Freight Defaults</h3>
-                <p>Default parameters pre-filled when creating new consignments and sales orders.</p>
-              </div>
-            </div>
-
-            <div className="form-grid">
-              <div className="field">
-                <label>Default Incoterm</label>
-                <select
-                  name="defaultIncoterm"
-                  value={formData.defaultIncoterm}
-                  onChange={handleChange}
-                  className="pro-select"
-                >
-                  <option value="FOB">FOB — Free On Board</option>
-                  <option value="CIF">CIF — Cost, Insurance & Freight</option>
-                  <option value="CFR">CFR — Cost & Freight</option>
-                  <option value="EXW">EXW — Ex Works</option>
-                  <option value="DDP">DDP — Delivered Duty Paid</option>
-                  <option value="DAP">DAP — Delivered At Place</option>
-                </select>
-              </div>
-
-              <div className="field">
-                <label>Primary Transport Mode</label>
-                <select
-                  name="defaultTransportMode"
-                  value={formData.defaultTransportMode}
-                  onChange={handleChange}
-                  className="pro-select"
-                >
-                  <option value="Sea">🚢 Sea Freight (FCL / LCL)</option>
-                  <option value="Air">✈️ Air Cargo Express</option>
-                  <option value="Truck">🚛 Road Transport</option>
-                </select>
-              </div>
-
-              <div className="field">
-                <label>Preferred Shipping Carrier</label>
-                <select
-                  name="defaultCarrier"
-                  value={formData.defaultCarrier}
-                  onChange={handleChange}
-                  className="pro-select"
-                >
-                  <option value="Maersk Line">Maersk Line</option>
-                  <option value="MSC Mediterranean">MSC Mediterranean</option>
-                  <option value="CMA CGM">CMA CGM</option>
-                  <option value="Hapag-Lloyd">Hapag-Lloyd</option>
-                  <option value="ONE Ocean Network">ONE Ocean Network</option>
-                  <option value="Emirates SkyCargo">Emirates SkyCargo</option>
-                  <option value="DHL Global Forwarding">DHL Global Forwarding</option>
-                </select>
-              </div>
-
               <div className="field">
                 <label>Default Operating Currency</label>
                 <select
@@ -358,121 +280,15 @@ export default function Settings() {
                 </select>
               </div>
 
-              <div className="field">
-                <label>Default Port of Loading (Origin)</label>
-                <input
-                  name="defaultOrigin"
-                  value={formData.defaultOrigin}
-                  onChange={handleChange}
-                  placeholder="e.g. Nhava Sheva (JNPT), Mumbai, India"
-                />
-              </div>
-
-              <div className="field">
-                <label>Default Port of Discharge (Destination)</label>
-                <input
-                  name="defaultDestination"
-                  value={formData.defaultDestination}
-                  onChange={handleChange}
-                  placeholder="e.g. Jebel Ali, Dubai, UAE"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: Documentation & Prefixes */}
-        {activeTab === 'documents' && (
-          <div className="settings-card">
-            <div className="settings-card-header">
-              <div>
-                <h3>Export Documentation & Numbering</h3>
-                <p>Standard export paperwork requirements and automated sequential document prefixes.</p>
-              </div>
-            </div>
-
-            <div className="form-grid">
-              <div className="field">
-                <label>Shipment Number Prefix</label>
-                <input
-                  name="shipmentPrefix"
-                  value={formData.shipmentPrefix}
-                  onChange={handleChange}
-                  placeholder="e.g. SHP-"
-                />
-              </div>
-
-              <div className="field">
-                <label>Sales Order Prefix</label>
-                <input
-                  name="orderPrefix"
-                  value={formData.orderPrefix}
-                  onChange={handleChange}
-                  placeholder="e.g. SO-"
-                />
-              </div>
-
-              <div className="field">
-                <label>Export Invoice Prefix</label>
-                <input
-                  name="invoicePrefix"
-                  value={formData.invoicePrefix}
-                  onChange={handleChange}
-                  placeholder="e.g. EXP-INV-"
-                />
-              </div>
-
-              <div className="field">
-                <label>Authorized Signatory Name</label>
-                <input
-                  name="authorizedSignatory"
-                  value={formData.authorizedSignatory}
-                  onChange={handleChange}
-                  placeholder="e.g. Divine Mathew"
-                />
-              </div>
-
               <div className="field full">
-                <label>Signatory Designation</label>
-                <input
-                  name="designation"
-                  value={formData.designation}
+                <label>Registered Office Address *</label>
+                <textarea
+                  name="address"
+                  rows={2}
+                  value={formData.address}
                   onChange={handleChange}
-                  placeholder="e.g. Director of Export Operations"
+                  required
                 />
-              </div>
-
-              <div className="field full" style={{ marginTop: '10px' }}>
-                <label>Mandatory Export Paperwork Checklist</label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px', marginTop: '8px' }}>
-                  {[
-                    'Bill of Lading (B/L)',
-                    'Certificate of Origin (COO)',
-                    'Commercial Export Invoice',
-                    'Packing List & Net Weights',
-                    'Marine Transit Insurance',
-                    'Customs Shipping Bill'
-                  ].map((docName) => (
-                    <div
-                      key={docName}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '10px 14px',
-                        background: '#f8fafc',
-                        borderRadius: '8px',
-                        border: '1px solid #e2e8f0',
-                        fontSize: '12.5px',
-                        fontWeight: 600,
-                        color: '#334155'
-                      }}
-                    >
-                      <CheckCircle2 size={16} color="#0c5a48" />
-                      <span>{docName}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
