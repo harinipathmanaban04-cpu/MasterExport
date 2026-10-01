@@ -346,10 +346,10 @@ button {
 
 /* MAIN CONTENT AREA */
 .main {
-  margin-left: 236px;
+  margin-left: 226px;
   min-width: 0;
-  width: calc(100% - 236px);
-  max-width: calc(100% - 236px);
+  width: calc(100% - 226px);
+  max-width: calc(100% - 226px);
   flex: 1;
   position: relative;
   z-index: 1;
@@ -368,11 +368,12 @@ button {
   -webkit-backdrop-filter: none !important;
   display: flex;
   align-items: center;
-  padding: 20px 32px 8px;
+  padding: 16px 20px 8px;
   gap: 16px;
   position: relative;
   z-index: 20;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .global-search {
@@ -583,10 +584,8 @@ button {
 }
 
 .content {
-  padding: 12px 32px 48px;
-  max-width: 1440px;
+  padding: 10px 20px 48px;
   width: 100%;
-  margin: 0 auto;
   box-sizing: border-box;
   overflow-x: hidden;
 }
