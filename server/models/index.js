@@ -124,3 +124,92 @@ export const Customer = mongoose.model('Customer', customerSchema);
 export const Product = mongoose.model('Product', productSchema);
 export const Sale = mongoose.model('Sale', salesSchema);
 export const Quotation = mongoose.model('Quotation', quotationSchema);
+
+const shipmentSchema = new mongoose.Schema({
+  shipmentNo: { type: String, required: true },
+  orderNo: String,
+  customer: String,
+  origin: { type: String, default: 'Nhava Sheva, Mumbai, India' },
+  destination: String,
+  route: String,
+  transportMode: { type: String, default: 'Sea' },
+  containerNo: String,
+  carrier: String,
+  etd: String,
+  eta: String,
+  trackingNo: String,
+  notes: String,
+  docs: [String],
+  status: { type: String, default: 'Preparing' }
+}, { timestamps: true });
+
+export const Shipment = mongoose.model('Shipment', shipmentSchema);
+
+const invoiceSchema = new mongoose.Schema({
+  invoiceNo: { type: String, required: true, unique: true },
+  invoiceType: {
+    type: String,
+    enum: ['Proforma Invoice', 'Commercial Invoice'],
+    default: 'Commercial Invoice'
+  },
+  orderNo: String,
+  quotationNo: String,
+  customerId: String,
+  customer: { type: String, required: true },
+  contactPerson: String,
+  email: String,
+  phone: String,
+  address: String,
+  origin: { type: String, default: 'Nhava Sheva, Mumbai, India' },
+  destination: String,
+  invoiceDate: { type: String, default: () => new Date().toISOString().slice(0, 10) },
+  dueDate: String,
+  paymentTerms: { type: String, default: 'Net 30' },
+  currency: { type: String, default: 'USD' },
+  incoterm: { type: String, default: 'FOB' },
+  items: [{
+    name: String,
+    description: String,
+    quantity: { type: Number, default: 1 },
+    unit: { type: String, default: 'PCS' },
+    unitPrice: { type: Number, default: 0 },
+    total: { type: Number, default: 0 }
+  }],
+  subtotal: { type: Number, default: 0 },
+  taxTotal: { type: Number, default: 0 },
+  shippingCharges: { type: Number, default: 0 },
+  totalAmount: { type: Number, required: true, default: 0 },
+  amountPaid: { type: Number, default: 0 },
+  remainingBalance: { type: Number, default: 0 },
+  status: {
+    type: String,
+    enum: ['Unpaid', 'Partially Paid', 'Paid'],
+    default: 'Unpaid'
+  },
+  notes: { type: String, default: 'Payment due per agreed commercial export terms.' },
+  bankDetails: {
+    bankName: { type: String, default: 'State Bank of India / Commercial Overseas Branch' },
+    accountNumber: { type: String, default: '984012948102' },
+    swiftCode: { type: String, default: 'SBININBBXXX' },
+    branch: { type: String, default: 'Nariman Point, Mumbai, India' }
+  }
+}, { timestamps: true });
+
+export const Invoice = mongoose.model('Invoice', invoiceSchema);
+
+const paymentSchema = new mongoose.Schema({
+  paymentId: String,
+  invoiceNo: { type: String, required: true },
+  orderNo: String,
+  customer: { type: String, required: true },
+  amount: { type: Number, required: true, min: 0.01 },
+  currency: { type: String, default: 'USD' },
+  paymentDate: { type: String, default: () => new Date().toISOString().slice(0, 10) },
+  paymentMethod: { type: String, default: 'Wire Transfer (TT)' },
+  reference: String,
+  notes: String
+}, { timestamps: true });
+
+export const Payment = mongoose.model('Payment', paymentSchema);
+
+
