@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   ShoppingCart,
-  Users,
-  Package,
   DollarSign,
   Eye,
   Plus,
@@ -10,7 +8,6 @@ import {
   Clock
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Status } from '../components/Layout';
 import { get } from '../api';
 import { useCurrency } from '../context/CurrencyContext';
 
@@ -32,14 +29,24 @@ export default function Dashboard() {
   const { currency, currencySymbol, formatAmount } = useCurrency();
 
   const [stats, setStats] = useState({
-    activeOrders: '24',
+    activeOrders: '7',
     ordersGrowth: '▲ 12% this month',
-    pendingShipments: '8',
-    shipmentsNote: '3 leaving this week',
-    outstandingDues: 45000,
-    duesNote: '5 invoices open',
-    monthlySalesRaw: 185000,
+    pendingShipments: '6',
+    shipmentsNote: 'In active transit',
+    outstandingDues: 62000,
+    duesNote: '3 invoices open',
+    monthlySalesRaw: 424800,
     salesGrowth: '▲ 8.4% vs last month'
+  });
+
+  const [pipeline, setPipeline] = useState({
+    enquiry: 9,
+    quotation: 5,
+    salesOrder: 7,
+    shipment: 6,
+    invoice: 3,
+    payment: 9,
+    completed: 4
   });
 
   const [recentOrders, setRecentOrders] = useState(defaultOrders);
@@ -49,19 +56,54 @@ export default function Dashboard() {
     Promise.all([
       get('/dashboard').catch(() => null),
       get('/sales').catch(() => []),
-      get('/customers').catch(() => []),
-      get('/products').catch(() => [])
-    ]).then(([d, salesData]) => {
+      get('/shipments').catch(() => []),
+      get('/invoices').catch(() => [])
+    ]).then(([d, salesData, shipmentsData, invoicesData]) => {
       if (d) {
         setStats((prev) => ({
           ...prev,
-          activeOrders: String(d.activeOrders || 24),
-          monthlySalesRaw: Number(d.monthlySales || 185000)
+          activeOrders: String(d.activeOrders !== undefined ? d.activeOrders : prev.activeOrders),
+          monthlySalesRaw: Number(d.monthlySales || d.totalSales || prev.monthlySalesRaw),
+          pendingShipments: String(d.pendingShipments !== undefined ? d.pendingShipments : prev.pendingShipments),
+          shipmentsNote: `${d.pendingShipments || 0} in active transit`,
+          outstandingDues: Number(d.outstandingDues !== undefined ? d.outstandingDues : prev.outstandingDues),
+          duesNote: `${d.invoicesOpen || 0} invoices open`
         }));
+
+        if (d.pipeline) {
+          setPipeline((prev) => ({ ...prev, ...d.pipeline }));
+        }
+
+        if (Array.isArray(d.activeShipments) && d.activeShipments.length > 0) {
+          setActiveShipments(d.activeShipments);
+        }
       }
 
-      if (Array.isArray(salesData) && salesData.length > 0) {
-        const orders = salesData
+      if (Array.isArray(shipmentsData) && shipmentsData.length > 0) {
+        setActiveShipments(
+          shipmentsData.slice(0, 5).map((shp) => ({
+            id: shp.shipmentNo || shp._id,
+            destination: shp.destination,
+            etd: shp.etd,
+            status: shp.status,
+            statusType:
+              shp.status === 'In Transit'
+                ? 'blue'
+                : shp.status === 'Delivered'
+                ? 'green'
+                : shp.status === 'Customs'
+                ? 'amber'
+                : 'purple'
+          }))
+        );
+      }
+
+      const salesList = (Array.isArray(salesData) && salesData.length > 0)
+        ? salesData
+        : (d && Array.isArray(d.recentSales) ? d.recentSales : []);
+
+      if (salesList.length > 0) {
+        const orders = salesList
           .filter((x) => x.type === 'Sales Order' || x.orderNo)
           .slice(0, 5)
           .map((ord) => ({
@@ -165,50 +207,85 @@ export default function Dashboard() {
         </div>
         <div className="pipeline-stepper">
           {/* 1. Enquiry */}
-          <div className="pipeline-step green" onClick={() => navigate('/sales?tab=Enquiries')} style={{ cursor: 'pointer' }} title="View Enquiries">
-            <div className="pipeline-circle">7</div>
+          <div
+            className="pipeline-step green"
+            onClick={() => navigate('/sales?tab=Enquiries')}
+            style={{ cursor: 'pointer' }}
+            title="View Enquiries"
+          >
+            <div className="pipeline-circle">{pipeline.enquiry}</div>
             <span className="pipeline-label">Enquiry</span>
           </div>
           <div className="pipeline-connector passed" />
 
           {/* 2. Quotation */}
-          <div className="pipeline-step green" onClick={() => navigate('/sales?tab=Quotations')} style={{ cursor: 'pointer' }} title="View Quotations">
-            <div className="pipeline-circle">5</div>
+          <div
+            className="pipeline-step green"
+            onClick={() => navigate('/sales?tab=Quotations')}
+            style={{ cursor: 'pointer' }}
+            title="View Quotations"
+          >
+            <div className="pipeline-circle">{pipeline.quotation}</div>
             <span className="pipeline-label">Quotation</span>
           </div>
           <div className="pipeline-connector passed" />
 
           {/* 3. Sales Order (Active) */}
-          <div className="pipeline-step active" onClick={() => navigate('/sales?tab=Sales Orders')} style={{ cursor: 'pointer' }} title="View Sales Orders">
-            <div className="pipeline-circle">24</div>
+          <div
+            className="pipeline-step active"
+            onClick={() => navigate('/sales?tab=Sales Orders')}
+            style={{ cursor: 'pointer' }}
+            title="View Sales Orders"
+          >
+            <div className="pipeline-circle">{pipeline.salesOrder}</div>
             <span className="pipeline-label" style={{ color: '#0c5a48', fontWeight: 700 }}>Sales Order</span>
           </div>
           <div className="pipeline-connector" />
 
           {/* 4. Shipment */}
-          <div className="pipeline-step" onClick={() => navigate('/shipments')} style={{ cursor: 'pointer' }} title="View Shipments">
-            <div className="pipeline-circle">8</div>
+          <div
+            className="pipeline-step"
+            onClick={() => navigate('/shipments')}
+            style={{ cursor: 'pointer' }}
+            title="View Shipments"
+          >
+            <div className="pipeline-circle">{pipeline.shipment}</div>
             <span className="pipeline-label">Shipment</span>
           </div>
           <div className="pipeline-connector" />
 
           {/* 5. Invoice */}
-          <div className="pipeline-step">
-            <div className="pipeline-circle">11</div>
+          <div
+            className="pipeline-step"
+            onClick={() => navigate('/invoices')}
+            style={{ cursor: 'pointer' }}
+            title="View Invoices"
+          >
+            <div className="pipeline-circle">{pipeline.invoice}</div>
             <span className="pipeline-label">Invoice</span>
           </div>
           <div className="pipeline-connector" />
 
           {/* 6. Payment */}
-          <div className="pipeline-step">
-            <div className="pipeline-circle">6</div>
+          <div
+            className="pipeline-step"
+            onClick={() => navigate('/invoices')}
+            style={{ cursor: 'pointer' }}
+            title="View Payments"
+          >
+            <div className="pipeline-circle">{pipeline.payment}</div>
             <span className="pipeline-label">Payment</span>
           </div>
           <div className="pipeline-connector" />
 
           {/* 7. Completed */}
-          <div className="pipeline-step">
-            <div className="pipeline-circle">42</div>
+          <div
+            className="pipeline-step"
+            onClick={() => navigate('/sales')}
+            style={{ cursor: 'pointer' }}
+            title="View Completed Orders"
+          >
+            <div className="pipeline-circle">{pipeline.completed}</div>
             <span className="pipeline-label">Completed</span>
           </div>
         </div>
@@ -288,11 +365,11 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Active Shipments matching Image 2 */}
+        {/* Active Shipments */}
         <div className="panel" style={{ background: '#ffffff', borderRadius: '20px', border: '1px solid rgba(226, 232, 240, 0.85)', padding: '22px 24px', minWidth: 0, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#1e1e2d' }}>Active Shipments</h3>
-            <Link to="/sales" style={{ fontSize: '12.5px', fontWeight: 600, color: '#0c5a48', textDecoration: 'none' }}>
+            <Link to="/shipments" style={{ fontSize: '12.5px', fontWeight: 600, color: '#0c5a48', textDecoration: 'none' }}>
               Track all →
             </Link>
           </div>
@@ -310,7 +387,7 @@ export default function Dashboard() {
                 {activeShipments.map((shp) => (
                   <tr key={shp.id}>
                     <td style={{ padding: '10px 10px' }}>
-                      <Link to="/sales" style={{ color: '#1e1e2d', fontWeight: 700, textDecoration: 'none', fontSize: '12.5px' }}>
+                      <Link to="/shipments" style={{ color: '#1e1e2d', fontWeight: 700, textDecoration: 'none', fontSize: '12.5px' }}>
                         {shp.id}
                       </Link>
                     </td>

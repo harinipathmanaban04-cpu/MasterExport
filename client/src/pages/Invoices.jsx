@@ -1362,7 +1362,7 @@ export default function Invoices({ initialTab = 'Invoices' }) {
       )}
 
       {/* =========================================================
-          MODAL 1: RECORD PAYMENT MODAL (WITH STRICT VALIDATION)
+          MODAL 1: RECORD PAYMENT MODAL (PROFESSIONAL EXECUTIVE DESIGN)
           ========================================================= */}
       {recordPaymentModalOpen && (
         <Modal
@@ -1371,111 +1371,287 @@ export default function Invoices({ initialTab = 'Invoices' }) {
             setRecordPaymentModalOpen(false);
             setSelectedInvoiceForPayment(null);
           }}
+          eyebrow="COMMERCIAL TREASURY & REALIZATIONS"
           title="Record Export Payment"
+          maxWidth="680px"
         >
           <form onSubmit={handleSubmitPayment}>
-            <div className="form-grid">
-              {/* Target Invoice */}
-              <div className="field-group" style={{ gridColumn: 'span 2' }}>
-                <label>Select Target Invoice *</label>
-                <select
-                  value={paymentForm.invoiceNo}
-                  onChange={(e) => {
-                    const invNo = e.target.value;
-                    const found = invoices.find((i) => i.invoiceNo === invNo);
-                    setSelectedInvoiceForPayment(found);
-                    setPaymentForm((prev) => ({
-                      ...prev,
-                      invoiceNo: invNo,
-                      amount: found ? (found.remainingBalance > 0 ? found.remainingBalance : '') : ''
-                    }));
-                  }}
-                  required
-                >
-                  <option value="">-- Choose an Invoice --</option>
-                  {invoices.map((inv) => (
-                    <option key={inv.invoiceNo} value={inv.invoiceNo}>
-                      {inv.invoiceNo} • {inv.customer} • {inv.orderNo} (Total: {formatAmount(inv.totalAmount)} | Balance: {formatAmount(inv.remainingBalance)}) [{inv.status}]
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div className="form-grid" style={{ gap: '16px' }}>
+              {/* Target Invoice Selector (Only shown if opened globally without a preselected invoice) */}
+              {!selectedInvoiceForPayment && (
+                <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Receipt size={13} style={{ color: '#0c5a48' }} />
+                      Select Target Commercial Invoice *
+                    </label>
+                    {currentTargetInvoice && (
+                      <span style={{ fontSize: '11.5px', color: '#64748b' }}>
+                        Invoice: <strong style={{ color: '#0c5a48' }}>{currentTargetInvoice.invoiceNo}</strong>
+                      </span>
+                    )}
+                  </div>
+                  <select
+                    value={paymentForm.invoiceNo}
+                    onChange={(e) => {
+                      const invNo = e.target.value;
+                      const found = invoices.find((i) => i.invoiceNo === invNo);
+                      setSelectedInvoiceForPayment(null);
+                      setPaymentForm((prev) => ({
+                        ...prev,
+                        invoiceNo: invNo,
+                        amount: found ? (found.remainingBalance > 0 ? String(found.remainingBalance) : '') : ''
+                      }));
+                    }}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '11px 14px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: '#1e293b',
+                      background: '#ffffff',
+                      border: '1.5px solid #cbd5e1',
+                      borderRadius: '10px',
+                      outline: 'none',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <option value="">-- Choose an Invoice to Record Payment --</option>
+                    {invoices.map((inv) => (
+                      <option key={inv.invoiceNo} value={inv.invoiceNo}>
+                        {inv.invoiceNo} • {inv.customer} • {inv.orderNo} (Total: {formatAmount(inv.totalAmount)} | Balance: {formatAmount(inv.remainingBalance)}) [{inv.status}]
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Dynamic Invoice Balance Summary Card */}
               {currentTargetInvoice && (
                 <div
                   style={{
                     gridColumn: 'span 2',
-                    background: '#f8fafc',
+                    background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
                     border: '1px solid #e2e8f0',
-                    borderRadius: '12px',
-                    padding: '14px 16px',
-                    marginBottom: '6px'
+                    borderRadius: '14px',
+                    padding: '16px 18px',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.03)'
                   }}
                 >
+                  {/* Meta bar */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      borderBottom: '1px solid #e2e8f0',
+                      paddingBottom: '10px',
+                      marginBottom: '12px',
+                      flexWrap: 'wrap',
+                      gap: '8px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div
+                        style={{
+                          padding: '4px 10px',
+                          borderRadius: '8px',
+                          background: '#e6f4f0',
+                          color: '#0c5a48',
+                          fontWeight: 800,
+                          fontSize: '12.5px',
+                          letterSpacing: '0.03em',
+                          border: '1px solid #a7f3d0'
+                        }}
+                      >
+                        {currentTargetInvoice.invoiceNo}
+                      </div>
+                      <div>
+                        <strong style={{ fontSize: '13.5px', color: '#0f172a' }}>
+                          {currentTargetInvoice.customer}
+                        </strong>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>
+                          Order: <strong>{currentTargetInvoice.orderNo || 'N/A'}</strong> • Terms: {currentTargetInvoice.paymentTerms || 'Net 30'}
+                        </div>
+                      </div>
+                    </div>
+                    <Status status={currentTargetInvoice.status} />
+                  </div>
+
+                  {/* 3 Metrics */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', textAlign: 'center' }}>
-                    <div>
-                      <small style={{ color: '#64748b', fontSize: '11px', textTransform: 'uppercase', fontWeight: 600 }}>
+                    <div style={{ background: '#ffffff', padding: '10px 8px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <small style={{ color: '#64748b', fontSize: '10.5px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>
                         Order / Invoice Value
                       </small>
-                      <strong style={{ display: 'block', color: '#1e1e2d', fontSize: '15px', marginTop: '2px' }}>
+                      <strong style={{ display: 'block', color: '#0f172a', fontSize: '17px', fontWeight: 800, marginTop: '2px' }}>
                         {formatAmount(currentTargetInvoice.totalAmount)}
                       </strong>
                     </div>
-                    <div>
-                      <small style={{ color: '#64748b', fontSize: '11px', textTransform: 'uppercase', fontWeight: 600 }}>
+                    <div style={{ background: '#ffffff', padding: '10px 8px', borderRadius: '10px', border: '1px solid #bbf7d0' }}>
+                      <small style={{ color: '#059669', fontSize: '10.5px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>
                         Already Paid
                       </small>
-                      <strong style={{ display: 'block', color: '#10b981', fontSize: '15px', marginTop: '2px' }}>
+                      <strong style={{ display: 'block', color: '#10b981', fontSize: '17px', fontWeight: 800, marginTop: '2px' }}>
                         {formatAmount(currentTargetInvoice.amountPaid || 0)}
                       </strong>
                     </div>
-                    <div>
-                      <small style={{ color: '#64748b', fontSize: '11px', textTransform: 'uppercase', fontWeight: 600 }}>
+                    <div style={{ background: '#ffffff', padding: '10px 8px', borderRadius: '10px', border: '1px solid #fecaca' }}>
+                      <small style={{ color: '#dc2626', fontSize: '10.5px', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>
                         Remaining Balance
                       </small>
-                      <strong style={{ display: 'block', color: '#ef4444', fontSize: '15px', marginTop: '2px' }}>
+                      <strong style={{ display: 'block', color: '#ef4444', fontSize: '17px', fontWeight: 800, marginTop: '2px' }}>
                         {formatAmount(currentTargetInvoice.remainingBalance || 0)}
                       </strong>
                     </div>
                   </div>
+
+                  {/* Progress Bar */}
+                  {(() => {
+                    const total = Number(currentTargetInvoice.totalAmount) || 1;
+                    const paid = Number(currentTargetInvoice.amountPaid) || 0;
+                    const pct = Math.min(100, Math.max(0, Math.round((paid / total) * 100)));
+                    return (
+                      <div style={{ marginTop: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>
+                          <span>Collection Realized ({pct}%)</span>
+                          <span>{formatAmount(currentTargetInvoice.remainingBalance || 0)} outstanding</span>
+                        </div>
+                        <div style={{ width: '100%', height: '6px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div
+                            style={{
+                              width: `${pct}%`,
+                              height: '100%',
+                              background: 'linear-gradient(90deg, #10b981, #0c5a48)',
+                              borderRadius: '4px',
+                              transition: 'width 0.3s ease'
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 
               {/* Amount to Pay */}
-              <div className="field-group">
-                <label>Payment Amount ({currentTargetInvoice?.currency || 'USD'}) *</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  placeholder="0.00"
-                  value={paymentForm.amount}
-                  onChange={(e) => {
-                    setPaymentForm({ ...paymentForm, amount: e.target.value });
-                    setPaymentError('');
-                  }}
-                  required
-                />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Payment Amount ({currentTargetInvoice?.currency || 'USD'}) *
+                  </label>
+                  {currentTargetInvoice && currentTargetInvoice.remainingBalance > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPaymentForm((prev) => ({ ...prev, amount: String(currentTargetInvoice.remainingBalance) }));
+                        setPaymentError('');
+                      }}
+                      style={{
+                        background: '#ecfdf5',
+                        border: '1px solid #a7f3d0',
+                        color: '#0c5a48',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      Pay Full Balance ({formatAmount(currentTargetInvoice.remainingBalance)})
+                    </button>
+                  )}
+                </div>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <span
+                    style={{
+                      position: 'absolute',
+                      left: '12px',
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      color: '#64748b',
+                      pointerEvents: 'none'
+                    }}
+                  >
+                    {currentTargetInvoice?.currency === 'EUR' ? '€' : currentTargetInvoice?.currency === 'GBP' ? '£' : '$'}
+                  </span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="0.00"
+                    value={paymentForm.amount}
+                    onChange={(e) => {
+                      setPaymentForm({ ...paymentForm, amount: e.target.value });
+                      setPaymentError('');
+                    }}
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px 10px 30px',
+                      fontSize: '14.5px',
+                      fontWeight: 700,
+                      color: '#0f172a',
+                      background: '#ffffff',
+                      border: '1.5px solid #cbd5e1',
+                      borderRadius: '10px',
+                      outline: 'none',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Payment Date */}
-              <div className="field-group">
-                <label>Payment Date *</label>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+                  Payment Date *
+                </label>
                 <input
                   type="date"
                   value={paymentForm.paymentDate}
                   onChange={(e) => setPaymentForm({ ...paymentForm, paymentDate: e.target.value })}
                   required
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: '#1e293b',
+                    background: '#ffffff',
+                    border: '1.5px solid #cbd5e1',
+                    borderRadius: '10px',
+                    outline: 'none',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                  }}
                 />
               </div>
 
               {/* Payment Method */}
-              <div className="field-group">
-                <label>Payment Mode / Instrument *</label>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+                  Payment Mode / Instrument *
+                </label>
                 <select
                   value={paymentForm.paymentMethod}
                   onChange={(e) => setPaymentForm({ ...paymentForm, paymentMethod: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: '#1e293b',
+                    background: '#ffffff',
+                    border: '1.5px solid #cbd5e1',
+                    borderRadius: '10px',
+                    outline: 'none',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                    cursor: 'pointer'
+                  }}
                 >
                   <option value="Wire Transfer (TT)">Telegraphic Transfer / Wire (TT)</option>
                   <option value="Letter of Credit (LC)">Letter of Credit (LC)</option>
@@ -1486,24 +1662,54 @@ export default function Invoices({ initialTab = 'Invoices' }) {
               </div>
 
               {/* Reference Number */}
-              <div className="field-group">
-                <label>Bank Reference / Transaction ID</label>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+                  Bank Reference / Transaction ID
+                </label>
                 <input
                   type="text"
-                  placeholder="e.g. TXN-SCB-984012"
+                  placeholder="e.g. TXN-SCB-984012 / SWIFT Ref"
                   value={paymentForm.reference}
                   onChange={(e) => setPaymentForm({ ...paymentForm, reference: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    fontSize: '13px',
+                    fontWeight: 500,
+                    color: '#1e293b',
+                    background: '#ffffff',
+                    border: '1.5px solid #cbd5e1',
+                    borderRadius: '10px',
+                    outline: 'none',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                  }}
                 />
               </div>
 
               {/* Notes */}
-              <div className="field-group" style={{ gridColumn: 'span 2' }}>
-                <label>Remittance Notes</label>
+              <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+                  Remittance Notes & Realization Details
+                </label>
                 <textarea
                   rows="2"
-                  placeholder="Optional bank swift notes or realization details..."
+                  placeholder="Optional bank swift notes, intermediary charges, realization remarks..."
                   value={paymentForm.notes}
                   onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    fontSize: '13px',
+                    color: '#1e293b',
+                    background: '#ffffff',
+                    border: '1.5px solid #cbd5e1',
+                    borderRadius: '10px',
+                    outline: 'none',
+                    resize: 'vertical',
+                    minHeight: '68px',
+                    fontFamily: 'inherit',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                  }}
                 />
               </div>
 
@@ -1512,17 +1718,39 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                 <div
                   style={{
                     gridColumn: 'span 2',
-                    background: '#f0fdf4',
-                    border: '1px solid #bbf7d0',
-                    borderRadius: '10px',
-                    padding: '10px 14px',
-                    fontSize: '12.5px',
-                    color: '#166534'
+                    background: paymentValidation.resultingStatus === 'Paid' ? '#f0fdf4' : '#eff6ff',
+                    border: `1.5px solid ${paymentValidation.resultingStatus === 'Paid' ? '#86efac' : '#93c5fd'}`,
+                    borderRadius: '12px',
+                    padding: '12px 16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
                   }}
                 >
-                  <strong>Resulting Status: {paymentValidation.resultingStatus}</strong>
-                  <div style={{ marginTop: '3px' }}>
-                    New Paid Total: <strong>{formatAmount(paymentValidation.resultingPaid)}</strong> • Balance Remaining: <strong>{formatAmount(paymentValidation.resultingRemaining)}</strong>
+                  <div
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: paymentValidation.resultingStatus === 'Paid' ? '#dcfce7' : '#dbeafe',
+                      color: paymentValidation.resultingStatus === 'Paid' ? '#16a34a' : '#2563eb',
+                      display: 'grid',
+                      placeItems: 'center',
+                      flexShrink: 0
+                    }}
+                  >
+                    {paymentValidation.resultingStatus === 'Paid' ? <CheckCircle2 size={18} /> : <Clock size={18} />}
+                  </div>
+                  <div style={{ flex: 1, fontSize: '13px' }}>
+                    <div style={{ fontWeight: 800, color: paymentValidation.resultingStatus === 'Paid' ? '#15803d' : '#1d4ed8' }}>
+                      Resulting Status: {paymentValidation.resultingStatus === 'Paid' ? 'Paid in Full (Settled)' : 'Partially Paid'}
+                    </div>
+                    <div style={{ marginTop: '2px', color: '#475569', fontSize: '12px' }}>
+                      New Paid Total: <strong style={{ color: '#0f172a' }}>{formatAmount(paymentValidation.resultingPaid)}</strong> • Balance Remaining:{' '}
+                      <strong style={{ color: paymentValidation.resultingRemaining > 0 ? '#b45309' : '#16a34a' }}>
+                        {formatAmount(paymentValidation.resultingRemaining)}
+                      </strong>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1533,27 +1761,36 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                   style={{
                     gridColumn: 'span 2',
                     background: '#fef2f2',
-                    border: '1px solid #fecaca',
-                    borderRadius: '10px',
-                    padding: '10px 14px',
-                    fontSize: '12.5px',
+                    border: '1.5px solid #fca5a5',
+                    borderRadius: '12px',
+                    padding: '12px 16px',
+                    fontSize: '13px',
                     color: '#b91c1c',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px'
+                    gap: '10px'
                   }}
                 >
-                  <AlertCircle size={16} />
-                  <span>{paymentError}</span>
+                  <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                  <span style={{ fontWeight: 600 }}>{paymentError}</span>
                 </div>
               )}
             </div>
 
-            <div className="modal-foot">
+            <div className="modal-foot" style={{ marginTop: '20px', paddingTop: '16px' }}>
               <button
                 type="button"
                 className="secondary"
-                onClick={() => setRecordPaymentModalOpen(false)}
+                onClick={() => {
+                  setRecordPaymentModalOpen(false);
+                  setSelectedInvoiceForPayment(null);
+                }}
+                style={{
+                  padding: '9px 18px',
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  fontSize: '13px'
+                }}
               >
                 Cancel
               </button>
@@ -1561,7 +1798,18 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                 type="submit"
                 className="primary"
                 disabled={!paymentValidation.isValid}
+                style={{
+                  padding: '9px 22px',
+                  borderRadius: '10px',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: paymentValidation.isValid ? '0 2px 8px rgba(12, 90, 72, 0.25)' : 'none'
+                }}
               >
+                <CheckCircle2 size={16} />
                 Confirm & Record Payment
               </button>
             </div>
