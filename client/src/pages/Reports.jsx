@@ -1,27 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import {
-  DollarSign,
-  TrendingUp,
-  Clock,
-  Receipt,
   Download,
-  Printer,
-  Calendar,
-  CheckCircle2,
-  AlertCircle,
-  Ship,
-  Package,
-  ArrowRight,
-  Info,
-  ChevronDown,
-  ChevronUp,
-  FileText,
-  User,
-  Layers,
-  Globe
+  Printer
 } from 'lucide-react';
 import { get } from '../api';
-import { PageHeader, StatCard, Status } from '../components/Layout';
+import { PageHeader } from '../components/Layout';
 import Modal from '../components/Modal';
 import Logo from '../components/Logo';
 import { useCurrency } from '../context/CurrencyContext';
@@ -77,11 +60,10 @@ const defaultReportsData = {
 export default function Reports() {
   const { formatAmount } = useCurrency();
   const [loading, setLoading] = useState(false);
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [periodFilter, setPeriodFilter] = useState('All Time');
+  const [activeCategory, setActiveCategory] = useState('sales');
+  const periodFilter = 'All Time';
   const [reportData, setReportData] = useState(defaultReportsData);
   const [printModalOpen, setPrintModalOpen] = useState(false);
-  const [showGuide, setShowGuide] = useState(true);
 
   // Fetch verified backend metrics
   useEffect(() => {
@@ -182,40 +164,6 @@ export default function Reports() {
         description="Executive summary of sales, order fulfillment, payment realizations, and operational profit"
         actions={
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-            {/* Period Selector */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: '#ffffff',
-                padding: '7px 14px',
-                borderRadius: '10px',
-                border: '1px solid #cbd5e1',
-                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)'
-              }}
-            >
-              <Calendar size={14} style={{ color: '#0c5a48' }} />
-              <select
-                value={periodFilter}
-                onChange={(e) => setPeriodFilter(e.target.value)}
-                style={{
-                  border: 'none',
-                  background: 'transparent',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: '#1e293b',
-                  outline: 'none',
-                  cursor: 'pointer'
-                }}
-              >
-                <option value="All Time">All Time</option>
-                <option value="This Month (Oct 2026)">This Month (Oct 2026)</option>
-                <option value="Last Quarter (Q3 2026)">Last Quarter (Q3 2026)</option>
-                <option value="Year to Date (YTD 2026)">Year to Date (YTD 2026)</option>
-              </select>
-            </div>
-
             {/* CSV Export */}
             <button type="button" className="secondary" onClick={handleExportCSV}>
               <Download size={14} style={{ marginRight: '6px' }} />
@@ -231,132 +179,7 @@ export default function Reports() {
         }
       />
 
-      {/* TOP 4 EXECUTIVE KPI CARDS (The 4 Pillars) */}
-      <div className="stats">
-        <StatCard
-          icon={DollarSign}
-          tone="green"
-          label="1. Total Sales"
-          value={formatAmount(grossSales)}
-          note={`Across ${orders.total || 8} confirmed export orders`}
-        />
-
-        <StatCard
-          icon={Ship}
-          tone="teal"
-          label="2. Order Pipeline"
-          value={`${orders.shipped + orders.delivered + orders.completed} / ${orders.total} Active`}
-          note={`${orders.pending} pending in production`}
-        />
-
-        <StatCard
-          icon={Receipt}
-          tone="blue"
-          label="3. Payments Realized"
-          value={formatAmount(payments.paidTotal)}
-          note={`${collectionRate}% collected (${formatAmount(payments.outstandingTotal)} pending)`}
-        />
-
-        <StatCard
-          icon={TrendingUp}
-          tone="orange"
-          label="4. Net Export Profit"
-          value={formatAmount(netProfit)}
-          note={`${profitMargin}% Net Margin (Sales - Costs)`}
-        />
-      </div>
-
-      {/* HELPFUL REPORT GUIDE (Clear Plain-English Explanation for Clients & Customers) */}
-      <div
-        style={{
-          background: '#f8fafc',
-          borderRadius: '14px',
-          border: '1px solid #e2e8f0',
-          padding: '14px 18px',
-          marginBottom: '22px'
-        }}
-      >
-        <div
-          onClick={() => setShowGuide(!showGuide)}
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            cursor: 'pointer',
-            userSelect: 'none'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div
-              style={{
-                width: '26px',
-                height: '26px',
-                borderRadius: '50%',
-                background: '#e6f4f0',
-                color: '#0c5a48',
-                display: 'grid',
-                placeItems: 'center'
-              }}
-            >
-              <Info size={14} />
-            </div>
-            <strong style={{ fontSize: '13.5px', color: '#1e293b' }}>
-              How This Report Works (Quick Guide for Clients & Customers)
-            </strong>
-          </div>
-          <button
-            type="button"
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#64748b',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              fontSize: '12px',
-              fontWeight: 600
-            }}
-          >
-            {showGuide ? 'Hide Guide' : 'Show Guide'}
-            {showGuide ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
-        </div>
-
-        {showGuide && (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '14px',
-              marginTop: '12px',
-              paddingTop: '12px',
-              borderTop: '1px solid #edf2f7',
-              fontSize: '12.5px',
-              color: '#475569'
-            }}
-          >
-            <div style={{ background: '#ffffff', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <strong style={{ color: '#0c5a48', display: 'block', marginBottom: '2px' }}>1. Sales Report</strong>
-              Monitors total export billing, monthly revenue timelines, and purchases by each customer.
-            </div>
-            <div style={{ background: '#ffffff', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <strong style={{ color: '#0c5a48', display: 'block', marginBottom: '2px' }}>2. Orders Pipeline</strong>
-              Tracks physical export stages: Pending (in production) ➔ Shipped (in transit) ➔ Delivered (port) ➔ Completed.
-            </div>
-            <div style={{ background: '#ffffff', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <strong style={{ color: '#0c5a48', display: 'block', marginBottom: '2px' }}>3. Payments & Cashflow</strong>
-              Shows realized receipts vs remaining dues across Paid, Partially Paid, Outstanding, and Overdue.
-            </div>
-            <div style={{ background: '#ffffff', padding: '10px 14px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <strong style={{ color: '#0c5a48', display: 'block', marginBottom: '2px' }}>4. Profit Calculation</strong>
-              Calculated transparently: <strong>Profit = Sales − Product Cost − Shipping Cost − Other Expenses</strong>.
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* FILTER TABS (All Overview vs Specific Module Focus) */}
+      {/* FILTER TABS */}
       <div
         style={{
           display: 'flex',
@@ -368,7 +191,6 @@ export default function Reports() {
         }}
       >
         {[
-          { id: 'all', label: 'All Reports (Full Summary)' },
           { id: 'sales', label: '1. Sales Performance' },
           { id: 'orders', label: '2. Order Pipeline' },
           { id: 'payments', label: '3. Payments & Cashflow' },
@@ -402,7 +224,7 @@ export default function Reports() {
       {/* =========================================================
           SECTION 1: SALES PERFORMANCE (Total Sales, Monthly, By Customer)
           ========================================================= */}
-      {(activeCategory === 'all' || activeCategory === 'sales') && (
+      {(activeCategory === 'sales') && (
         <div style={{ marginBottom: '28px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -554,7 +376,7 @@ export default function Reports() {
       {/* =========================================================
           SECTION 2: ORDER FULFILLMENT PIPELINE (Pending, Shipped, Delivered, Completed)
           ========================================================= */}
-      {(activeCategory === 'all' || activeCategory === 'orders') && (
+      {(activeCategory === 'orders') && (
         <div style={{ marginBottom: '28px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -674,7 +496,7 @@ export default function Reports() {
       {/* =========================================================
           SECTION 3: PAYMENT STATUS (Paid, Partially Paid, Outstanding, Overdue)
           ========================================================= */}
-      {(activeCategory === 'all' || activeCategory === 'payments') && (
+      {(activeCategory === 'payments') && (
         <div style={{ marginBottom: '28px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -779,7 +601,7 @@ export default function Reports() {
           SECTION 4: PROFIT CALCULATION
           (Sales - Product Cost - Shipping Cost - Other Expenses)
           ========================================================= */}
-      {(activeCategory === 'all' || activeCategory === 'profit') && (
+      {(activeCategory === 'profit') && (
         <div style={{ marginBottom: '28px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

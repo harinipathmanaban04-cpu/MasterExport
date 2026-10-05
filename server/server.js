@@ -1075,27 +1075,77 @@ app.put('/api/sales/:id/advance-stage', async (req, res) => {
 // Dashboard metrics
 app.get('/api/dashboard', async (req, res) => {
   try {
-    const [cs, ps, ss, qs] = await Promise.all([
-      Customer.find(),
-      Product.find(),
-      Sale.find().sort({ createdAt: -1 }),
-      Quotation.find().sort({ createdAt: -1 })
-    ]);
+    let cs = [], ps = [], ss = [], qs = [], shps = [], invs = [], pays = [];
+
+    if (mongoose.connection.readyState === 1) {
+      [cs, ps, ss, qs, shps, invs, pays] = await Promise.all([
+        Customer.find(),
+        Product.find(),
+        Sale.find().sort({ createdAt: -1 }),
+        Quotation.find().sort({ createdAt: -1 }),
+        Shipment.find().sort({ createdAt: -1 }),
+        Invoice.find().sort({ createdAt: -1 }),
+        Payment.find().sort({ createdAt: -1 })
+      ]);
+    } else {
+      cs = memStore.customers || [];
+      ps = memStore.products || [];
+      ss = memStore.sales || [];
+      qs = memStore.quotations || [];
+      shps = memStore.shipments || [];
+      invs = memStore.invoices || [];
+      pays = memStore.payments || [];
+    }
 
     const activeOrdersList = ss.filter(x => x.type === 'Sales Order' && x.status !== 'Completed');
-    const activeOrders = activeOrdersList.length > 0 ? activeOrdersList.length : 24;
+    const activeOrders = activeOrdersList.length > 0 ? activeOrdersList.length : ss.length;
 
-    const salesSum = ss.reduce((sum, s) => sum + (s.totalAmount || 0), 0);
-    const totalSales = salesSum > 0 ? salesSum : 185000;
+    // Monthly sales calculation
+    const salesSum = ss.reduce((sum, s) => sum + (Number(s.totalAmount) || 0), 0);
+    const monthlySales = salesSum > 0 ? salesSum : 185000;
 
-    const recentOrders = ss.filter(x => x.type === 'Sales Order').slice(0, 5);
+    // Shipments calculation
+    const pendingShipmentsList = shps.filter(s => s.status !== 'Delivered');
+    const pendingShipments = pendingShipmentsList.length;
+
+    // Outstanding dues from invoices
+    const openInvoices = invs.filter(i => i.status !== 'Paid');
+    const outstandingDues = openInvoices.reduce((sum, i) => sum + (Number(i.remainingBalance !== undefined ? i.remainingBalance : (i.totalAmount - (i.amountPaid || 0))) || 0), 0);
+    const invoicesOpen = openInvoices.length;
+
+    // Active shipments formatted for dashboard
+    const activeShipments = shps.slice(0, 5).map(s => ({
+      id: s.shipmentNo || s._id,
+      destination: s.destination,
+      etd: s.etd,
+      status: s.status,
+      statusType: s.status === 'In Transit' ? 'blue' : s.status === 'Delivered' ? 'green' : s.status === 'Customs' ? 'amber' : 'purple'
+    }));
+
+    // Pipeline counts across lifecycle
+    const pipeline = {
+      enquiry: qs.length || 7,
+      quotation: qs.filter(q => q.status === 'Draft' || q.status === 'Sent').length || 5,
+      salesOrder: activeOrders,
+      shipment: pendingShipments || shps.length,
+      invoice: invoicesOpen || invs.length,
+      payment: pays.length,
+      completed: ss.filter(x => x.status === 'Completed').length + invs.filter(x => x.status === 'Paid').length
+    };
+
+    const recentOrders = ss.filter(x => x.type === 'Sales Order' || x.orderNo).slice(0, 5);
 
     res.json({
       activeOrders,
-      monthlySales: 185000,
-      totalSales,
-      customers: cs.length || 12,
-      products: ps.length || 35,
+      monthlySales,
+      totalSales: salesSum,
+      pendingShipments,
+      outstandingDues,
+      invoicesOpen,
+      customers: cs.length,
+      products: ps.length,
+      activeShipments,
+      pipeline,
       recentSales: recentOrders.length > 0 ? recentOrders : ss.slice(0, 5)
     });
   } catch (e) {
