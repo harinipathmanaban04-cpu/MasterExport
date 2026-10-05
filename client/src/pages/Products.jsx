@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Edit, Trash2, Sparkles } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Sparkles, ChevronDown } from 'lucide-react';
 import { get, post, put, del } from '../api';
 import Modal from '../components/Modal';
 import { useCurrency } from '../context/CurrencyContext';
@@ -173,29 +173,21 @@ export default function Products() {
           />
         </div>
 
-        <select
-          value={unitFilter}
-          onChange={(e) => setUnitFilter(e.target.value)}
-          style={{
-            height: '38px',
-            padding: '0 32px 0 14px',
-            borderRadius: '20px',
-            border: '1px solid var(--border)',
-            background: '#ffffff',
-            color: '#374151',
-            fontSize: '12.5px',
-            fontWeight: 500,
-            outline: 'none',
-            cursor: 'pointer'
-          }}
-        >
-          <option value="">All Units</option>
-          <option value="MT">MT</option>
-          <option value="KG">KG</option>
-          <option value="ROLL">ROLL</option>
-          <option value="PAIR">PAIR</option>
-          <option value="PC">PC</option>
-        </select>
+        <div className="pill-select-wrap">
+          <select
+            value={unitFilter}
+            onChange={(e) => setUnitFilter(e.target.value)}
+            className="pill-select"
+          >
+            <option value="">All Units</option>
+            <option value="MT">MT</option>
+            <option value="KG">KG</option>
+            <option value="ROLL">ROLL</option>
+            <option value="PAIR">PAIR</option>
+            <option value="PC">PC</option>
+          </select>
+          <ChevronDown size={14} className="pill-select-arrow" />
+        </div>
       </div>
 
       {/* Product Table matching PDF Page 3 */}

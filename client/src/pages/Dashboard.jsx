@@ -92,9 +92,9 @@ export default function Dashboard() {
         </div>
         <button
           className="btn-new-enquiry"
-          onClick={() => navigate('/sales')}
+          onClick={() => navigate('/sales?tab=Enquiries&new=true')}
           type="button"
-          title="Create New Enquiry or Order"
+          title="Create Customer & Enquiry"
         >
           <Plus size={16} /> New Enquiry
         </button>
@@ -165,28 +165,28 @@ export default function Dashboard() {
         </div>
         <div className="pipeline-stepper">
           {/* 1. Enquiry */}
-          <div className="pipeline-step green">
+          <div className="pipeline-step green" onClick={() => navigate('/sales?tab=Enquiries')} style={{ cursor: 'pointer' }} title="View Enquiries">
             <div className="pipeline-circle">7</div>
             <span className="pipeline-label">Enquiry</span>
           </div>
           <div className="pipeline-connector passed" />
 
           {/* 2. Quotation */}
-          <div className="pipeline-step green">
+          <div className="pipeline-step green" onClick={() => navigate('/sales?tab=Quotations')} style={{ cursor: 'pointer' }} title="View Quotations">
             <div className="pipeline-circle">5</div>
             <span className="pipeline-label">Quotation</span>
           </div>
           <div className="pipeline-connector passed" />
 
           {/* 3. Sales Order (Active) */}
-          <div className="pipeline-step active">
+          <div className="pipeline-step active" onClick={() => navigate('/sales?tab=Sales Orders')} style={{ cursor: 'pointer' }} title="View Sales Orders">
             <div className="pipeline-circle">24</div>
             <span className="pipeline-label" style={{ color: '#0c5a48', fontWeight: 700 }}>Sales Order</span>
           </div>
           <div className="pipeline-connector" />
 
           {/* 4. Shipment */}
-          <div className="pipeline-step">
+          <div className="pipeline-step" onClick={() => navigate('/shipments')} style={{ cursor: 'pointer' }} title="View Shipments">
             <div className="pipeline-circle">8</div>
             <span className="pipeline-label">Shipment</span>
           </div>
