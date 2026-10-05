@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   FileText,
   FileCheck2,
@@ -82,8 +83,11 @@ const EMPTY_LINE_ITEM = {
   lineTotal: 0
 };
 
-export default function Sales({ initialTab = 'All' }) {
+export default function Sales({ initialTab = 'Quotations', openNewEnquiry = false }) {
   const { currency: globalCurrency, currencySymbol: globalSymbol, formatAmount } = useCurrency();
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const newParam = searchParams.get('new');
 
   const resolveCurrencySymbol = (curr) => {
     if (!curr) return globalSymbol || '₹';
@@ -110,12 +114,16 @@ export default function Sales({ initialTab = 'All' }) {
   };
 
   // Tabs: 'Quotations', 'Sales Orders', 'Enquiries'
-  const [activeTab, setActiveTab] = useState(() => normalizeTab(initialTab));
+  const [activeTab, setActiveTab] = useState(() => normalizeTab(tabParam || initialTab));
   const [selectedOrderId, setSelectedOrderId] = useState(null);
 
   useEffect(() => {
-    setActiveTab(normalizeTab(initialTab));
-  }, [initialTab]);
+    if (tabParam) {
+      setActiveTab(normalizeTab(tabParam));
+    } else if (initialTab) {
+      setActiveTab(normalizeTab(initialTab));
+    }
+  }, [tabParam, initialTab]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -128,6 +136,75 @@ export default function Sales({ initialTab = 'All' }) {
   const [editingQuotation, setEditingQuotation] = useState(null);
   const [previewDocModal, setPreviewDocModal] = useState(null);
   const [editSalesModal, setEditSalesModal] = useState(null);
+
+  // Toggle state: Enquiry to Customer (ready to be customer)
+  const [enquiryToCustomer, setEnquiryToCustomer] = useState(true);
+
+  // Comprehensive Enquiry Form State (Auto-registers customer to Customers module)
+  const [enquiryForm, setEnquiryForm] = useState({
+    customer: '',
+    contactPerson: '',
+    email: '',
+    phone: '',
+    country: 'UAE 🇦🇪',
+    destination: 'Dubai, UAE',
+    address: '',
+    taxNumber: '',
+    paymentTerms: 'Net 30',
+    currency: 'INR',
+    productName: '',
+    description: '',
+    quantity: 100,
+    unit: 'MT',
+    unitPrice: 500,
+    notes: ''
+  });
+
+  const handleCustomerChange = (custName) => {
+    const found = customers.find(
+      (c) => c.companyName?.trim().toLowerCase() === custName.trim().toLowerCase()
+    );
+    if (found) {
+      setEnquiryForm((prev) => ({
+        ...prev,
+        customer: custName,
+        contactPerson: found.contactPerson || prev.contactPerson,
+        email: found.email || prev.email,
+        phone: found.phone || prev.phone,
+        country: found.country || prev.country,
+        destination: found.address || found.country || prev.destination,
+        address: found.address || prev.address,
+        taxNumber: found.taxNumber || prev.taxNumber,
+        paymentTerms: found.paymentTerms || prev.paymentTerms,
+        currency: found.currency || prev.currency
+      }));
+    } else {
+      setEnquiryForm((prev) => ({
+        ...prev,
+        customer: custName
+      }));
+    }
+  };
+
+  const handleProductChange = (prodName) => {
+    const found = productsCatalog.find(
+      (p) => p.name?.trim().toLowerCase() === prodName.trim().toLowerCase()
+    );
+    if (found) {
+      setEnquiryForm((prev) => ({
+        ...prev,
+        productName: prodName,
+        description: found.description || prev.description,
+        unit: found.unit || prev.unit,
+        unitPrice: found.price || prev.unitPrice
+      }));
+    } else {
+      setEnquiryForm((prev) => ({
+        ...prev,
+        productName: prodName
+      }));
+    }
+  };
 
   // Quotation Form State (Comprehensive line-items & financials)
   const [quotationForm, setQuotationForm] = useState({
@@ -320,6 +397,19 @@ export default function Sales({ initialTab = 'All' }) {
     setQuotationModalOpen(true);
   };
 
+  // Auto-open new enquiry or quotation modal if requested via URL or props
+  useEffect(() => {
+    if (newParam === 'true' || openNewEnquiry) {
+      if (tabParam === 'Quotations' || tabParam === 'Quotation') {
+        setActiveTab('Quotations');
+        handleOpenCreateQuotation();
+      } else {
+        setActiveTab('Enquiries');
+        setEnquiryModalOpen(true);
+      }
+    }
+  }, [newParam, openNewEnquiry, tabParam]);
+
   const handleOpenEditQuotation = (quotation) => {
     setEditingQuotation(quotation);
     setQuotationForm({
@@ -487,6 +577,20 @@ export default function Sales({ initialTab = 'All' }) {
     }
   };
 
+  // Print Quotation / Document matching preview layout
+  const handlePrintDocument = () => {
+    document.body.classList.add('printing-quotation-mode');
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'visible';
+
+    window.print();
+
+    setTimeout(() => {
+      document.body.classList.remove('printing-quotation-mode');
+      document.body.style.overflow = originalOverflow;
+    }, 1000);
+  };
+
   // Convert Quotation to Order
   const handleConvertQuotation = async (quotation) => {
     if (!quotation) return;
@@ -547,44 +651,216 @@ export default function Sales({ initialTab = 'All' }) {
     }
   };
 
-  // Create Enquiry Handler
-  const handleCreateEnquiry = async (e) => {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const customer = fd.get('customer');
-    const destination = fd.get('destination');
-    const currency = fd.get('currency') || globalCurrency || 'INR';
-    const notes = fd.get('notes');
-    const productName = fd.get('productName');
-    const quantity = Number(fd.get('quantity') || 1);
-    const unitPrice = Number(fd.get('unitPrice') || 0);
+  // Save Enquiry Handler - Auto-saves Customer (if toggle ON) & automatically generates Quotation in Sales module and shows Quotation layout
+  const handleSaveEnquiry = async () => {
+    const customer = (enquiryForm.customer || '').trim();
+    if (!customer) {
+      alert('Please enter or select a Customer / Buyer Company');
+      return;
+    }
 
+    const productName = (enquiryForm.productName || '').trim() || 'Export Item';
+    const quantity = Math.max(1, Number(enquiryForm.quantity || 1));
+    const unitPrice = Math.max(0, Number(enquiryForm.unitPrice || 0));
+    const totalAmount = quantity * unitPrice;
     const count = data.filter((x) => x.enquiryNo).length;
     const enquiryNo = `ENQ-${1001 + count}`;
+    const destination = enquiryForm.destination || enquiryForm.country || 'International Port';
+    const country = enquiryForm.country || destination;
+    const currency = enquiryForm.currency || globalCurrency || 'INR';
 
+    // 1. Always create or update Customer in Customer module
+    const normCustomer = customer.trim().toLowerCase();
+    const existingCust = customers.find(
+      (c) => c.companyName?.trim().toLowerCase() === normCustomer
+    );
+
+    const customerPayload = {
+      customerId: existingCust?.customerId || `CUST-${101 + customers.length}`,
+      companyName: customer,
+      contactPerson: enquiryForm.contactPerson || existingCust?.contactPerson || '',
+      country: country || existingCust?.country || 'International 🌐',
+      email: enquiryForm.email || existingCust?.email || '',
+      phone: enquiryForm.phone || existingCust?.phone || '',
+      address: enquiryForm.address || existingCust?.address || '',
+      taxNumber: enquiryForm.taxNumber || existingCust?.taxNumber || 'TRN 100234567890003',
+      currency: currency || existingCust?.currency || 'INR',
+      paymentTerms: enquiryForm.paymentTerms || existingCust?.paymentTerms || 'Net 30',
+      outstandingBalance: existingCust?.outstandingBalance || 0,
+      status: 'Active'
+    };
+
+    try {
+      if (existingCust && existingCust._id) {
+        await put(`/customers/${existingCust._id}`, customerPayload).catch(() => null);
+      } else {
+        await post('/customers', customerPayload).catch(() => null);
+      }
+    } catch (custErr) {
+      console.warn('Customer auto-save error:', custErr);
+    }
+
+    // 2. Create and save the Enquiry in Sales module
     const newEnquiry = {
       type: 'Enquiry',
       enquiryNo,
       customer,
+      customerId: existingCust?.customerId || customerPayload.customerId,
+      contactPerson: enquiryForm.contactPerson || '',
+      email: enquiryForm.email || '',
+      phone: enquiryForm.phone || '',
+      address: enquiryForm.address || '',
+      country,
       destination,
       currency,
-      notes,
+      paymentTerms: enquiryForm.paymentTerms || 'Net 30',
+      notes: enquiryForm.notes || '',
       products: [
         {
           name: productName,
+          description: enquiryForm.description || '',
           quantity,
+          unit: enquiryForm.unit || 'MT',
           unitPrice,
-          total: quantity * unitPrice
+          total: totalAmount
         }
       ],
-      totalAmount: quantity * unitPrice,
+      totalAmount,
       status: 'Open'
     };
 
-    await post('/sales', newEnquiry);
-    showNotice(`Enquiry ${enquiryNo} recorded successfully!`);
+    let createdEnquiry = newEnquiry;
+    try {
+      const res = await post('/sales', newEnquiry);
+      if (res && res._id) createdEnquiry = res;
+    } catch (enqErr) {
+      console.warn('Backend save enquiry error:', enqErr);
+    }
+
+    // 3. Automatically create and save Quotation into Sales module Quotations
+    const today = new Date().toISOString().slice(0, 10);
+    const in30Days = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+    const nextSeq = String(quotationsList.length + 1).padStart(4, '0');
+    const autoQuotationNo = `QUO-${new Date().getFullYear()}-${nextSeq}`;
+
+    const quotationItems = [
+      {
+        name: productName,
+        description: enquiryForm.description || 'Export grade specification',
+        quantity,
+        unit: enquiryForm.unit || 'MT',
+        unitPrice,
+        discount: 0,
+        discountType: 'percent',
+        taxRate: 0,
+        taxAmount: 0,
+        lineTotal: totalAmount
+      }
+    ];
+
+    const quotationPayload = {
+      quotationNo: autoQuotationNo,
+      quotationDate: today,
+      validUntil: in30Days,
+      customer,
+      companyName: customer,
+      contactPerson: enquiryForm.contactPerson || '',
+      email: enquiryForm.email || '',
+      phone: enquiryForm.phone || '',
+      address: enquiryForm.address || '',
+      destination,
+      currency,
+      incoterm: 'CIF',
+      shippingCharges: 0,
+      paymentTerms: enquiryForm.paymentTerms || 'Net 30',
+      deliveryTerms: 'CIF Destination Port',
+      notes: enquiryForm.notes || 'All items inspected according to international export grade standards. Standard seaworthy export packaging.',
+      termsAndConditions: '1. Prices valid until expiry date.\n2. Payment terms as agreed.\n3. Goods dispatch within 14 business days from order confirmation.',
+      status: 'Draft',
+      enquiryNo,
+      items: quotationItems,
+      subtotal: totalAmount,
+      totalDiscount: 0,
+      taxableAmount: totalAmount,
+      taxTotal: 0,
+      grandTotal: totalAmount
+    };
+
+    let savedQuotation = quotationPayload;
+    try {
+      const qRes = await createQuotation(quotationPayload);
+      if (qRes && (qRes._id || qRes.quotationNo)) {
+        savedQuotation = qRes;
+      }
+    } catch (qErr) {
+      console.warn('Backend save quotation error:', qErr);
+      setQuotationsList((prev) => [quotationPayload, ...prev]);
+    }
+
+    // 4. Close Enquiry modal and reload all data across Customer and Sales modules
     setEnquiryModalOpen(false);
-    loadAll();
+    await loadAll();
+
+    // 5. Automatically switch to Quotations tab in Sales module
+    setActiveTab('Quotations');
+
+    showNotice(
+      `Customer "${customer}" saved in Customers module. Enquiry ${enquiryNo} & Quotation ${autoQuotationNo} generated in Sales module!`
+    );
+
+    // 6. Automatically show the Quotation preview layout & download PDF
+    const previewDoc = {
+      ...savedQuotation,
+      type: 'Quotation',
+      items: quotationItems,
+      grandTotal: totalAmount,
+      subtotal: totalAmount
+    };
+    setPreviewDocModal(previewDoc);
+
+    // Automatically trigger PDF download of the preview quotation
+    setTimeout(() => {
+      generateQuotationPdf(previewDoc);
+    }, 600);
+  };
+
+  // Convert an existing Enquiry directly to a Confirmed Sales Order
+  const handleConvertEnquiryToOrder = async (enquiry) => {
+    try {
+      const soCount = data.filter((x) => x.type === 'Sales Order' || x.orderNo).length;
+      const orderNo = `SO-${1024 + soCount}`;
+      const totalAmount = Number(enquiry.totalAmount || 0);
+
+      const salesOrderPayload = {
+        type: 'Sales Order',
+        orderNo,
+        enquiryNo: enquiry.enquiryNo || '',
+        customer: enquiry.customer,
+        contactPerson: enquiry.contactPerson || '',
+        email: enquiry.email || '',
+        phone: enquiry.phone || '',
+        address: enquiry.address || '',
+        destination: enquiry.destination || '',
+        currency: enquiry.currency || 'INR',
+        incoterm: enquiry.incoterm || 'CIF',
+        paymentTerms: enquiry.paymentTerms || 'Net 30',
+        products: enquiry.products || [],
+        totalAmount,
+        advanceReceived: totalAmount * 0.3,
+        balanceDue: totalAmount * 0.7,
+        status: 'Confirmed'
+      };
+
+      await post('/sales', salesOrderPayload);
+      if (enquiry._id) {
+        await put(`/sales/${enquiry._id}`, { status: 'Converted', orderNo }).catch(() => null);
+      }
+      showNotice(`Enquiry ${enquiry.enquiryNo || ''} converted to Confirmed Sales Order (${orderNo})!`);
+      await loadAll();
+      setActiveTab('Sales Orders');
+    } catch (err) {
+      alert(err.message || 'Failed to convert enquiry to sales order');
+    }
   };
 
   const isQuotationsTab = activeTab === 'Quotations';
@@ -597,40 +873,6 @@ export default function Sales({ initialTab = 'All' }) {
         eyebrow="SALES & COMMERCIAL"
         title="Sales & Quotations"
         description="Manage export pipeline from lead enquiry to confirmed order"
-        actions={
-          <>
-            {isQuotationsTab && (
-              <button
-                className="btn-purple"
-                onClick={() => handleOpenCreateQuotation()}
-              >
-                <Plus size={16} /> Create Quotation
-              </button>
-            )}
-            {isSalesOrdersTab && (
-              <button
-                className="btn-purple"
-                onClick={() => setEnquiryModalOpen(true)}
-              >
-                <Plus size={16} /> Create Order
-              </button>
-            )}
-            {isEnquiriesTab && (
-              <button
-                className="btn-purple"
-                onClick={() => setEnquiryModalOpen(true)}
-              >
-                <Plus size={16} /> New Enquiry
-              </button>
-            )}
-            <button
-              className="secondary"
-              onClick={() => (isQuotationsTab ? setEnquiryModalOpen(true) : handleOpenCreateQuotation())}
-            >
-              <Plus size={16} /> {isQuotationsTab ? 'New Enquiry' : 'Create Quotation'}
-            </button>
-          </>
-        }
       />
 
       {notification && (
@@ -690,25 +932,7 @@ export default function Sales({ initialTab = 'All' }) {
       {isQuotationsTab && (
         <>
           {/* Tip Banner */}
-          <div
-            style={{
-              background: '#fbfdfc',
-              border: '1px solid #d0ebe4',
-              borderRadius: '10px',
-              padding: '12px 18px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              marginBottom: '20px',
-              color: '#0c5a48',
-              fontSize: '13px'
-            }}
-          >
-            <span style={{ fontSize: '16px' }}>💡</span>
-            <div>
-              <strong>Quotations convert to Sales Orders with a single click.</strong> Keep track of accepted vs pending quotes and convert them directly to confirmed sales orders.
-            </div>
-          </div>
+         
 
           {/* 4 Summary KPI Cards */}
           <div className="stats module-stats">
@@ -961,13 +1185,6 @@ export default function Sales({ initialTab = 'All' }) {
                   Direct buyer inquiries ready for commercial quote preparation
                 </span>
               </div>
-              <button
-                className="secondary"
-                style={{ fontSize: '12px', padding: '6px 12px' }}
-                onClick={() => setEnquiryModalOpen(true)}
-              >
-                <Plus size={14} /> New Enquiry
-              </button>
             </div>
 
             <div className="table-wrap">
@@ -1018,14 +1235,31 @@ export default function Sales({ initialTab = 'All' }) {
                             <Status>{enq.status || 'Open'}</Status>
                           </td>
                           <td>
-                            <div className="actions" style={{ justifyContent: 'flex-end' }}>
+                            <div className="actions" style={{ justifyContent: 'flex-end', gap: '6px' }}>
                               <button
                                 className="btn-purple"
                                 style={{ padding: '4px 10px', fontSize: '11px', height: '28px' }}
                                 title="Pre-fill and prepare quotation"
                                 onClick={() => handleOpenCreateQuotation(enq)}
                               >
-                                Create Quotation →
+                                Quotation →
+                              </button>
+                              <button
+                                style={{
+                                  padding: '4px 10px',
+                                  fontSize: '11px',
+                                  height: '28px',
+                                  background: '#e6f7f2',
+                                  color: '#0c5a48',
+                                  border: '1px solid #a7dfd2',
+                                  borderRadius: '6px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                                title="Convert directly to Confirmed Sales Order"
+                                onClick={() => handleConvertEnquiryToOrder(enq)}
+                              >
+                                Convert to Sales →
                               </button>
                             </div>
                           </td>
@@ -1524,7 +1758,24 @@ export default function Sales({ initialTab = 'All' }) {
                                 title="Prepare commercial quotation"
                                 onClick={() => handleOpenCreateQuotation(enq)}
                               >
-                                Create Quotation →
+                                Quotation →
+                              </button>
+                              <button
+                                style={{
+                                  padding: '4px 10px',
+                                  fontSize: '11px',
+                                  height: '28px',
+                                  background: '#e6f7f2',
+                                  color: '#0c5a48',
+                                  border: '1px solid #a7dfd2',
+                                  borderRadius: '6px',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                                title="Convert directly to Confirmed Sales Order"
+                                onClick={() => handleConvertEnquiryToOrder(enq)}
+                              >
+                                Convert to Sales →
                               </button>
                               <button
                                 className="small-btn"
@@ -2011,7 +2262,7 @@ export default function Sales({ initialTab = 'All' }) {
                 Close
               </button>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                <button type="button" className="secondary" onClick={() => window.print()}>
+                <button type="button" className="secondary" onClick={handlePrintDocument}>
                   <Printer size={15} /> Print Document
                 </button>
                 {(previewDocModal.type === 'Quotation' || previewDocModal.quotationNo) && (
@@ -2064,7 +2315,7 @@ export default function Sales({ initialTab = 'All' }) {
             </div>
           }
         >
-          <div className="document-preview">
+          <div className="document-preview" id="printable-quotation-doc">
             <div className="doc-header">
               <div className="doc-brand">
                 <Logo variant="document" width={270} />
@@ -2250,26 +2501,56 @@ export default function Sales({ initialTab = 'All' }) {
       )}
 
       {/* =========================================================
-          CREATE ENQUIRY MODAL
+          CREATE ENQUIRY MODAL (Auto-saves customer to Customers page & supports Quote / Sales Order conversion)
           ========================================================= */}
       {enquiryModalOpen && (
         <Modal
-          eyebrow="SALES WORKFLOW — STEP 1"
-          title="Create Customer Enquiry"
+          eyebrow="EXPORT PIPELINE — STEP 1"
+          title="Create Customer & Enquiry"
           onClose={() => setEnquiryModalOpen(false)}
+          large
           footer={
-            <>
-              <button className="secondary" onClick={() => setEnquiryModalOpen(false)}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <button type="button" className="secondary" onClick={() => setEnquiryModalOpen(false)}>
                 Cancel
               </button>
-              <button className="primary" form="enquiry-form">
-                Record Enquiry
+              <button
+                type="button"
+                className="primary"
+                onClick={handleSaveEnquiry}
+                title="Save Customer & Enquiry, generate Commercial Quotation, and download preview"
+                style={{ padding: '10px 24px', fontSize: '13px', fontWeight: 700 }}
+              >
+                <Plus size={16} /> Save Enquiry
               </button>
-            </>
+            </div>
           }
         >
-          <form id="enquiry-form" onSubmit={handleCreateEnquiry}>
-            <div className="form-grid">
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '10px 14px',
+              background: '#e8f5f1',
+              border: '1px solid #c2e5dc',
+              borderRadius: '8px',
+              marginBottom: '16px',
+              color: '#0c5a48',
+              fontSize: '12.5px',
+              fontWeight: 600
+            }}
+          >
+            <Sparkles size={16} />
+            <span>
+              Saving creates the customer in <strong>Customer Module</strong> and saves the enquiry in <strong>Sales Module</strong>, then automatically opens the Quotation preview and triggers download.
+            </span>
+          </div>
+          <form id="enquiry-form" onSubmit={(e) => { e.preventDefault(); handleSaveEnquiry(); }}>
+            <h4 style={{ margin: '0 0 10px', fontSize: '13px', color: '#1e1e2d', fontWeight: 700, borderBottom: '1px solid #f0f2f5', paddingBottom: '6px' }}>
+              1. Customer & Buyer Information (Saved to Customer Module)
+            </h4>
+            <div className="form-grid" style={{ marginBottom: '18px' }}>
               <div className="field">
                 <label>Customer / Buyer Company *</label>
                 <input
@@ -2277,26 +2558,110 @@ export default function Sales({ initialTab = 'All' }) {
                   required
                   placeholder="e.g. ABC Trading LLC"
                   list="customer-list-enq"
+                  value={enquiryForm.customer}
+                  onChange={(e) => handleCustomerChange(e.target.value)}
                 />
                 <datalist id="customer-list-enq">
                   {customers.map((c) => (
-                    <option key={c._id} value={c.companyName} />
+                    <option key={c._id || c.customerId} value={c.companyName} />
                   ))}
                 </datalist>
+                <span style={{ fontSize: '10.5px', color: '#6b7280' }}>
+                  Select existing or type new company (auto-saved to Customers module)
+                </span>
               </div>
 
               <div className="field">
-                <label>Destination Port / Country *</label>
-                <input name="destination" required placeholder="e.g. Dubai, UAE or Hamburg, Germany" />
+                <label>Contact Person</label>
+                <input
+                  name="contactPerson"
+                  placeholder="e.g. Ahmed Ali"
+                  value={enquiryForm.contactPerson}
+                  onChange={(e) => setEnquiryForm((prev) => ({ ...prev, contactPerson: e.target.value }))}
+                />
               </div>
 
+              <div className="field">
+                <label>Buyer Email</label>
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="buyer@abctrading.ae"
+                  value={enquiryForm.email}
+                  onChange={(e) => setEnquiryForm((prev) => ({ ...prev, email: e.target.value }))}
+                />
+              </div>
+
+              <div className="field">
+                <label>Buyer Phone / WhatsApp</label>
+                <input
+                  name="phone"
+                  placeholder="+971 50 123 4567"
+                  value={enquiryForm.phone}
+                  onChange={(e) => setEnquiryForm((prev) => ({ ...prev, phone: e.target.value }))}
+                />
+              </div>
+
+              <div className="field">
+                <label>Country / Destination Port *</label>
+                <input
+                  name="destination"
+                  required
+                  placeholder="e.g. Dubai, UAE or Hamburg, Germany"
+                  value={enquiryForm.destination}
+                  onChange={(e) => setEnquiryForm((prev) => ({ ...prev, destination: e.target.value, country: e.target.value }))}
+                />
+              </div>
+
+              <div className="field">
+                <label>Billing Currency</label>
+                <select
+                  name="currency"
+                  value={enquiryForm.currency}
+                  onChange={(e) => setEnquiryForm((prev) => ({ ...prev, currency: e.target.value }))}
+                >
+                  <option value="INR">INR (₹)</option>
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                  <option value="AED">AED (د.إ)</option>
+                </select>
+              </div>
+
+              <div className="field">
+                <label>Payment Terms</label>
+                <input
+                  name="paymentTerms"
+                  placeholder="e.g. Net 30, Advance, 30% Adv + 70% B/L"
+                  value={enquiryForm.paymentTerms}
+                  onChange={(e) => setEnquiryForm((prev) => ({ ...prev, paymentTerms: e.target.value }))}
+                />
+              </div>
+
+              <div className="field">
+                <label>Delivery / Office Address</label>
+                <input
+                  name="address"
+                  placeholder="Office 402, Business Bay, Dubai"
+                  value={enquiryForm.address}
+                  onChange={(e) => setEnquiryForm((prev) => ({ ...prev, address: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <h4 style={{ margin: '0 0 10px', fontSize: '13px', color: '#1e1e2d', fontWeight: 700, borderBottom: '1px solid #f0f2f5', paddingBottom: '6px' }}>
+              2. Enquiry Products & Commercial Terms (Saved to Sales Module)
+            </h4>
+            <div className="form-grid">
               <div className="field">
                 <label>Product Requested *</label>
                 <input
                   name="productName"
                   required
-                  placeholder="e.g. Premium Basmati Rice"
+                  placeholder="e.g. Basmati Rice 1121"
                   list="prod-list-enq"
+                  value={enquiryForm.productName}
+                  onChange={(e) => handleProductChange(e.target.value)}
                 />
                 <datalist id="prod-list-enq">
                   {productsCatalog.map((p) => (
@@ -2306,24 +2671,61 @@ export default function Sales({ initialTab = 'All' }) {
               </div>
 
               <div className="field">
+                <label>Item Description / Grade Specs</label>
+                <input
+                  name="description"
+                  placeholder="e.g. Long grain, double polished, 25kg PP bags"
+                  value={enquiryForm.description}
+                  onChange={(e) => setEnquiryForm((prev) => ({ ...prev, description: e.target.value }))}
+                />
+              </div>
+
+              <div className="field">
                 <label>Quantity *</label>
-                <input name="quantity" type="number" required defaultValue={100} min="1" />
+                <input
+                  name="quantity"
+                  type="number"
+                  required
+                  min="1"
+                  value={enquiryForm.quantity}
+                  onChange={(e) => setEnquiryForm((prev) => ({ ...prev, quantity: Number(e.target.value) }))}
+                />
               </div>
 
               <div className="field">
-                <label>Target / Expected Unit Price</label>
-                <input name="unitPrice" type="number" step="0.01" defaultValue={500} />
-              </div>
-
-              <div className="field">
-                <label>Currency</label>
-                <select name="currency" defaultValue="INR">
-                  <option value="INR">INR (₹)</option>
-                  <option value="USD">USD ($)</option>
-                  <option value="EUR">EUR (€)</option>
-                  <option value="GBP">GBP (£)</option>
-                  <option value="AED">AED (د.إ)</option>
+                <label>Unit of Measure</label>
+                <select
+                  name="unit"
+                  value={enquiryForm.unit}
+                  onChange={(e) => setEnquiryForm((prev) => ({ ...prev, unit: e.target.value }))}
+                >
+                  <option value="MT">MT (Metric Ton)</option>
+                  <option value="KG">KG (Kilograms)</option>
+                  <option value="PCS">PCS (Pieces)</option>
+                  <option value="Bags">Bags (25kg / 50kg)</option>
+                  <option value="Boxes">Boxes / Cartons</option>
+                  <option value="Containers">20ft / 40ft Container</option>
                 </select>
+              </div>
+
+              <div className="field">
+                <label>Expected / Target Unit Price</label>
+                <input
+                  name="unitPrice"
+                  type="number"
+                  step="0.01"
+                  value={enquiryForm.unitPrice}
+                  onChange={(e) => setEnquiryForm((prev) => ({ ...prev, unitPrice: Number(e.target.value) }))}
+                />
+              </div>
+
+              <div className="field">
+                <label>Estimated Total Value</label>
+                <input
+                  readOnly
+                  style={{ background: '#f8fafc', fontWeight: 700, color: '#0c5a48' }}
+                  value={`${resolveCurrencySymbol(enquiryForm.currency)}${(Number(enquiryForm.quantity || 0) * Number(enquiryForm.unitPrice || 0)).toLocaleString()}`}
+                />
               </div>
 
               <div className="field full">
@@ -2331,6 +2733,8 @@ export default function Sales({ initialTab = 'All' }) {
                 <textarea
                   name="notes"
                   placeholder="Specify packaging specifications, inspection requirements, target delivery date..."
+                  value={enquiryForm.notes}
+                  onChange={(e) => setEnquiryForm((prev) => ({ ...prev, notes: e.target.value }))}
                 />
               </div>
             </div>

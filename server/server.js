@@ -11,7 +11,6 @@ app.use(cors({ origin: process.env.CLIENT_URL || '*' }));
 app.use(express.json());
 
 const modelMap = {
-  customers: Customer,
   products: Product,
   sales: Sale,
   shipments: Shipment,
@@ -19,16 +18,140 @@ const modelMap = {
   payments: Payment
 };
 
-const memStore = {
-  customers: [...customers],
-  products: [...products],
-  sales: [...sales],
-  shipments: [...shipments],
-  invoices: [...invoices],
-  payments: [...payments]
-};
+// =========================================================
+// DEDICATED CUSTOMERS API (Deduplication & Anti-Replication)
+// =========================================================
 
-// Resilient Generic CRUD (Works with MongoDB or In-Memory fallback)
+// GET /api/customers - Deduplicates by company name and guarantees unique customerIds
+app.get('/api/customers', async (req, res) => {
+  try {
+    const raw = await Customer.find().sort({ createdAt: 1 });
+
+    const seenNames = new Set();
+    const cleanCustomers = [];
+    const duplicateIdsToDelete = [];
+
+    for (const c of raw) {
+      const normName = (c.companyName || '').trim().toLowerCase();
+      if (!normName) continue;
+      if (seenNames.has(normName)) {
+        duplicateIdsToDelete.push(c._id);
+      } else {
+        seenNames.add(normName);
+        cleanCustomers.push(c);
+      }
+    }
+
+    // Permanently remove duplicate records from database
+    if (duplicateIdsToDelete.length > 0) {
+      await Customer.deleteMany({ _id: { $in: duplicateIdsToDelete } });
+    }
+
+    // Guarantee unique sequential customerId for each customer
+    const usedIds = new Set();
+    let nextNum = 101;
+    for (const c of cleanCustomers) {
+      let cid = c.customerId;
+      if (!cid || usedIds.has(cid)) {
+        while (usedIds.has(`CUST-${nextNum}`)) {
+          nextNum++;
+        }
+        cid = `CUST-${nextNum}`;
+        c.customerId = cid;
+        await Customer.findByIdAndUpdate(c._id, { customerId: cid });
+        nextNum++;
+      }
+      usedIds.add(cid);
+    }
+
+    // Attach all customer enquiries saved in database
+    const allEnquiries = await Sale.find({ type: 'Enquiry' }).sort({ createdAt: -1 });
+
+    const enrichedCustomers = cleanCustomers.map((c) => {
+      const cObj = c.toObject ? c.toObject() : { ...c };
+      const normName = (cObj.companyName || '').trim().toLowerCase();
+      cObj.enquiries = allEnquiries.filter(
+        (e) => (e.customer || '').trim().toLowerCase() === normName
+      );
+      cObj.enquiriesCount = cObj.enquiries.length;
+      return cObj;
+    });
+
+    res.json(enrichedCustomers);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
+// POST /api/customers - Upsert behavior: updates existing buyer if name matches, avoiding duplication
+app.post('/api/customers', async (req, res) => {
+  try {
+    const name = (req.body.companyName || '').trim();
+    if (!name) return res.status(400).json({ message: 'Company Name is required' });
+
+    // Escaped regex for exact case-insensitive match
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const existing = await Customer.findOne({
+      companyName: { $regex: new RegExp(`^${escaped}$`, 'i') }
+    });
+
+    if (existing) {
+      // Update existing record rather than creating a duplicate document
+      const updateData = { ...req.body };
+      delete updateData._id;
+      const updated = await Customer.findByIdAndUpdate(existing._id, updateData, {
+        new: true,
+        runValidators: true
+      });
+      return res.json(updated);
+    }
+
+    // Allocate next available unique customer ID
+    const allCusts = await Customer.find({}, 'customerId');
+    const existingIds = new Set(allCusts.map((c) => c.customerId).filter(Boolean));
+    let nextNum = 101;
+    while (existingIds.has(`CUST-${nextNum}`)) {
+      nextNum++;
+    }
+
+    const payload = {
+      ...req.body,
+      companyName: name,
+      customerId: req.body.customerId && !existingIds.has(req.body.customerId)
+        ? req.body.customerId
+        : `CUST-${nextNum}`
+    };
+
+    const created = await Customer.create(payload);
+    res.status(201).json(created);
+  } catch (e) {
+    res.status(400).json({ message: e.message });
+  }
+});
+
+app.put('/api/customers/:id', async (req, res) => {
+  try {
+    const row = await Customer.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+    if (!row) return res.status(404).json({ message: 'Record not found' });
+    res.json(row);
+  } catch (e) {
+    res.status(400).json({ message: e.message });
+  }
+});
+
+app.delete('/api/customers/:id', async (req, res) => {
+  try {
+    await Customer.findByIdAndDelete(req.params.id);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(400).json({ message: e.message });
+  }
+});
+
+// Generic CRUD
 function registerCrud(path, Model) {
   app.get(`/api/${path}`, async (req, res) => {
     try {

@@ -23,17 +23,32 @@ export default function Modal({
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    document.body.classList.add('has-modal-open');
 
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && onClose) {
         onClose();
       }
     };
+
+    const handleBeforePrint = () => {
+      document.body.style.overflow = 'visible';
+    };
+
+    const handleAfterPrint = () => {
+      document.body.style.overflow = 'hidden';
+    };
+
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
 
     return () => {
       document.body.style.overflow = prevOverflow;
+      document.body.classList.remove('has-modal-open');
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
     };
   }, [onClose]);
 
