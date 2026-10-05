@@ -72,6 +72,57 @@ const defaultCustomers = [
     paymentTerms: 'Net 30',
     outstandingBalance: 12500,
     status: 'Active'
+  },
+  {
+    _id: 'cust-5',
+    customerId: 'CUST-105',
+    companyName: 'Oceanic Trading',
+    avatar: 'OT',
+    avatarColor: 'purple',
+    country: 'Australia 🇦🇺',
+    contactPerson: 'David Miller',
+    email: 'david@oceanictrading.com.au',
+    phone: '+61 2 9876 5432',
+    address: 'Level 18, 100 Miller St, North Sydney NSW 2060, Australia',
+    taxNumber: 'AU882190342',
+    currency: 'USD',
+    paymentTerms: 'Net 30',
+    outstandingBalance: 20000,
+    status: 'Active'
+  },
+  {
+    _id: 'cust-6',
+    customerId: 'CUST-106',
+    companyName: 'Singapore Global Logistics',
+    avatar: 'SG',
+    avatarColor: 'coral',
+    country: 'Singapore 🇸🇬',
+    contactPerson: 'Serena Tan',
+    email: 'serena@sglogistic.sg',
+    phone: '+65 6789 0123',
+    address: '10 Marina Boulevard, Tower 2, Singapore 018983',
+    taxNumber: 'SG201829104M',
+    currency: 'USD',
+    paymentTerms: 'Advance',
+    outstandingBalance: 0,
+    status: 'Active'
+  },
+  {
+    _id: 'cust-7',
+    customerId: 'CUST-107',
+    companyName: 'Al-Mansoor Enterprises',
+    avatar: 'AM',
+    avatarColor: 'blue',
+    country: 'Saudi Arabia 🇸🇦',
+    contactPerson: 'Fahad Al-Mansoor',
+    email: 'fahad@almansoor.sa',
+    phone: '+966 11 482 9900',
+    address: 'King Fahd Road, Al Olaya, Riyadh 12213, Saudi Arabia',
+    taxNumber: 'SA310293847500003',
+    currency: 'USD',
+    paymentTerms: 'LC at Sight',
+    outstandingBalance: 0,
+    status: 'Active'
   }
 ];
 
@@ -199,13 +250,31 @@ export default function Customers() {
 
       {/* Filter Toolbar matching PDF Page 2 */}
       <div className="filter-toolbar">
-        <div className="global-search filter-search" style={{ background: '#ffffff', border: '1px solid var(--border)' }}>
-          <Search size={16} />
+        <div className="global-search filter-search" style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '20px' }}>
+          <Search size={16} style={{ color: '#0c5a48', flexShrink: 0 }} />
           <input
             placeholder="Search customer or country..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch('')}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: '2px',
+                cursor: 'pointer',
+                color: '#8fa4a8',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+              title="Clear search"
+            >
+              <X size={15} />
+            </button>
+          )}
         </div>
 
         <select

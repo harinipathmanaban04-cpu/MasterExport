@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { get, post, put, del } from '../api';
 import Modal from '../components/Modal';
+import Logo from '../components/Logo';
 import { PageHeader, StatCard, Status } from '../components/Layout';
 
 // Standard 5-stage export shipment lifecycle
@@ -122,6 +123,22 @@ const defaultShipments = [
     trackingNo: 'CMA-552140',
     docs: ['Bill of Lading (B/L)', 'Certificate of Origin (COO)', 'Customs Clearance'],
     status: 'Delivered'
+  },
+  {
+    _id: 'shp-106',
+    shipmentNo: 'SHP-106',
+    orderNo: 'SO-1029',
+    customer: 'Singapore Global Logistics',
+    origin: 'Chennai Port, India',
+    destination: 'Singapore Port, Singapore',
+    transportMode: 'Sea',
+    containerNo: 'PILU-338901',
+    carrier: 'PIL Pacific Line',
+    etd: '2026-10-25',
+    eta: '2026-11-02',
+    trackingNo: 'PIL-338901',
+    docs: ['Bill of Lading (B/L)', 'Commercial Invoice', 'Packing List'],
+    status: 'Preparing'
   }
 ];
 
@@ -680,7 +697,7 @@ export default function Shipments() {
           eyebrow="EXPORT SHIPMENT TRACKING"
           title={`Delivery ${viewShipment.shipmentNo} — ${viewShipment.orderNo}`}
           onClose={() => setViewShipment(null)}
-          maxWidth="700px"
+          maxWidth="780px"
           footer={
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -718,8 +735,39 @@ export default function Shipments() {
             </div>
           }
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            {/* Visual Tracking Stepper: Preparing -> Customs -> Shipped -> In Transit -> Delivered */}
+          <div className="document-preview" style={{ padding: '0', background: 'transparent' }}>
+            <div className="doc-header" style={{ borderBottom: '2px solid #0c5a48', paddingBottom: '16px', marginBottom: '18px' }}>
+              <div className="doc-brand">
+                <Logo variant="document" width={270} />
+                <div className="doc-brand-info">
+                  <strong>Master Export Pro Inc.</strong>
+                  <br />
+                  123 Trade Center, Business Bay, New York, NY 10001, USA
+                  <br />
+                  Email: exports@masterexportpro.com | GST / Tax ID: 123456789
+                </div>
+              </div>
+              <div className="doc-meta" style={{ textAlign: 'right' }}>
+                <h2 style={{ margin: '0 0 4px', fontSize: '18px', color: '#0c5a48', fontWeight: 800 }}>
+                  EXPORT SHIPMENT DISPATCH
+                </h2>
+                <div className="doc-meta-badge" style={{ display: 'inline-block', padding: '4px 10px', background: '#e6f4f0', color: '#0c5a48', borderRadius: '6px', fontWeight: 700, fontSize: '13px' }}>
+                  {viewShipment.shipmentNo}
+                </div>
+                <div style={{ fontSize: '12px', marginTop: '6px' }}>
+                  <strong>Sales Order:</strong> {viewShipment.orderNo}
+                </div>
+                <div style={{ fontSize: '12px', marginTop: '3px' }}>
+                  <strong>Carrier:</strong> {viewShipment.carrier || 'Carrier'} ({viewShipment.transportMode} Freight)
+                </div>
+                <div style={{ fontSize: '12px', marginTop: '3px' }}>
+                  <strong>Status:</strong> <Status>{viewShipment.status}</Status>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+              {/* Visual Tracking Stepper: Preparing -> Customs -> Shipped -> In Transit -> Delivered */}
             <div>
               <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#627b75', fontWeight: 700, marginBottom: '8px' }}>
                 DELIVERY STATUS PIPELINE
@@ -852,7 +900,8 @@ export default function Shipments() {
               </div>
             </div>
           </div>
-        </Modal>
+        </div>
+      </Modal>
       )}
 
       {/* CREATE / EDIT SHIPMENT MODAL (Strictly Required Fields) */}
