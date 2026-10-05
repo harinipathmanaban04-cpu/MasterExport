@@ -980,6 +980,133 @@ app.get('/api/dashboard', async (req, res) => {
   }
 });
 
+// GET /api/reports - Executive Summary for Sales, Orders, Payments & Profit
+app.get('/api/reports', async (req, res) => {
+  try {
+    let salesList = [];
+    let invoicesList = [];
+    let paymentsList = [];
+    let shipmentsList = [];
+    let productsList = [];
+    let customersList = [];
+
+    if (mongoose.connection.readyState === 1) {
+      [salesList, invoicesList, paymentsList, shipmentsList, productsList, customersList] = await Promise.all([
+        Sale.find(),
+        Invoice.find(),
+        Payment.find(),
+        Shipment.find(),
+        Product.find(),
+        Customer.find()
+      ]);
+    } else {
+      salesList = memStore.sales || [];
+      invoicesList = memStore.invoices || [];
+      paymentsList = memStore.payments || [];
+      shipmentsList = memStore.shipments || [];
+      productsList = memStore.products || [];
+      customersList = memStore.customers || [];
+    }
+
+    const confirmedOrders = (salesList || []).filter(s => s.type === 'Sales Order' || s.orderNo);
+    const totalSales = confirmedOrders.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
+
+    // 1. Sales by customer
+    const custMap = {};
+    confirmedOrders.forEach(o => {
+      const cName = o.customer || 'Unknown';
+      if (!custMap[cName]) {
+        custMap[cName] = { customer: cName, ordersCount: 0, totalSales: 0 };
+      }
+      custMap[cName].ordersCount += 1;
+      custMap[cName].totalSales += (Number(o.totalAmount) || 0);
+    });
+    const salesByCustomer = Object.values(custMap).sort((a, b) => b.totalSales - a.totalSales);
+
+    // 2. Monthly sales
+    const monthlyMap = {};
+    confirmedOrders.forEach(o => {
+      const dt = o.createdAt ? new Date(o.createdAt) : new Date();
+      const monthKey = dt.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+      if (!monthlyMap[monthKey]) {
+        monthlyMap[monthKey] = { month: monthKey, totalSales: 0, ordersCount: 0 };
+      }
+      monthlyMap[monthKey].totalSales += (Number(o.totalAmount) || 0);
+      monthlyMap[monthKey].ordersCount += 1;
+    });
+    const monthlySales = Object.values(monthlyMap);
+
+    // 3. Orders lifecycle
+    const ordersSummary = {
+      pending: confirmedOrders.filter(o => ['Preparing', 'Draft', 'Confirmed'].includes(o.status)).length,
+      shipped: confirmedOrders.filter(o => ['Shipped', 'In Transit', 'Customs'].includes(o.status)).length,
+      delivered: confirmedOrders.filter(o => o.status === 'Delivered').length,
+      completed: confirmedOrders.filter(o => ['Completed', 'Delivered'].includes(o.status)).length,
+      total: confirmedOrders.length
+    };
+
+    // 4. Payments summary
+    const now = new Date();
+    const paidTotal = (paymentsList || []).reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+    const outstandingTotal = (invoicesList || []).reduce((sum, i) => sum + (Number(i.remainingBalance) || 0), 0);
+    const overdueInvoices = (invoicesList || []).filter(i => (Number(i.remainingBalance) || 0) > 0 && i.dueDate && new Date(i.dueDate) < now);
+
+    const paymentsSummary = {
+      paidCount: (invoicesList || []).filter(i => i.status === 'Paid').length,
+      paidTotal,
+      partiallyPaidCount: (invoicesList || []).filter(i => i.status === 'Partially Paid').length,
+      partiallyPaidRemaining: (invoicesList || []).filter(i => i.status === 'Partially Paid').reduce((s, i) => s + (Number(i.remainingBalance) || 0), 0),
+      outstandingCount: (invoicesList || []).filter(i => (Number(i.remainingBalance) || 0) > 0).length,
+      outstandingTotal,
+      overdueCount: overdueInvoices.length,
+      overdueTotal: overdueInvoices.reduce((s, i) => s + (Number(i.remainingBalance) || 0), 0)
+    };
+
+    // 5. Profit: Sales - Product Cost - Shipping Cost - Other Expenses
+    let productCost = 0;
+    confirmedOrders.forEach(o => {
+      if (Array.isArray(o.products) && o.products.length > 0) {
+        o.products.forEach(p => {
+          const matchedProd = (productsList || []).find(pr => pr.sku === p.sku || pr.name === p.name);
+          const saleUnit = Number(p.unitPrice) || 10;
+          let unitCost = saleUnit * 0.70;
+          if (matchedProd && Number(matchedProd.purchasePrice) > 0 && Number(matchedProd.purchasePrice) < saleUnit) {
+            unitCost = Number(matchedProd.purchasePrice);
+          }
+          productCost += unitCost * (Number(p.quantity) || 1);
+        });
+      } else {
+        productCost += (Number(o.totalAmount) || 0) * 0.70;
+      }
+    });
+
+    const shippingCost = confirmedOrders.reduce((sum, o) => sum + (Number(o.freight) || 2500), 0);
+    const otherExpenses = Math.round(totalSales * 0.035);
+    const netProfit = Math.max(0, totalSales - productCost - shippingCost - otherExpenses);
+    const profitMargin = totalSales > 0 ? ((netProfit / totalSales) * 100).toFixed(1) : 0;
+
+    res.json({
+      sales: {
+        totalSales,
+        monthlySales,
+        salesByCustomer
+      },
+      orders: ordersSummary,
+      payments: paymentsSummary,
+      profit: {
+        totalSales,
+        productCost: Math.round(productCost),
+        shippingCost: Math.round(shippingCost),
+        otherExpenses: Math.round(otherExpenses),
+        netProfit: Math.round(netProfit),
+        profitMargin: Number(profitMargin)
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // Reset / Seed DB
 app.post('/api/reset-data', async (req, res) => {
   try {

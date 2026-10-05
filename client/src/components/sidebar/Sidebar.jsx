@@ -7,6 +7,7 @@ import {
   LineChart,
   Ship,
   Receipt,
+  BarChart3,
   Settings as SettingsIcon,
   X
 } from 'lucide-react';
@@ -19,6 +20,7 @@ const nav = [
   ['/sales', 'Sales', LineChart],
   ['/shipments', 'Shipments', Ship],
   ['/invoices', 'Invoices & Payments', Receipt],
+  ['/reports', 'Reports', BarChart3],
   ['/settings', 'Settings', SettingsIcon]
 ];
 
