@@ -6,8 +6,8 @@ import {
   Package,
   LineChart,
   Ship,
+  Receipt,
   Settings as SettingsIcon,
-  Sparkles,
   X
 } from 'lucide-react';
 import Logo from '../Logo';
@@ -18,6 +18,7 @@ const nav = [
   ['/products', 'Products', Package],
   ['/sales', 'Sales', LineChart],
   ['/shipments', 'Shipments', Ship],
+  ['/invoices', 'Invoices & Payments', Receipt],
   ['/settings', 'Settings', SettingsIcon]
 ];
 
@@ -47,14 +48,6 @@ export default function Sidebar({ open, onClose }) {
           ))}
         </nav>
 
-        <div className="sidebar-tip-card">
-          <div className="tip-header">
-            <Sparkles size={16} className="tip-sparkle" />
-          </div>
-          <strong>Enter once, reuse everywhere</strong>
-          <p>We auto-fill customer, product and price details for you.</p>
-          <p>Media Wave Technologies</p>
-        </div>
       </aside>
     </>
   );

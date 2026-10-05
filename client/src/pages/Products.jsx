@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Edit, Trash2, Sparkles } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Sparkles, X } from 'lucide-react';
 import { get, post, put, del } from '../api';
 import Modal from '../components/Modal';
 import { useCurrency } from '../context/CurrencyContext';
@@ -43,6 +43,58 @@ const defaultProducts = [
     stock: 18,
     availableStock: '18 MT',
     isLowStock: true
+  },
+  {
+    _id: 'prd-4',
+    sku: 'PRD-04',
+    name: 'Organic Spices Assorted',
+    icon: '🌶️',
+    description: 'Certified organic whole black pepper & turmeric',
+    hsCode: '0904.11.10',
+    price: 28.00,
+    unit: 'KG',
+    stock: 3200,
+    availableStock: '3,200 KG',
+    isLowStock: false
+  },
+  {
+    _id: 'prd-5',
+    sku: 'PRD-05',
+    name: 'Industrial Valve Assemblies',
+    icon: '⚙️',
+    description: 'Stainless steel high pressure export ball valves',
+    hsCode: '8481.80.30',
+    price: 94.28,
+    unit: 'PCS',
+    stock: 850,
+    availableStock: '850 PCS',
+    isLowStock: false
+  },
+  {
+    _id: 'prd-6',
+    sku: 'PRD-06',
+    name: 'Cashew Kernels W320 Grade',
+    icon: '🥜',
+    description: 'Export vacuum packed 25lb tins cashew nuts',
+    hsCode: '0801.32.10',
+    price: 9.80,
+    unit: 'KG',
+    stock: 8500,
+    availableStock: '8,500 KG',
+    isLowStock: false
+  },
+  {
+    _id: 'prd-7',
+    sku: 'PRD-07',
+    name: 'Pure Leather Handcrafted Bags',
+    icon: '💼',
+    description: 'Full grain artisanal export travel duffels & laptop bags',
+    hsCode: '4202.11.00',
+    price: 65.00,
+    unit: 'PCS',
+    stock: 620,
+    availableStock: '620 PCS',
+    isLowStock: false
   }
 ];
 
@@ -164,13 +216,31 @@ export default function Products() {
 
       {/* Filter bar matching PDF Page 3 */}
       <div className="filter-toolbar">
-        <div className="global-search filter-search" style={{ background: '#ffffff', border: '1px solid var(--border)' }}>
-          <Search size={16} />
+        <div className="global-search filter-search" style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '20px' }}>
+          <Search size={16} style={{ color: '#0c5a48', flexShrink: 0 }} />
           <input
             placeholder="Search SKU, name, or HS Code..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch('')}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: '2px',
+                cursor: 'pointer',
+                color: '#8fa4a8',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+              title="Clear search"
+            >
+              <X size={15} />
+            </button>
+          )}
         </div>
 
         <select
