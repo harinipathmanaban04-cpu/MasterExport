@@ -6,6 +6,7 @@ import {
   Package,
   LineChart,
   Ship,
+  Receipt,
   Settings as SettingsIcon,
   Sparkles,
   X,
@@ -19,6 +20,7 @@ const nav = [
   ['/products', 'Products', Package],
   ['/sales', 'Sales', LineChart],
   ['/shipments', 'Shipments', Ship],
+  ['/invoices', 'Invoices & Payments', Receipt],
   ['/settings', 'Settings', SettingsIcon]
 ];
 

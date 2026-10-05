@@ -6,6 +6,7 @@ import Customers from './pages/Customers';
 import Products from './pages/Products';
 import Sales from './pages/Sales';
 import Shipments from './pages/Shipments';
+import Invoices from './pages/Invoices';
 import Settings from './pages/Settings';
 
 export default function App() {
@@ -21,6 +22,8 @@ export default function App() {
         <Route path="/quotations" element={<Sales initialTab="Quotations" />} />
         <Route path="/sales/quotations" element={<Sales initialTab="Quotations" />} />
         <Route path="/shipments" element={<Shipments />} />
+        <Route path="/invoices" element={<Invoices />} />
+        <Route path="/payments" element={<Invoices initialTab="Payments" />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

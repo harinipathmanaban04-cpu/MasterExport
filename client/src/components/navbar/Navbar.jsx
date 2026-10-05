@@ -113,7 +113,7 @@ export default function Navbar({ onOpen, currency, setCurrency, currencies }) {
         <div className="global-search">
           <Search size={16} />
           <input
-            placeholder="Search order, customer, SKU..."
+            placeholder="Search..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);

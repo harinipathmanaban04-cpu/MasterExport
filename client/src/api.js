@@ -70,3 +70,15 @@ export const createShipment = (data) => post('/shipments', data);
 export const updateShipment = (id, data) => put(`/shipments/${id}`, data);
 export const deleteShipment = (id) => del(`/shipments/${id}`);
 
+// Invoices & Payments API
+export const getInvoices = () => get('/invoices');
+export const getInvoiceById = (id) => get(`/invoices/${id}`);
+export const createInvoice = (data) => post('/invoices', data);
+export const updateInvoice = (id, data) => put(`/invoices/${id}`, data);
+export const deleteInvoice = (id) => del(`/invoices/${id}`);
+
+export const getPayments = () => get('/payments');
+export const recordPayment = (data) => post('/payments', data);
+export const deletePayment = (id) => del(`/payments/${id}`);
+
+
