@@ -9,7 +9,9 @@ import {
   Receipt,
   BarChart3,
   Settings as SettingsIcon,
-  X
+  Sparkles,
+  X,
+  ClipboardList
 } from 'lucide-react';
 import Logo from '../Logo';
 
@@ -50,6 +52,7 @@ export default function Sidebar({ open, onClose }) {
           ))}
         </nav>
 
+       
       </aside>
     </>
   );

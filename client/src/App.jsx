@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Customers from './pages/Customers';
@@ -18,13 +18,16 @@ export default function App() {
         <Route path="/customers" element={<Customers />} />
         <Route path="/products" element={<Products />} />
         <Route path="/sales" element={<Sales />} />
-        <Route path="/sales/quotations" element={<Sales initialTab="Quotation" />} />
-        <Route path="/quotations" element={<Sales initialTab="Quotation" />} />
+        <Route path="/enquiries" element={<Sales initialTab="Enquiries" />} />
+        <Route path="/enquiry" element={<Sales initialTab="Enquiries" openNewEnquiry={true} />} />
+        <Route path="/quotations" element={<Sales initialTab="Quotations" />} />
+        <Route path="/sales/quotations" element={<Sales initialTab="Quotations" />} />
         <Route path="/shipments" element={<Shipments />} />
         <Route path="/invoices" element={<Invoices />} />
         <Route path="/payments" element={<Invoices initialTab="Payments" />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>
   );

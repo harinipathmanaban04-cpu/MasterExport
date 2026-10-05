@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Bell, Menu, Search, X, Package, Users, FileText, Globe, ChevronDown } from 'lucide-react';
+import { Menu, Search, X, Package, Users, FileText, Globe, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { get, getQuotations } from '../../api';
 
@@ -335,12 +335,6 @@ export default function Navbar({ onOpen, currency, setCurrency, currencies }) {
           </select>
           <ChevronDown size={13} style={{ color: '#64748b', pointerEvents: 'none' }} />
         </div>
-
-        {/* Notification Bell Button matching picture */}
-        <button className="icon-btn notif-btn" title="Notifications" type="button">
-          <Bell size={18} />
-          <span className="dot-badge" />
-        </button>
 
         {/* Admin User Profile Pill matching picture */}
         <div className="user-pill" title="User Profile">
