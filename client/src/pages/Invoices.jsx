@@ -21,12 +21,16 @@ import {
   FileCheck,
   ChevronRight,
   ShieldCheck,
-  Receipt
+  Receipt,
+  User,
+  Layers,
+  Package,
+  ArrowRight
 } from 'lucide-react';
 import { get, post, del, getInvoices, createInvoice, deleteInvoice, getPayments, recordPayment } from '../api';
 import Modal from '../components/Modal';
 import Logo from '../components/Logo';
-import { PageHeader, StatCard } from '../components/Layout';
+import { PageHeader, StatCard, Status } from '../components/Layout';
 import { useCurrency } from '../context/CurrencyContext';
 
 // Clean initial export invoices matching requirements
@@ -412,6 +416,7 @@ export default function Invoices({ initialTab = 'Invoices' }) {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [recordPaymentModalOpen, setRecordPaymentModalOpen] = useState(false);
   const [viewInvoice, setViewInvoice] = useState(null);
+  const [activeInvoiceTab, setActiveInvoiceTab] = useState('document');
   const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState(null);
 
   // Payment form state with real-time validation
@@ -953,24 +958,24 @@ export default function Invoices({ initialTab = 'Invoices' }) {
       {activeTab === 'Invoices' && (
         <div className="panel" style={{ background: '#ffffff', borderRadius: '20px', border: '1px solid rgba(226, 232, 240, 0.85)', padding: '22px 24px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)' }}>
           <div className="table-wrap">
-            <table className="data-table">
+            <table className="data-table" style={{ width: '100%', minWidth: '1420px', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                 <tr>
-                  <th>INVOICE NO</th>
-                  <th>TYPE</th>
-                  <th>ORDER REF</th>
-                  <th>CUSTOMER</th>
-                  <th>DATE / DUE</th>
-                  <th>INVOICE VALUE</th>
-                  <th>PAID / BALANCE</th>
-                  <th>PAYMENT STATUS</th>
-                  <th style={{ textAlign: 'right' }}>ACTIONS</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>INVOICE NO</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>TYPE</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>ORDER REF</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>CUSTOMER</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>DATE / DUE</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>INVOICE VALUE</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>PAID / BALANCE</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>PAYMENT STATUS</th>
+                  <th style={{ padding: '16px 24px', textAlign: 'right', whiteSpace: 'nowrap' }}>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredInvoices.length === 0 ? (
                   <tr>
-                    <td colSpan="9" style={{ textAlign: 'center', padding: '36px 16px', color: '#94a3b8' }}>
+                    <td colSpan="9" style={{ textAlign: 'center', padding: '48px 24px', color: '#94a3b8' }}>
                       <FileText size={36} style={{ margin: '0 auto 10px', display: 'block', opacity: 0.4 }} />
                       <strong style={{ display: 'block', color: '#475569', fontSize: '14px', marginBottom: '4px' }}>No invoices found</strong>
                       <span style={{ fontSize: '12.5px' }}>Try adjusting your search query or generate a new invoice</span>
@@ -985,15 +990,18 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                     return (
                       <tr
                         key={inv._id || inv.invoiceNo}
-                        onClick={() => setViewInvoice(inv)}
-                        style={{ cursor: 'pointer' }}
+                        onClick={() => {
+                          setViewInvoice(inv);
+                          setActiveInvoiceTab('document');
+                        }}
+                        style={{ cursor: 'pointer', transition: 'background 0.15s ease' }}
                       >
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <div
                               style={{
-                                width: '30px',
-                                height: '30px',
+                                width: '32px',
+                                height: '32px',
                                 borderRadius: '8px',
                                 background: isProforma ? '#ede9fe' : '#e6f4f0',
                                 color: isProforma ? '#6d28d9' : '#0c5a48',
@@ -1004,33 +1012,36 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                             >
                               <FileText size={15} />
                             </div>
-                            <strong style={{ color: '#1e1e2d', fontSize: '13px' }}>{inv.invoiceNo}</strong>
+                            <span style={{ color: '#0c5a48', fontWeight: 700, fontSize: '13px', letterSpacing: '-0.01em' }}>
+                              {inv.invoiceNo}
+                            </span>
                           </div>
                         </td>
-                        <td>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                           <span
                             style={{
                               display: 'inline-block',
-                              padding: '3px 8px',
+                              padding: '4px 11px',
                               borderRadius: '6px',
-                              fontSize: '11px',
+                              fontSize: '11.5px',
                               fontWeight: 700,
                               background: isProforma ? '#f5f3ff' : '#ecfdf5',
                               color: isProforma ? '#7c3aed' : '#059669',
-                              border: isProforma ? '1px solid #ddd6fe' : '1px solid #a7f3d0'
+                              border: isProforma ? '1px solid #ddd6fe' : '1px solid #a7f3d0',
+                              letterSpacing: '0.02em'
                             }}
                           >
                             {isProforma ? 'Proforma (PI)' : 'Commercial (CI)'}
                           </span>
                         </td>
-                        <td>
-                          <span style={{ fontWeight: 600, color: '#0c5a48', fontSize: '12.5px' }}>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <span className="order-badge" style={{ padding: '4px 10px', fontSize: '12px' }}>
                             {inv.orderNo || '—'}
                           </span>
                         </td>
-                        <td>
-                          <div>
-                            <strong style={{ color: '#1e1e2d', fontSize: '13px', display: 'block' }}>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <strong style={{ color: '#1e1e2d', fontSize: '13.5px', display: 'block' }}>
                               {inv.customer}
                             </strong>
                             <small style={{ color: '#64748b', fontSize: '11.5px' }}>
@@ -1038,9 +1049,9 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                             </small>
                           </div>
                         </td>
-                        <td>
-                          <div>
-                            <span style={{ color: '#334155', fontSize: '12.5px', display: 'block' }}>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <span style={{ color: '#334155', fontSize: '12.5px', fontWeight: 600, display: 'block' }}>
                               {inv.invoiceDate}
                             </span>
                             <small style={{ color: '#94a3b8', fontSize: '11px' }}>
@@ -1048,34 +1059,71 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                             </small>
                           </div>
                         </td>
-                        <td>
-                          <strong style={{ color: '#1e1e2d', fontSize: '13.5px' }}>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <strong style={{ color: '#1e1e2d', fontSize: '14px', fontWeight: 700 }}>
                             {formatAmount(inv.totalAmount)}
                           </strong>
                         </td>
-                        <td>
-                          <div style={{ minWidth: '120px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', marginBottom: '3px' }}>
-                              <span style={{ color: '#10b981', fontWeight: 600 }}>
-                                Paid: {formatAmount(inv.amountPaid || 0)}
-                              </span>
-                              <span style={{ color: inv.remainingBalance > 0 ? '#ef4444' : '#64748b', fontWeight: 600 }}>
-                                Rem: {formatAmount(inv.remainingBalance || 0)}
-                              </span>
-                            </div>
-                            <div style={{ width: '100%', height: '4px', background: '#e2e8f0', borderRadius: '2px', overflow: 'hidden' }}>
-                              <div
-                                style={{
-                                  height: '100%',
-                                  width: `${Math.min(100, Math.round(((inv.amountPaid || 0) / (inv.totalAmount || 1)) * 100))}%`,
-                                  background: isPaid ? '#10b981' : isPartiallyPaid ? '#3b82f6' : '#e2e8f0',
-                                  transition: 'width 0.3s ease'
-                                }}
-                              />
-                            </div>
-                          </div>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          {(() => {
+                            const pct = Math.min(100, Math.round(((inv.amountPaid || 0) / (inv.totalAmount || 1)) * 100));
+                            return (
+                              <div style={{ minWidth: '165px', maxWidth: '190px' }}>
+                                {/* Row 1: Paid Amount & Progress Badge */}
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '5px' }}>
+                                  <span style={{ fontSize: '12.5px', fontWeight: 700, color: isPaid ? '#059669' : inv.amountPaid > 0 ? '#0c5a48' : '#64748b', whiteSpace: 'nowrap' }}>
+                                    {formatAmount(inv.amountPaid || 0)}
+                                  </span>
+                                  <span
+                                    style={{
+                                      fontSize: '10.5px',
+                                      fontWeight: 700,
+                                      padding: '1px 6px',
+                                      borderRadius: '4px',
+                                      background: isPaid ? '#ecfdf5' : isPartiallyPaid ? '#eff6ff' : '#f8fafc',
+                                      color: isPaid ? '#059669' : isPartiallyPaid ? '#2563eb' : '#64748b',
+                                      border: isPaid ? '1px solid #a7f3d0' : isPartiallyPaid ? '1px solid #bfdbfe' : '1px solid #e2e8f0',
+                                      whiteSpace: 'nowrap'
+                                    }}
+                                  >
+                                    {pct}%
+                                  </span>
+                                </div>
+
+                                {/* Row 2: Sleek Progress Bar */}
+                                <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden', marginBottom: '5px', border: '1px solid #e2e8f0' }}>
+                                  <div
+                                    style={{
+                                      height: '100%',
+                                      width: `${pct}%`,
+                                      background: isPaid
+                                        ? 'linear-gradient(90deg, #10b981, #059669)'
+                                        : isPartiallyPaid
+                                        ? 'linear-gradient(90deg, #38bdf8, #2563eb)'
+                                        : '#cbd5e1',
+                                      borderRadius: '10px',
+                                      transition: 'width 0.4s ease'
+                                    }}
+                                  />
+                                </div>
+
+                                {/* Row 3: Remaining / Settlement info */}
+                                <div style={{ fontSize: '11px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                  {inv.remainingBalance > 0 ? (
+                                    <span style={{ color: '#64748b' }}>
+                                      Due: <strong style={{ color: '#e11d48', fontWeight: 600 }}>{formatAmount(inv.remainingBalance)}</strong>
+                                    </span>
+                                  ) : (
+                                    <span style={{ color: '#059669', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                      ✓ Settled
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </td>
-                        <td>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                           <span
                             className={`badge ${
                               isPaid ? 'badge-green' : isPartiallyPaid ? 'badge-blue' : 'badge-amber'
@@ -1083,8 +1131,8 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '5px',
-                              padding: '4px 10px',
+                              gap: '6px',
+                              padding: '5px 12px',
                               borderRadius: '20px',
                               fontSize: '11.5px',
                               fontWeight: 700
@@ -1101,35 +1149,63 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                             {inv.status}
                           </span>
                         </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                          <div
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-end',
+                              gap: '8px'
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {/* Action 1: View Invoice Document */}
                             <button
                               type="button"
                               className="pro-icon-btn"
                               title="View Official Invoice Document"
-                              onClick={() => setViewInvoice(inv)}
+                              onClick={() => {
+                                setViewInvoice(inv);
+                                setActiveInvoiceTab('document');
+                              }}
                             >
                               <Eye size={15} />
                             </button>
-                            {!isPaid && (
+
+                            {/* Action 2: Record Payment / Settled Indicator (Constant width slot) */}
+                            {!isPaid ? (
                               <button
                                 type="button"
-                                className="pro-track-btn"
+                                className="pro-icon-btn"
                                 style={{
                                   background: '#e6f4f0',
                                   color: '#0c5a48',
-                                  border: '1px solid #bbf0e4',
-                                  padding: '4px 10px',
-                                  fontSize: '11.5px',
-                                  fontWeight: 600,
-                                  borderRadius: '8px'
+                                  border: '1px solid #a7f3d0'
                                 }}
-                                title="Record a Payment"
+                                title={`Record Payment (Balance: ${formatAmount(inv.remainingBalance || 0)})`}
                                 onClick={() => handleOpenPaymentModal(inv)}
                               >
-                                <CreditCard size={13} /> Pay
+                                <CreditCard size={14} />
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className="pro-icon-btn"
+                                disabled
+                                style={{
+                                  background: '#f8fafc',
+                                  color: '#10b981',
+                                  border: '1px solid #e2e8f0',
+                                  cursor: 'default',
+                                  opacity: 0.7
+                                }}
+                                title="Invoice Fully Settled (Paid in Full)"
+                              >
+                                <CheckCircle2 size={14} />
                               </button>
                             )}
+
+                            {/* Action 3: Delete Invoice */}
                             <button
                               type="button"
                               className="pro-icon-btn danger"
@@ -1173,24 +1249,24 @@ export default function Invoices({ initialTab = 'Invoices' }) {
           </div>
 
           <div className="table-wrap">
-            <table className="data-table">
+            <table className="data-table" style={{ width: '100%', minWidth: '1360px', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                 <tr>
-                  <th>PAYMENT ID</th>
-                  <th>CUSTOMER</th>
-                  <th>ORDER REF</th>
-                  <th>INVOICE REF</th>
-                  <th>PAYMENT DATE</th>
-                  <th>AMOUNT PAID</th>
-                  <th>METHOD</th>
-                  <th>TRANSACTION REF</th>
-                  <th>STATUS</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>PAYMENT ID</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>CUSTOMER</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>ORDER REF</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>INVOICE REF</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>PAYMENT DATE</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>AMOUNT PAID</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>METHOD</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>TRANSACTION REF</th>
+                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>STATUS</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredPayments.length === 0 ? (
                   <tr>
-                    <td colSpan="9" style={{ textAlign: 'center', padding: '36px 16px', color: '#94a3b8' }}>
+                    <td colSpan="9" style={{ textAlign: 'center', padding: '48px 24px', color: '#94a3b8' }}>
                       <CreditCard size={36} style={{ margin: '0 auto 10px', display: 'block', opacity: 0.4 }} />
                       <strong style={{ display: 'block', color: '#475569', fontSize: '14px', marginBottom: '4px' }}>No payments recorded yet</strong>
                       <span style={{ fontSize: '12.5px' }}>Click "Record Payment" to post a remittance against an export invoice</span>
@@ -1202,62 +1278,70 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                     const status = matchedInv ? matchedInv.status : 'Paid';
 
                     return (
-                      <tr key={p._id || p.paymentId}>
-                        <td>
-                          <strong style={{ color: '#0c5a48', fontSize: '13px' }}>
+                      <tr key={p._id || p.paymentId} style={{ transition: 'background 0.15s ease' }}>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <span style={{ display: 'inline-block', padding: '4px 10px', background: '#e8f5f1', border: '1px solid #c7ece2', borderRadius: '6px', color: '#0c5a48', fontSize: '12.5px', fontWeight: 700 }}>
                             {p.paymentId || 'PAY-REF'}
-                          </strong>
+                          </span>
                         </td>
-                        <td>
-                          <strong style={{ color: '#1e1e2d', fontSize: '13px' }}>{p.customer}</strong>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <strong style={{ color: '#1e1e2d', fontSize: '13.5px' }}>{p.customer}</strong>
                         </td>
-                        <td>
-                          <span style={{ color: '#475569', fontSize: '12.5px', fontWeight: 600 }}>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <span className="order-badge" style={{ padding: '4px 10px', fontSize: '12px' }}>
                             {p.orderNo || '—'}
                           </span>
                         </td>
-                        <td>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                           <span
                             onClick={() => {
-                              if (matchedInv) setViewInvoice(matchedInv);
+                              if (matchedInv) {
+                                setViewInvoice(matchedInv);
+                                setActiveInvoiceTab('document');
+                              }
                             }}
                             style={{
+                              display: 'inline-block',
+                              padding: '4px 10px',
+                              background: '#e6f4f0',
+                              border: '1px solid #cce8e0',
+                              borderRadius: '6px',
                               color: '#0c5a48',
                               fontWeight: 700,
-                              cursor: matchedInv ? 'pointer' : 'default',
-                              textDecoration: matchedInv ? 'underline' : 'none'
+                              fontSize: '12px',
+                              cursor: matchedInv ? 'pointer' : 'default'
                             }}
                           >
                             {p.invoiceNo}
                           </span>
                         </td>
-                        <td>
-                          <span style={{ color: '#334155', fontSize: '12.5px' }}>{p.paymentDate}</span>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <span style={{ color: '#334155', fontSize: '12.5px', fontWeight: 600 }}>{p.paymentDate}</span>
                         </td>
-                        <td>
-                          <strong style={{ color: '#10b981', fontSize: '13.5px' }}>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <strong style={{ color: '#059669', fontSize: '14px', fontWeight: 700 }}>
                             {formatAmount(p.amount)}
                           </strong>
                         </td>
-                        <td>
-                          <span style={{ color: '#475569', fontSize: '12px', background: '#f1f5f9', padding: '3px 8px', borderRadius: '6px' }}>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <span style={{ color: '#475569', fontSize: '12px', background: '#f1f5f9', padding: '4px 10px', borderRadius: '6px', fontWeight: 600, border: '1px solid #e2e8f0' }}>
                             {p.paymentMethod || 'Wire Transfer'}
                           </span>
                         </td>
-                        <td>
-                          <code style={{ fontSize: '11.5px', color: '#64748b' }}>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <code className="mono-code" style={{ fontSize: '12px', padding: '3px 8px' }}>
                             {p.reference || '—'}
                           </code>
                         </td>
-                        <td>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                           <span
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '4px',
-                              padding: '3px 8px',
+                              gap: '6px',
+                              padding: '4px 12px',
                               borderRadius: '20px',
-                              fontSize: '11px',
+                              fontSize: '11.5px',
                               fontWeight: 700,
                               background: '#ecfdf5',
                               color: '#059669',
@@ -1731,194 +1815,687 @@ export default function Invoices({ initialTab = 'Invoices' }) {
       )}
 
       {/* =========================================================
-          MODAL 3: OFFICIAL EXPORT INVOICE DOCUMENT PREVIEW
+          MODAL 3: OFFICIAL EXPORT INVOICE & DETAILS MODAL
+          (Neat multi-tab architecture matching Shipments module)
           ========================================================= */}
       {viewInvoice && (
         <Modal
-          open={Boolean(viewInvoice)}
+          eyebrow="COMMERCIAL EXPORT INVOICE"
+          title={`${viewInvoice.invoiceType || 'Commercial Invoice'} ${viewInvoice.invoiceNo} — ${viewInvoice.customer}`}
           onClose={() => setViewInvoice(null)}
-          title={`${viewInvoice.invoiceType} — ${viewInvoice.invoiceNo}`}
-        >
-          <div className="document-preview invoice-document-sheet" style={{ background: '#ffffff', color: '#1e1e2d' }}>
-            {/* Document Header */}
-            <div className="doc-header" style={{ borderBottom: '2px solid #0c5a48', paddingBottom: '16px', marginBottom: '18px' }}>
-              <div className="doc-brand">
-                <Logo variant="document" width={270} />
-                <div className="doc-brand-info">
-                  <strong>Master Export Pro Inc.</strong>
-                  <br />
-                  123 Trade Center, Business Bay, New York, NY 10001, USA
-                  <br />
-                  Email: exports@masterexportpro.com | GST / Tax ID: 123456789
-                </div>
-              </div>
-              <div className="doc-meta" style={{ textAlign: 'right' }}>
+          maxWidth="840px"
+          footer={
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '12px', color: '#627b75', fontWeight: 600 }}>Payment Status:</span>
                 <span
+                  className={`badge ${
+                    viewInvoice.status === 'Paid'
+                      ? 'badge-green'
+                      : viewInvoice.status === 'Partially Paid'
+                      ? 'badge-blue'
+                      : 'badge-amber'
+                  }`}
                   style={{
-                    display: 'inline-block',
-                    padding: '4px 12px',
-                    borderRadius: '4px',
-                    background: viewInvoice.invoiceType === 'Proforma Invoice' ? '#ede9fe' : '#e6f4f0',
-                    color: viewInvoice.invoiceType === 'Proforma Invoice' ? '#6d28d9' : '#0c5a48',
-                    fontSize: '12px',
-                    fontWeight: 800,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    marginBottom: '6px'
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '4px 10px',
+                    borderRadius: '20px',
+                    fontSize: '11.5px',
+                    fontWeight: 700
                   }}
                 >
-                  {viewInvoice.invoiceType}
+                  <span
+                    style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      background:
+                        viewInvoice.status === 'Paid'
+                          ? '#10b981'
+                          : viewInvoice.status === 'Partially Paid'
+                          ? '#3b82f6'
+                          : '#f59e0b'
+                    }}
+                  />
+                  {viewInvoice.status}
                 </span>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: '#1e1e2d' }}>
-                  {viewInvoice.invoiceNo}
-                </div>
-                <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '2px' }}>
-                  Date: <strong>{viewInvoice.invoiceDate}</strong>
-                </div>
-              </div>
-            </div>
-
-            {/* Bill To & Export Logistics */}
-            <div className="doc-addresses" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', background: '#f8fafc', padding: '14px 16px', borderRadius: '10px', marginBottom: '18px' }}>
-              <div>
-                <small style={{ color: '#0c5a48', fontWeight: 700, fontSize: '11px', textTransform: 'uppercase' }}>
-                  CONSIGNEE / BUYER:
-                </small>
-                <div style={{ fontSize: '13.5px', fontWeight: 800, color: '#1e1e2d', marginTop: '2px' }}>
-                  {viewInvoice.customer}
-                </div>
-                <div style={{ fontSize: '11.5px', color: '#475569', lineHeight: 1.4, marginTop: '2px' }}>
-                  {viewInvoice.address || 'Commercial Office, International Trade Center'}<br />
-                  Contact: {viewInvoice.contactPerson || 'Purchasing Director'} • {viewInvoice.phone || '+971 50 123 4567'}
-                </div>
-              </div>
-              <div>
-                <small style={{ color: '#0c5a48', fontWeight: 700, fontSize: '11px', textTransform: 'uppercase' }}>
-                  EXPORT & DELIVERY TERMS:
-                </small>
-                <div style={{ fontSize: '12px', color: '#1e1e2d', marginTop: '4px', lineHeight: 1.6 }}>
-                  Order Ref: <strong>{viewInvoice.orderNo || '—'}</strong><br />
-                  Port of Loading: <strong>{viewInvoice.origin || 'Nhava Sheva (JNPT), Mumbai'}</strong><br />
-                  Port of Discharge: <strong>{viewInvoice.destination || 'Dubai, UAE'}</strong><br />
-                  Terms: <strong>{viewInvoice.incoterm || 'FOB'}</strong> • <strong>{viewInvoice.paymentTerms || 'Net 30'}</strong>
-                </div>
-              </div>
-            </div>
-
-            {/* Goods Table */}
-            <table className="doc-table" style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '18px' }}>
-              <thead>
-                <tr style={{ background: '#0c5a48', color: '#ffffff', textAlign: 'left', fontSize: '11.5px' }}>
-                  <th style={{ padding: '8px 10px' }}>NO</th>
-                  <th style={{ padding: '8px 10px' }}>DESCRIPTION OF EXPORT GOODS</th>
-                  <th style={{ padding: '8px 10px', textAlign: 'right' }}>QTY</th>
-                  <th style={{ padding: '8px 10px' }}>UNIT</th>
-                  <th style={{ padding: '8px 10px', textAlign: 'right' }}>RATE</th>
-                  <th style={{ padding: '8px 10px', textAlign: 'right' }}>TOTAL AMOUNT</th>
-                </tr>
-              </thead>
-              <tbody style={{ fontSize: '12px' }}>
-                {(viewInvoice.items || []).map((it, idx) => (
-                  <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '10px 10px' }}>{idx + 1}</td>
-                    <td style={{ padding: '10px 10px' }}>
-                      <strong style={{ color: '#1e1e2d', display: 'block' }}>{it.name}</strong>
-                      <small style={{ color: '#64748b' }}>{it.description || 'Export grade standard seaworthy packing'}</small>
-                    </td>
-                    <td style={{ padding: '10px 10px', textAlign: 'right' }}>{it.quantity}</td>
-                    <td style={{ padding: '10px 10px' }}>{it.unit || 'MT'}</td>
-                    <td style={{ padding: '10px 10px', textAlign: 'right' }}>{formatAmount(it.unitPrice)}</td>
-                    <td style={{ padding: '10px 10px', textAlign: 'right', fontWeight: 700, color: '#1e1e2d' }}>
-                      {formatAmount(it.total)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Financial Summary */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
-              {/* Bank Remittance Details */}
-              <div style={{ flex: '1', minWidth: '240px', background: '#f8fafc', padding: '12px 14px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '11.5px', color: '#475569' }}>
-                <strong style={{ color: '#0c5a48', display: 'block', marginBottom: '4px' }}>
-                  BANK WIRE REMITTANCE INSTRUCTIONS:
-                </strong>
-                Bank: <strong>State Bank of India (Overseas Commercial)</strong><br />
-                Account: <strong>984012948102</strong> • Swift/BIC: <strong>SBININBBXXX</strong><br />
-                Branch: <strong>Commercial Branch, Nariman Point, Mumbai, India</strong>
-              </div>
-
-              {/* Totals Calculation */}
-              <div style={{ width: '280px', fontSize: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', color: '#64748b' }}>
-                  <span>FOB Goods Subtotal:</span>
-                  <strong style={{ color: '#1e1e2d' }}>{formatAmount(viewInvoice.subtotal || viewInvoice.totalAmount)}</strong>
-                </div>
-                {viewInvoice.shippingCharges > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', color: '#64748b' }}>
-                    <span>Freight / Shipping Charges:</span>
-                    <strong style={{ color: '#1e1e2d' }}>{formatAmount(viewInvoice.shippingCharges)}</strong>
-                  </div>
+                {viewInvoice.remainingBalance > 0 && (
+                  <span style={{ fontSize: '11.5px', color: '#e11d48', fontWeight: 600 }}>
+                    (Due: {formatAmount(viewInvoice.remainingBalance)})
+                  </span>
                 )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderTop: '2px solid #0c5a48', borderBottom: '1px solid #e2e8f0', marginTop: '6px' }}>
-                  <strong style={{ fontSize: '14px', color: '#0c5a48' }}>TOTAL INVOICE VALUE:</strong>
-                  <strong style={{ fontSize: '15px', color: '#0c5a48' }}>{formatAmount(viewInvoice.totalAmount)}</strong>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {viewInvoice.status !== 'Paid' && (
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={() => {
+                      const inv = viewInvoice;
+                      setViewInvoice(null);
+                      handleOpenPaymentModal(inv);
+                    }}
+                  >
+                    <CreditCard size={14} style={{ marginRight: '6px' }} />
+                    Record Payment
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => window.print()}
+                >
+                  <Printer size={14} style={{ marginRight: '6px' }} />
+                  Print / Save PDF
+                </button>
+                <button
+                  type="button"
+                  className="primary"
+                  onClick={() => setViewInvoice(null)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          }
+        >
+          {/* Top Primary Summary Card (Immediate high-priority data without scrolling) */}
+          <div
+            style={{
+              background: '#f8fafc',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0',
+              padding: '14px 18px',
+              marginBottom: '16px'
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                flexWrap: 'wrap',
+                gap: '12px',
+                marginBottom: '12px'
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span
+                    style={{
+                      background: '#0c5a48',
+                      color: '#ffffff',
+                      fontWeight: 800,
+                      fontSize: '13px',
+                      padding: '3px 10px',
+                      borderRadius: '6px'
+                    }}
+                  >
+                    {viewInvoice.invoiceNo}
+                  </span>
+                  <span className="order-badge" style={{ padding: '3px 8px', fontSize: '12px' }}>
+                    Order: {viewInvoice.orderNo || 'SO-1024'}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '11.5px',
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      background: viewInvoice.invoiceType === 'Proforma Invoice' ? '#ede9fe' : '#e6f4f0',
+                      color: viewInvoice.invoiceType === 'Proforma Invoice' ? '#6d28d9' : '#0c5a48',
+                      border: viewInvoice.invoiceType === 'Proforma Invoice' ? '1px solid #ddd6fe' : '1px solid #bbf7d0'
+                    }}
+                  >
+                    {viewInvoice.invoiceType || 'Commercial Invoice'}
+                  </span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', color: '#10b981', marginTop: '4px' }}>
-                  <span>Amount Paid / Settled:</span>
-                  <strong>{formatAmount(viewInvoice.amountPaid || 0)}</strong>
+                <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#1e1e2d', marginTop: '6px' }}>
+                  {viewInvoice.customer}
+                  <span style={{ fontSize: '12px', fontWeight: 500, color: '#64748b', marginLeft: '8px' }}>
+                    • Port: {viewInvoice.destination || 'Dubai, UAE'}
+                  </span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', color: viewInvoice.remainingBalance > 0 ? '#ef4444' : '#64748b' }}>
-                  <span>Remaining Balance Due:</span>
-                  <strong>{formatAmount(viewInvoice.remainingBalance || 0)}</strong>
+              </div>
+
+              {/* Financial snapshot */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', textAlign: 'right' }}>
+                <div>
+                  <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Total Value
+                  </div>
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#1e1e2d' }}>
+                    {formatAmount(viewInvoice.totalAmount)}
+                  </div>
+                </div>
+                <div style={{ width: '1px', height: '28px', background: '#cbd5e1' }} />
+                <div>
+                  <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Paid
+                  </div>
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#059669' }}>
+                    {formatAmount(viewInvoice.amountPaid || 0)}
+                  </div>
+                </div>
+                <div style={{ width: '1px', height: '28px', background: '#cbd5e1' }} />
+                <div>
+                  <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Balance Due
+                  </div>
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: viewInvoice.remainingBalance > 0 ? '#e11d48' : '#059669' }}>
+                    {formatAmount(viewInvoice.remainingBalance || 0)}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Signature Block */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid #e2e8f0', paddingTop: '16px', marginTop: '20px' }}>
-              <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                This is a computer generated export document issued by Master Export Pro.
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ width: '160px', borderBottom: '1px solid #0c5a48', marginBottom: '6px' }} />
-                <strong style={{ fontSize: '11.5px', color: '#1e1e2d', display: 'block' }}>
-                  For Master Export Pro India Pvt Ltd
-                </strong>
-                <small style={{ fontSize: '10.5px', color: '#64748b' }}>Authorized Signatory & Seal</small>
-              </div>
-            </div>
+            {/* Payment Progress Bar */}
+            {(() => {
+              const pct = Math.min(100, Math.round(((viewInvoice.amountPaid || 0) / (viewInvoice.totalAmount || 1)) * 100));
+              return (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>
+                    <span>Payment Realization ({pct}% Settled)</span>
+                    <span>Terms: <strong>{viewInvoice.paymentTerms || 'Net 30'}</strong> (Due: {viewInvoice.dueDate || 'Upon Receipt'})</span>
+                  </div>
+                  <div style={{ width: '100%', height: '7px', background: '#e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        height: '100%',
+                        width: `${pct}%`,
+                        background: viewInvoice.status === 'Paid'
+                          ? 'linear-gradient(90deg, #10b981, #059669)'
+                          : 'linear-gradient(90deg, #0ea5e9, #2563eb)',
+                        borderRadius: '10px',
+                        transition: 'width 0.4s ease'
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
-          <div className="modal-foot">
+          {/* Sub-Navigation Tabs Bar */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              borderBottom: '1px solid #e2e8f0',
+              paddingBottom: '10px',
+              marginBottom: '16px',
+              overflowX: 'auto'
+            }}
+          >
             <button
               type="button"
-              className="secondary"
-              onClick={() => setViewInvoice(null)}
+              className={`invoice-tab-btn ${activeInvoiceTab === 'document' ? 'active' : ''}`}
+              onClick={() => setActiveInvoiceTab('document')}
             >
-              Close
+              <FileText size={14} /> Official Invoice
             </button>
-            {viewInvoice.status !== 'Paid' && (
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => {
-                  const inv = viewInvoice;
-                  setViewInvoice(null);
-                  handleOpenPaymentModal(inv);
+            <button
+              type="button"
+              className={`invoice-tab-btn ${activeInvoiceTab === 'overview' ? 'active' : ''}`}
+              onClick={() => setActiveInvoiceTab('overview')}
+            >
+              <Layers size={14} /> Overview & Terms
+            </button>
+            <button
+              type="button"
+              className={`invoice-tab-btn ${activeInvoiceTab === 'items' ? 'active' : ''}`}
+              onClick={() => setActiveInvoiceTab('items')}
+            >
+              <Package size={14} /> Goods & Items ({viewInvoice.items?.length || 0})
+            </button>
+            <button
+              type="button"
+              className={`invoice-tab-btn ${activeInvoiceTab === 'payments' ? 'active' : ''}`}
+              onClick={() => setActiveInvoiceTab('payments')}
+            >
+              <CreditCard size={14} /> Payments & Remittance
+            </button>
+          </div>
+
+          {/* TAB 1: OFFICIAL PRINTABLE INVOICE DOCUMENT */}
+          {activeInvoiceTab === 'document' && (
+            <div className="document-preview invoice-document-sheet" style={{ background: '#ffffff', color: '#1e1e2d', padding: '0' }}>
+              {/* Document Header */}
+              <div
+                className="doc-header"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  flexWrap: 'wrap',
+                  gap: '16px',
+                  borderBottom: '2px solid #0c5a48',
+                  paddingBottom: '16px',
+                  marginBottom: '18px'
                 }}
               >
-                <CreditCard size={15} /> Record Payment
-              </button>
-            )}
-            <button
-              type="button"
-              className="primary"
-              onClick={() => window.print()}
-            >
-              <Printer size={15} /> Print / Save PDF
-            </button>
-          </div>
+                <div className="doc-brand" style={{ flex: '1 1 320px', maxWidth: '380px' }}>
+                  <Logo variant="document" width={200} />
+                  <div className="doc-brand-info" style={{ marginTop: '8px', fontSize: '11px', color: '#627b75', lineHeight: '1.5' }}>
+                    <strong>Master Export Pro Inc.</strong>
+                    <br />
+                    123 Trade Center, Business Bay, New York, NY 10001, USA
+                    <br />
+                    Email: exports@masterexportpro.com | GST / Tax ID: 123456789
+                  </div>
+                </div>
+                <div className="doc-meta" style={{ textAlign: 'right', flex: '0 0 auto' }}>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      padding: '4px 12px',
+                      borderRadius: '4px',
+                      background: viewInvoice.invoiceType === 'Proforma Invoice' ? '#ede9fe' : '#e6f4f0',
+                      color: viewInvoice.invoiceType === 'Proforma Invoice' ? '#6d28d9' : '#0c5a48',
+                      fontSize: '12px',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      marginBottom: '6px'
+                    }}
+                  >
+                    {viewInvoice.invoiceType || 'Commercial Invoice'}
+                  </span>
+                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#1e1e2d' }}>
+                    {viewInvoice.invoiceNo}
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '2px' }}>
+                    Date: <strong style={{ color: '#1e1e2d' }}>{viewInvoice.invoiceDate}</strong>
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '2px' }}>
+                    Due: <strong style={{ color: '#1e1e2d' }}>{viewInvoice.dueDate || 'Upon Receipt'}</strong>
+                  </div>
+                  <div style={{ marginTop: '4px' }}>
+                    <Status>{viewInvoice.status}</Status>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bill To & Export Logistics */}
+              <div
+                className="doc-addresses"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                  gap: '16px',
+                  background: '#f8fafc',
+                  padding: '14px 16px',
+                  borderRadius: '10px',
+                  border: '1px solid #e2e8f0',
+                  marginBottom: '18px'
+                }}
+              >
+                <div>
+                  <small style={{ color: '#0c5a48', fontWeight: 700, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    CONSIGNEE / BUYER:
+                  </small>
+                  <div style={{ fontSize: '13.5px', fontWeight: 800, color: '#1e1e2d', marginTop: '3px' }}>
+                    {viewInvoice.customer}
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#475569', lineHeight: 1.4, marginTop: '2px' }}>
+                    {viewInvoice.address || 'Commercial Office, International Trade Center'}<br />
+                    Contact: <strong>{viewInvoice.contactPerson || 'Purchasing Director'}</strong> • {viewInvoice.phone || '+971 50 123 4567'}
+                  </div>
+                </div>
+                <div>
+                  <small style={{ color: '#0c5a48', fontWeight: 700, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    EXPORT & DELIVERY TERMS:
+                  </small>
+                  <div style={{ fontSize: '12px', color: '#1e1e2d', marginTop: '4px', lineHeight: 1.6 }}>
+                    Order Ref: <strong>{viewInvoice.orderNo || '—'}</strong><br />
+                    Port of Loading: <strong>{viewInvoice.origin || 'Nhava Sheva (JNPT), Mumbai, India'}</strong><br />
+                    Port of Discharge: <strong>{viewInvoice.destination || 'Dubai, UAE'}</strong><br />
+                    Terms: <strong>{viewInvoice.incoterm || 'FOB'}</strong> • <strong>{viewInvoice.paymentTerms || 'Net 30'}</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Goods Table */}
+              <div style={{ overflowX: 'auto', marginBottom: '18px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <table className="doc-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <thead>
+                    <tr style={{ background: '#0c5a48', color: '#ffffff', fontSize: '11.5px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      <th style={{ padding: '9px 12px', width: '45px' }}>NO</th>
+                      <th style={{ padding: '9px 12px' }}>DESCRIPTION OF EXPORT GOODS</th>
+                      <th style={{ padding: '9px 12px', textAlign: 'right', width: '80px' }}>QTY</th>
+                      <th style={{ padding: '9px 12px', width: '70px' }}>UNIT</th>
+                      <th style={{ padding: '9px 12px', textAlign: 'right', width: '110px' }}>RATE</th>
+                      <th style={{ padding: '9px 12px', textAlign: 'right', width: '130px' }}>TOTAL AMOUNT</th>
+                    </tr>
+                  </thead>
+                  <tbody style={{ fontSize: '12px' }}>
+                    {(viewInvoice.items || []).map((it, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid #edf2f7', background: idx % 2 === 0 ? '#ffffff' : '#fcfdfd' }}>
+                        <td style={{ padding: '10px 12px', color: '#64748b' }}>{idx + 1}</td>
+                        <td style={{ padding: '10px 12px' }}>
+                          <strong style={{ color: '#1e1e2d', display: 'block', fontSize: '12.5px' }}>{it.name}</strong>
+                          <small style={{ color: '#64748b', fontSize: '11px' }}>{it.description || 'Export grade standard seaworthy packing'}</small>
+                        </td>
+                        <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>{it.quantity}</td>
+                        <td style={{ padding: '10px 12px', color: '#64748b' }}>{it.unit || 'PCS'}</td>
+                        <td style={{ padding: '10px 12px', textAlign: 'right', color: '#475569' }}>{formatAmount(it.unitPrice)}</td>
+                        <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#0c5a48' }}>
+                          {formatAmount(it.total)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Financial Summary */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
+                {/* Bank Remittance Details */}
+                <div style={{ flex: '1 1 300px', background: '#f8fafc', padding: '12px 14px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '11.5px', color: '#475569', lineHeight: 1.6 }}>
+                  <strong style={{ color: '#0c5a48', display: 'block', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    BANK WIRE REMITTANCE INSTRUCTIONS:
+                  </strong>
+                  Beneficiary: <strong>Master Export Pro Inc.</strong><br />
+                  Bank: <strong>State Bank of India (Overseas Commercial)</strong><br />
+                  Account: <strong>984012948102</strong> • Swift/BIC: <strong>SBININBBXXX</strong><br />
+                  Branch: <strong>Commercial Branch, Nariman Point, Mumbai, India</strong>
+                </div>
+
+                {/* Totals Calculation */}
+                <div style={{ width: '280px', fontSize: '12px', background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', color: '#64748b' }}>
+                    <span>FOB Goods Subtotal:</span>
+                    <strong style={{ color: '#1e1e2d' }}>{formatAmount(viewInvoice.subtotal || viewInvoice.totalAmount)}</strong>
+                  </div>
+                  {viewInvoice.shippingCharges > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', color: '#64748b' }}>
+                      <span>Freight / Shipping Charges:</span>
+                      <strong style={{ color: '#1e1e2d' }}>{formatAmount(viewInvoice.shippingCharges)}</strong>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderTop: '2px solid #0c5a48', borderBottom: '1px solid #e2e8f0', marginTop: '6px' }}>
+                    <strong style={{ fontSize: '13px', color: '#0c5a48' }}>TOTAL INVOICE VALUE:</strong>
+                    <strong style={{ fontSize: '14.5px', color: '#0c5a48' }}>{formatAmount(viewInvoice.totalAmount)}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', color: '#059669', marginTop: '4px' }}>
+                    <span>Amount Paid / Settled:</span>
+                    <strong>{formatAmount(viewInvoice.amountPaid || 0)}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', color: viewInvoice.remainingBalance > 0 ? '#ef4444' : '#059669' }}>
+                    <span>Remaining Balance Due:</span>
+                    <strong>{formatAmount(viewInvoice.remainingBalance || 0)}</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Signature Block */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid #e2e8f0', paddingTop: '16px', marginTop: '16px' }}>
+                <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                  This is an authentic computer generated export commercial invoice issued by Master Export Pro Inc.
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ width: '160px', borderBottom: '1px solid #0c5a48', marginBottom: '6px' }} />
+                  <strong style={{ fontSize: '11.5px', color: '#1e1e2d', display: 'block' }}>
+                    For Master Export Pro Inc.
+                  </strong>
+                  <small style={{ fontSize: '10.5px', color: '#64748b' }}>Authorized Signatory & Seal</small>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: OVERVIEW & COMMERCIAL TERMS */}
+          {activeInvoiceTab === 'overview' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Route Visualizer Card */}
+              <div style={{ background: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', padding: '16px 20px' }}>
+                <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#64748b', fontWeight: 700, marginBottom: '12px' }}>
+                  Export Logistics Route
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                  <div style={{ flex: '1 1 200px' }}>
+                    <div style={{ fontSize: '11px', color: '#64748b' }}>PORT OF LOADING (ORIGIN)</div>
+                    <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#1e1e2d', marginTop: '2px' }}>
+                      {viewInvoice.origin || 'Nhava Sheva (JNPT), Mumbai, India'}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', background: '#e6f4f0', borderRadius: '20px', color: '#0c5a48', fontWeight: 700, fontSize: '12px' }}>
+                    <span>{viewInvoice.incoterm || 'FOB'} Terms</span>
+                    <ArrowRight size={14} />
+                  </div>
+                  <div style={{ flex: '1 1 200px', textAlign: 'right' }}>
+                    <div style={{ fontSize: '11px', color: '#64748b' }}>PORT OF DISCHARGE (DESTINATION)</div>
+                    <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#1e1e2d', marginTop: '2px' }}>
+                      {viewInvoice.destination || 'Dubai, UAE'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2-Column Info Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+                {/* Commercial Terms */}
+                <div style={{ background: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', padding: '14px 16px' }}>
+                  <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#64748b', fontWeight: 700, marginBottom: '10px' }}>
+                    Commercial Terms
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', rowGap: '8px', fontSize: '12.5px' }}>
+                    <span style={{ color: '#64748b' }}>Sales Order:</span>
+                    <strong>{viewInvoice.orderNo || 'SO-1024'}</strong>
+
+                    <span style={{ color: '#64748b' }}>Invoice Type:</span>
+                    <span>{viewInvoice.invoiceType || 'Commercial Invoice'}</span>
+
+                    <span style={{ color: '#64748b' }}>Incoterm:</span>
+                    <strong style={{ color: '#0c5a48' }}>{viewInvoice.incoterm || 'FOB'}</strong>
+
+                    <span style={{ color: '#64748b' }}>Payment Terms:</span>
+                    <strong>{viewInvoice.paymentTerms || 'Net 30'}</strong>
+
+                    <span style={{ color: '#64748b' }}>Currency:</span>
+                    <span>{viewInvoice.currency || 'USD'} ($)</span>
+
+                    <span style={{ color: '#64748b' }}>Due Date:</span>
+                    <strong>{viewInvoice.dueDate || 'Upon Receipt'}</strong>
+                  </div>
+                </div>
+
+                {/* Consignee / Buyer Info */}
+                <div style={{ background: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', padding: '14px 16px' }}>
+                  <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#64748b', fontWeight: 700, marginBottom: '10px' }}>
+                    Consignee Details
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', rowGap: '8px', fontSize: '12.5px' }}>
+                    <span style={{ color: '#64748b' }}>Client:</span>
+                    <strong>{viewInvoice.customer}</strong>
+
+                    <span style={{ color: '#64748b' }}>Contact:</span>
+                    <span>{viewInvoice.contactPerson || 'Purchasing Director'}</span>
+
+                    <span style={{ color: '#64748b' }}>Phone:</span>
+                    <span>{viewInvoice.phone || '+971 50 123 4567'}</span>
+
+                    <span style={{ color: '#64748b' }}>Email:</span>
+                    <span>{viewInvoice.email || 'purchasing@client.com'}</span>
+
+                    <span style={{ color: '#64748b' }}>Address:</span>
+                    <span style={{ fontSize: '11.5px', color: '#475569' }}>{viewInvoice.address || 'Commercial Office, International Trade Center'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes */}
+              {viewInvoice.notes && (
+                <div style={{ background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', padding: '12px 14px', fontSize: '12px', color: '#475569' }}>
+                  <strong style={{ color: '#0c5a48', display: 'block', marginBottom: '3px' }}>Export Special Instructions / Notes:</strong>
+                  {viewInvoice.notes}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: GOODS & LINE ITEMS */}
+          {activeInvoiceTab === 'items' && (
+            <div style={{ background: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+              <div style={{ padding: '14px 18px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: 700, color: '#1e1e2d' }}>
+                  Export Consignment Line Items
+                </h4>
+                <span style={{ fontSize: '12px', color: '#64748b' }}>
+                  {viewInvoice.items?.length || 0} product lines specified
+                </span>
+              </div>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12.5px' }}>
+                  <thead>
+                    <tr style={{ background: '#f8fafc', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      <th style={{ padding: '10px 14px' }}>NO</th>
+                      <th style={{ padding: '10px 14px' }}>PRODUCT DESCRIPTION & PACKING</th>
+                      <th style={{ padding: '10px 14px', textAlign: 'right' }}>QUANTITY</th>
+                      <th style={{ padding: '10px 14px' }}>UNIT</th>
+                      <th style={{ padding: '10px 14px', textAlign: 'right' }}>UNIT RATE</th>
+                      <th style={{ padding: '10px 14px', textAlign: 'right' }}>TOTAL VALUE</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(viewInvoice.items || []).map((it, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '12px 14px', color: '#94a3b8' }}>{idx + 1}</td>
+                        <td style={{ padding: '12px 14px' }}>
+                          <strong style={{ color: '#1e1e2d', display: 'block' }}>{it.name}</strong>
+                          <span style={{ color: '#64748b', fontSize: '11.5px' }}>{it.description || 'Export grade seaworthy packaging'}</span>
+                        </td>
+                        <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 600 }}>{it.quantity}</td>
+                        <td style={{ padding: '12px 14px', color: '#64748b' }}>{it.unit || 'PCS'}</td>
+                        <td style={{ padding: '12px 14px', textAlign: 'right', color: '#475569' }}>{formatAmount(it.unitPrice)}</td>
+                        <td style={{ padding: '12px 14px', textAlign: 'right', fontWeight: 700, color: '#0c5a48' }}>
+                          {formatAmount(it.total)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ background: '#f8fafc', borderTop: '2px solid #e2e8f0', fontWeight: 700 }}>
+                      <td colSpan={5} style={{ padding: '12px 14px', textAlign: 'right', color: '#475569' }}>
+                        Total Goods Value:
+                      </td>
+                      <td style={{ padding: '12px 14px', textAlign: 'right', color: '#0c5a48', fontSize: '14px' }}>
+                        {formatAmount(viewInvoice.subtotal || viewInvoice.totalAmount)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: PAYMENTS & REMITTANCE */}
+          {activeInvoiceTab === 'payments' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Bank Wire Details Box */}
+              <div style={{ background: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', padding: '16px 18px' }}>
+                <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#0c5a48', fontWeight: 700, marginBottom: '8px' }}>
+                  Bank Wire Remittance Instructions
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', fontSize: '12.5px' }}>
+                  <div>
+                    <span style={{ color: '#64748b', fontSize: '11px' }}>BENEFICIARY:</span>
+                    <strong style={{ display: 'block', color: '#1e1e2d' }}>Master Export Pro Inc.</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: '#64748b', fontSize: '11px' }}>BANK NAME:</span>
+                    <strong style={{ display: 'block', color: '#1e1e2d' }}>State Bank of India (Overseas Commercial)</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: '#64748b', fontSize: '11px' }}>ACCOUNT NO / IBAN:</span>
+                    <strong style={{ display: 'block', color: '#1e1e2d' }}>984012948102</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: '#64748b', fontSize: '11px' }}>SWIFT / BIC CODE:</span>
+                    <strong style={{ display: 'block', color: '#0c5a48' }}>SBININBBXXX</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payments Ledger for this Invoice */}
+              <div style={{ background: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                <div style={{ padding: '12px 18px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#1e1e2d' }}>
+                    Payment Transaction History
+                  </h4>
+                  {viewInvoice.status !== 'Paid' && (
+                    <button
+                      type="button"
+                      className="primary"
+                      style={{ fontSize: '11.5px', padding: '5px 12px' }}
+                      onClick={() => {
+                        const inv = viewInvoice;
+                        setViewInvoice(null);
+                        handleOpenPaymentModal(inv);
+                      }}
+                    >
+                      <CreditCard size={13} style={{ marginRight: '5px' }} />
+                      Record Payment
+                    </button>
+                  )}
+                </div>
+
+                {(() => {
+                  const matchedPayments = payments.filter((p) => p.invoiceNo === viewInvoice.invoiceNo);
+                  if (matchedPayments.length === 0) {
+                    return (
+                      <div style={{ padding: '32px 20px', textAlign: 'center', color: '#94a3b8' }}>
+                        <Clock size={28} style={{ margin: '0 auto 8px', display: 'block', opacity: 0.5 }} />
+                        <strong style={{ display: 'block', color: '#475569', fontSize: '13.5px', marginBottom: '3px' }}>
+                          No payments recorded yet
+                        </strong>
+                        <span style={{ fontSize: '12px' }}>
+                          Total outstanding balance of {formatAmount(viewInvoice.remainingBalance || viewInvoice.totalAmount)} is pending settlement.
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12.5px' }}>
+                        <thead>
+                          <tr style={{ background: '#f8fafc', color: '#475569', fontSize: '11px', textTransform: 'uppercase' }}>
+                            <th style={{ padding: '9px 14px' }}>PAYMENT ID</th>
+                            <th style={{ padding: '9px 14px' }}>DATE</th>
+                            <th style={{ padding: '9px 14px' }}>METHOD</th>
+                            <th style={{ padding: '9px 14px' }}>REFERENCE</th>
+                            <th style={{ padding: '9px 14px', textAlign: 'right' }}>AMOUNT</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {matchedPayments.map((p) => (
+                            <tr key={p._id || p.paymentId} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                              <td style={{ padding: '10px 14px', fontWeight: 700, color: '#0c5a48' }}>{p.paymentId}</td>
+                              <td style={{ padding: '10px 14px', color: '#64748b' }}>{p.paymentDate}</td>
+                              <td style={{ padding: '10px 14px' }}>{p.paymentMethod}</td>
+                              <td style={{ padding: '10px 14px' }}>
+                                <span className="mono-code" style={{ fontSize: '11px', padding: '2px 6px', background: '#f1f5f9', borderRadius: '4px' }}>
+                                  {p.reference || '—'}
+                                </span>
+                              </td>
+                              <td style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 700, color: '#059669' }}>
+                                {formatAmount(p.amount)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
         </Modal>
       )}
     </div>

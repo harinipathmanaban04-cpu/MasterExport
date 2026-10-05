@@ -511,29 +511,29 @@ export default function Shipments() {
         </div>
 
         <div className="table-wrap" style={{ overflowX: 'auto', width: '100%' }}>
-          <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <table className="data-table" style={{ width: '100%', minWidth: '1680px', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr>
-                <th style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>SHIPMENT NO.</th>
-                <th style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>ORDER</th>
-                <th style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>CUSTOMER</th>
-                <th style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>ORIGIN</th>
-                <th style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>DESTINATION</th>
-                <th style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>MODE</th>
-                <th style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>CONTAINER NO.</th>
-                <th style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>CARRIER</th>
-                <th style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>ETD</th>
-                <th style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>ETA</th>
-                <th style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>TRACKING NO.</th>
-                <th style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>DOCUMENTS</th>
-                <th style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>STATUS</th>
-                <th style={{ padding: '12px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>ACTIONS</th>
+                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>SHIPMENT NO.</th>
+                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>ORDER</th>
+                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>CUSTOMER</th>
+                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>ORIGIN</th>
+                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>DESTINATION</th>
+                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>MODE</th>
+                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>CONTAINER NO.</th>
+                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>CARRIER</th>
+                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>ETD</th>
+                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>ETA</th>
+                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>TRACKING NO.</th>
+                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>DOCUMENTS</th>
+                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>STATUS</th>
+                <th style={{ padding: '16px 26px', textAlign: 'right', whiteSpace: 'nowrap' }}>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={14} style={{ padding: '48px 20px', textAlign: 'center' }}>
+                  <td colSpan={14} style={{ padding: '48px 24px', textAlign: 'center' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                       <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#e8f5f1', display: 'grid', placeItems: 'center', color: '#0c5a48' }}>
                         <Ship size={24} />
@@ -565,32 +565,32 @@ export default function Shipments() {
                     style={{ cursor: 'pointer', transition: 'background 0.15s ease' }}
                   >
                     {/* 1. Shipment Number */}
-                    <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <span className="shipment-id-badge">{row.shipmentNo}</span>
                     </td>
 
                     {/* 2. Order */}
-                    <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <span className="order-badge">{row.orderNo || 'SO-1024'}</span>
                     </td>
 
                     {/* 3. Customer */}
-                    <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <span className="customer-cell-name">{row.customer || 'Consignee Client'}</span>
                     </td>
 
                     {/* 4. Origin */}
-                    <td style={{ padding: '12px 14px' }}>
+                    <td style={{ padding: '20px 26px', verticalAlign: 'middle' }}>
                       <span className="port-cell" title={row.origin}>{row.origin || 'Origin Port'}</span>
                     </td>
 
                     {/* 5. Destination */}
-                    <td style={{ padding: '12px 14px' }}>
+                    <td style={{ padding: '20px 26px', verticalAlign: 'middle' }}>
                       <span className="port-cell" title={row.destination}>{row.destination || 'Destination Port'}</span>
                     </td>
 
                     {/* 6. Transport Mode */}
-                    <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <span className={`mode-badge ${(row.transportMode || 'sea').toLowerCase()}`}>
                         {renderModeIcon(row.transportMode, 13)}
                         <span>{row.transportMode || 'Sea'}</span>
@@ -598,32 +598,32 @@ export default function Shipments() {
                     </td>
 
                     {/* 7. Container Number */}
-                    <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <code className="mono-code">{row.containerNo || 'N/A'}</code>
                     </td>
 
                     {/* 8. Carrier */}
-                    <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <span className="carrier-name">{row.carrier || 'Carrier'}</span>
                     </td>
 
                     {/* 9. ETD */}
-                    <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <span className="date-cell">{row.etd || 'TBD'}</span>
                     </td>
 
                     {/* 10. ETA */}
-                    <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <span className="date-cell eta-highlight">{row.eta || 'TBD'}</span>
                     </td>
 
                     {/* 11. Tracking Number */}
-                    <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <code className="mono-code">{row.trackingNo || 'N/A'}</code>
                     </td>
 
                     {/* 12. Documents */}
-                    <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }} onClick={(e) => { e.stopPropagation(); setViewShipment(row); }}>
+                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }} onClick={(e) => { e.stopPropagation(); setViewShipment(row); }}>
                       <span className="doc-badge" title={row.docs?.join(', ') || 'View Documents'}>
                         <FileText size={12} />
                         <span>{row.docs?.length || 0} Docs</span>
@@ -631,13 +631,13 @@ export default function Shipments() {
                     </td>
 
                     {/* Status */}
-                    <td style={{ padding: '12px 14px', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <Status>{row.status}</Status>
                     </td>
 
                     {/* Actions */}
-                    <td style={{ padding: '12px 14px', textAlign: 'right', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <td style={{ padding: '20px 26px', textAlign: 'right', whiteSpace: 'nowrap', verticalAlign: 'middle' }} onClick={(e) => e.stopPropagation()}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                         {/* Track / Details Button */}
                         <button
                           type="button"
@@ -649,8 +649,8 @@ export default function Shipments() {
                           <span>Track</span>
                         </button>
 
-                        {/* Quick Advance Button (if not yet delivered) */}
-                        {row.status !== 'Delivered' && (
+                        {/* Quick Advance Button (if not yet delivered) or Done indicator */}
+                        {row.status !== 'Delivered' ? (
                           <button
                             type="button"
                             className="pro-next-btn"
@@ -659,6 +659,23 @@ export default function Shipments() {
                           >
                             <span>Next</span>
                             <ArrowRight size={11} />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="pro-next-btn"
+                            disabled
+                            style={{
+                              background: '#f8fafc',
+                              color: '#059669',
+                              borderColor: '#e2e8f0',
+                              cursor: 'default',
+                              opacity: 0.85
+                            }}
+                            title="Shipment Delivered & Concluded"
+                          >
+                            <span>Done</span>
+                            <CheckCircle2 size={11} />
                           </button>
                         )}
 
@@ -768,140 +785,140 @@ export default function Shipments() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               {/* Visual Tracking Stepper: Preparing -> Customs -> Shipped -> In Transit -> Delivered */}
-            <div>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#627b75', fontWeight: 700, marginBottom: '8px' }}>
-                DELIVERY STATUS PIPELINE
-              </div>
-              <div className="workflow-stepper" style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
-                {SHIPMENT_STAGES.map((stg, i) => {
-                  const cur = SHIPMENT_STAGES.indexOf(viewShipment.status);
-                  const isPassed = cur >= 0 && i < cur;
-                  const isActive = cur >= 0 && i === cur;
-                  return (
-                    <React.Fragment key={stg}>
-                      <div className={`step-item ${isActive ? 'active' : isPassed ? 'passed' : ''}`} style={{ flex: 1, justifyContent: 'center' }}>
-                        <div
-                          className="step-circle"
-                          style={{
-                            width: '30px',
-                            height: '30px',
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            borderRadius: '50%',
-                            display: 'grid',
-                            placeItems: 'center',
-                            background: isPassed ? '#10b981' : isActive ? '#0c5a48' : '#e2e8f0',
-                            color: isPassed || isActive ? '#ffffff' : '#64748b'
-                          }}
-                        >
-                          {isPassed ? '✓' : i + 1}
+              <div>
+                <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#627b75', fontWeight: 700, marginBottom: '8px' }}>
+                  DELIVERY STATUS PIPELINE
+                </div>
+                <div className="workflow-stepper" style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
+                  {SHIPMENT_STAGES.map((stg, i) => {
+                    const cur = SHIPMENT_STAGES.indexOf(viewShipment.status);
+                    const isPassed = cur >= 0 && i < cur;
+                    const isActive = cur >= 0 && i === cur;
+                    return (
+                      <React.Fragment key={stg}>
+                        <div className={`step-item ${isActive ? 'active' : isPassed ? 'passed' : ''}`} style={{ flex: 1, justifyContent: 'center' }}>
+                          <div
+                            className="step-circle"
+                            style={{
+                              width: '30px',
+                              height: '30px',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              borderRadius: '50%',
+                              display: 'grid',
+                              placeItems: 'center',
+                              background: isPassed ? '#10b981' : isActive ? '#0c5a48' : '#e2e8f0',
+                              color: isPassed || isActive ? '#ffffff' : '#64748b'
+                            }}
+                          >
+                            {isPassed ? '✓' : i + 1}
+                          </div>
+                          <span className="step-label" style={{ fontSize: '11.5px', marginTop: '4px', fontWeight: isActive ? 700 : 500 }}>
+                            {stg}
+                          </span>
                         </div>
-                        <span className="step-label" style={{ fontSize: '11.5px', marginTop: '4px', fontWeight: isActive ? 700 : 500 }}>
-                          {stg}
-                        </span>
-                      </div>
-                      {i < SHIPMENT_STAGES.length - 1 && (
-                        <div
-                          className={`step-divider ${isPassed ? 'passed' : ''}`}
-                          style={{ height: '2px', background: isPassed ? '#10b981' : '#e2e8f0', flex: 1, margin: '0 4px' }}
-                        />
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Information Grid: Strictly Required Fields */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
-              {/* Card 1: Order & Customer Information */}
-              <div style={{ background: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', padding: '14px 16px' }}>
-                <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#64748b', fontWeight: 700, marginBottom: '10px' }}>
-                  Delivery & Order Details
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', rowGap: '8px', fontSize: '13px' }}>
-                  <span style={{ color: '#64748b' }}>Shipment Number:</span>
-                  <strong style={{ color: '#0c5a48' }}>{viewShipment.shipmentNo}</strong>
-
-                  <span style={{ color: '#64748b' }}>Sales Order:</span>
-                  <strong>{viewShipment.orderNo}</strong>
-
-                  <span style={{ color: '#64748b' }}>Customer:</span>
-                  <strong>{viewShipment.customer}</strong>
-
-                  <span style={{ color: '#64748b' }}>Transport Mode:</span>
-                  <span>{viewShipment.transportMode} Freight</span>
-
-                  <span style={{ color: '#64748b' }}>Carrier:</span>
-                  <strong>{viewShipment.carrier || 'Carrier'}</strong>
-
-                  <span style={{ color: '#64748b' }}>Current Status:</span>
-                  <Status>{viewShipment.status}</Status>
+                        {i < SHIPMENT_STAGES.length - 1 && (
+                          <div
+                            className={`step-divider ${isPassed ? 'passed' : ''}`}
+                            style={{ height: '2px', background: isPassed ? '#10b981' : '#e2e8f0', flex: 1, margin: '0 4px' }}
+                          />
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Card 2: Routing, Container & Tracking */}
-              <div style={{ background: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', padding: '14px 16px' }}>
-                <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#64748b', fontWeight: 700, marginBottom: '10px' }}>
-                  Logistics & Tracking
+              {/* Information Grid: Strictly Required Fields */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+                {/* Card 1: Order & Customer Information */}
+                <div style={{ background: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', padding: '14px 16px' }}>
+                  <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#64748b', fontWeight: 700, marginBottom: '10px' }}>
+                    Delivery & Order Details
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', rowGap: '8px', fontSize: '13px' }}>
+                    <span style={{ color: '#64748b' }}>Shipment Number:</span>
+                    <strong style={{ color: '#0c5a48' }}>{viewShipment.shipmentNo}</strong>
+
+                    <span style={{ color: '#64748b' }}>Sales Order:</span>
+                    <strong>{viewShipment.orderNo}</strong>
+
+                    <span style={{ color: '#64748b' }}>Customer:</span>
+                    <strong>{viewShipment.customer}</strong>
+
+                    <span style={{ color: '#64748b' }}>Transport Mode:</span>
+                    <span>{viewShipment.transportMode} Freight</span>
+
+                    <span style={{ color: '#64748b' }}>Carrier:</span>
+                    <strong>{viewShipment.carrier || 'Carrier'}</strong>
+
+                    <span style={{ color: '#64748b' }}>Current Status:</span>
+                    <Status>{viewShipment.status}</Status>
+                  </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', rowGap: '8px', fontSize: '13px' }}>
-                  <span style={{ color: '#64748b' }}>Origin:</span>
-                  <span>{viewShipment.origin}</span>
 
-                  <span style={{ color: '#64748b' }}>Destination:</span>
-                  <strong>{viewShipment.destination}</strong>
+                {/* Card 2: Routing, Container & Tracking */}
+                <div style={{ background: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', padding: '14px 16px' }}>
+                  <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#64748b', fontWeight: 700, marginBottom: '10px' }}>
+                    Logistics & Tracking
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', rowGap: '8px', fontSize: '13px' }}>
+                    <span style={{ color: '#64748b' }}>Origin:</span>
+                    <span>{viewShipment.origin}</span>
 
-                  <span style={{ color: '#64748b' }}>Container Number:</span>
-                  <code className="mono-code">{viewShipment.containerNo || 'N/A'}</code>
+                    <span style={{ color: '#64748b' }}>Destination:</span>
+                    <strong>{viewShipment.destination}</strong>
 
-                  <span style={{ color: '#64748b' }}>Tracking Number:</span>
-                  <code className="mono-code">{viewShipment.trackingNo || 'N/A'}</code>
+                    <span style={{ color: '#64748b' }}>Container Number:</span>
+                    <code className="mono-code">{viewShipment.containerNo || 'N/A'}</code>
 
-                  <span style={{ color: '#64748b' }}>Departure (ETD):</span>
-                  <span>{viewShipment.etd || 'TBD'}</span>
+                    <span style={{ color: '#64748b' }}>Tracking Number:</span>
+                    <code className="mono-code">{viewShipment.trackingNo || 'N/A'}</code>
 
-                  <span style={{ color: '#64748b' }}>Arrival (ETA):</span>
-                  <strong style={{ color: '#0c5a48' }}>{viewShipment.eta || 'TBD'}</strong>
+                    <span style={{ color: '#64748b' }}>Departure (ETD):</span>
+                    <span>{viewShipment.etd || 'TBD'}</span>
+
+                    <span style={{ color: '#64748b' }}>Arrival (ETA):</span>
+                    <strong style={{ color: '#0c5a48' }}>{viewShipment.eta || 'TBD'}</strong>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Documents Section */}
-            <div style={{ background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', padding: '14px 16px' }}>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#64748b', fontWeight: 700, marginBottom: '8px' }}>
-                Attached Export Documents ({viewShipment.docs?.length || 0})
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {viewShipment.docs && viewShipment.docs.length > 0 ? (
-                  viewShipment.docs.map((d) => (
-                    <span
-                      key={d}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '4px 10px',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        background: '#e8f5f1',
-                        color: '#0c5a48',
-                        border: '1px solid #d0ebe4'
-                      }}
-                    >
-                      <CheckCircle2 size={13} />
-                      {d}
-                    </span>
-                  ))
-                ) : (
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>No documents attached.</span>
-                )}
+              {/* Documents Section */}
+              <div style={{ background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', padding: '14px 16px' }}>
+                <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#64748b', fontWeight: 700, marginBottom: '8px' }}>
+                  Attached Export Documents ({viewShipment.docs?.length || 0})
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {viewShipment.docs && viewShipment.docs.length > 0 ? (
+                    viewShipment.docs.map((d) => (
+                      <span
+                        key={d}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          background: '#e8f5f1',
+                          color: '#0c5a48',
+                          border: '1px solid #d0ebe4'
+                        }}
+                      >
+                        <CheckCircle2 size={13} />
+                        {d}
+                      </span>
+                    ))
+                  ) : (
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>No documents attached.</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </Modal>
+        </Modal>
       )}
 
       {/* CREATE / EDIT SHIPMENT MODAL (Strictly Required Fields) */}
