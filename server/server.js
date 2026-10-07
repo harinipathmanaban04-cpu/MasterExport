@@ -18,6 +18,16 @@ const modelMap = {
   payments: Payment
 };
 
+const memStore = {
+  products: [...products],
+  sales: [...sales],
+  quotations: [...initialQuotations],
+  shipments: [...shipments],
+  invoices: [...invoices],
+  payments: [...payments],
+  customers: [...customers]
+};
+
 // =========================================================
 // DEDICATED CUSTOMERS API (Deduplication & Anti-Replication)
 // =========================================================
@@ -25,130 +35,186 @@ const modelMap = {
 // GET /api/customers - Deduplicates by company name and guarantees unique customerIds
 app.get('/api/customers', async (req, res) => {
   try {
-    const raw = await Customer.find().sort({ createdAt: 1 });
+    if (mongoose.connection.readyState === 1) {
+      const raw = await Customer.find().sort({ createdAt: 1 });
 
-    const seenNames = new Set();
-    const cleanCustomers = [];
-    const duplicateIdsToDelete = [];
+      const seenNames = new Set();
+      const cleanCustomers = [];
+      const duplicateIdsToDelete = [];
 
-    for (const c of raw) {
-      const normName = (c.companyName || '').trim().toLowerCase();
-      if (!normName) continue;
-      if (seenNames.has(normName)) {
-        duplicateIdsToDelete.push(c._id);
-      } else {
-        seenNames.add(normName);
-        cleanCustomers.push(c);
+      for (const c of raw) {
+        const normName = (c.companyName || '').trim().toLowerCase();
+        if (!normName) continue;
+        if (seenNames.has(normName)) {
+          duplicateIdsToDelete.push(c._id);
+        } else {
+          seenNames.add(normName);
+          cleanCustomers.push(c);
+        }
       }
-    }
 
-    // Permanently remove duplicate records from database
-    if (duplicateIdsToDelete.length > 0) {
-      await Customer.deleteMany({ _id: { $in: duplicateIdsToDelete } });
-    }
+      // Permanently remove duplicate records from database
+      if (duplicateIdsToDelete.length > 0) {
+        await Customer.deleteMany({ _id: { $in: duplicateIdsToDelete } });
+      }
 
-    // Guarantee unique sequential customerId for each customer
-    const usedIds = new Set();
-    let nextNum = 101;
-    for (const c of cleanCustomers) {
-      let cid = c.customerId;
-      if (!cid || usedIds.has(cid)) {
-        while (usedIds.has(`CUST-${nextNum}`)) {
+      // Guarantee unique sequential customerId for each customer
+      const usedIds = new Set();
+      let nextNum = 101;
+      for (const c of cleanCustomers) {
+        let cid = c.customerId;
+        if (!cid || usedIds.has(cid)) {
+          while (usedIds.has(`CUST-${nextNum}`)) {
+            nextNum++;
+          }
+          cid = `CUST-${nextNum}`;
+          c.customerId = cid;
+          await Customer.findByIdAndUpdate(c._id, { customerId: cid });
           nextNum++;
         }
-        cid = `CUST-${nextNum}`;
-        c.customerId = cid;
-        await Customer.findByIdAndUpdate(c._id, { customerId: cid });
-        nextNum++;
+        usedIds.add(cid);
       }
-      usedIds.add(cid);
+
+      // Attach all customer enquiries saved in database
+      const allEnquiries = await Sale.find({ type: 'Enquiry' }).sort({ createdAt: -1 });
+
+      const enrichedCustomers = cleanCustomers.map((c) => {
+        const cObj = c.toObject ? c.toObject() : { ...c };
+        const normName = (cObj.companyName || '').trim().toLowerCase();
+        cObj.enquiries = allEnquiries.filter(
+          (e) => (e.customer || '').trim().toLowerCase() === normName
+        );
+        cObj.enquiriesCount = cObj.enquiries.length;
+        return cObj;
+      });
+
+      return res.json(enrichedCustomers);
     }
-
-    // Attach all customer enquiries saved in database
-    const allEnquiries = await Sale.find({ type: 'Enquiry' }).sort({ createdAt: -1 });
-
-    const enrichedCustomers = cleanCustomers.map((c) => {
-      const cObj = c.toObject ? c.toObject() : { ...c };
-      const normName = (cObj.companyName || '').trim().toLowerCase();
-      cObj.enquiries = allEnquiries.filter(
-        (e) => (e.customer || '').trim().toLowerCase() === normName
-      );
-      cObj.enquiriesCount = cObj.enquiries.length;
-      return cObj;
-    });
-
-    res.json(enrichedCustomers);
   } catch (e) {
-    res.status(500).json({ message: e.message });
+    console.warn('Customer DB read fallback:', e.message);
   }
+
+  // Memory store fallback
+  const memList = memStore.customers || [];
+  const allEnquiries = (memStore.sales || []).filter((s) => s.type === 'Enquiry');
+  const enriched = memList.map((c) => {
+    const norm = (c.companyName || '').trim().toLowerCase();
+    const enqs = allEnquiries.filter(
+      (e) => (e.customer || '').trim().toLowerCase() === norm
+    );
+    return {
+      ...c,
+      enquiries: enqs,
+      enquiriesCount: enqs.length
+    };
+  });
+  res.json(enriched);
 });
 
 // POST /api/customers - Upsert behavior: updates existing buyer if name matches, avoiding duplication
 app.post('/api/customers', async (req, res) => {
+  const name = (req.body.companyName || '').trim();
+  if (!name) return res.status(400).json({ message: 'Company Name is required' });
+
   try {
-    const name = (req.body.companyName || '').trim();
-    if (!name) return res.status(400).json({ message: 'Company Name is required' });
-
-    // Escaped regex for exact case-insensitive match
-    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const existing = await Customer.findOne({
-      companyName: { $regex: new RegExp(`^${escaped}$`, 'i') }
-    });
-
-    if (existing) {
-      // Update existing record rather than creating a duplicate document
-      const updateData = { ...req.body };
-      delete updateData._id;
-      const updated = await Customer.findByIdAndUpdate(existing._id, updateData, {
-        new: true,
-        runValidators: true
+    if (mongoose.connection.readyState === 1) {
+      // Escaped regex for exact case-insensitive match
+      const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const existing = await Customer.findOne({
+        companyName: { $regex: new RegExp(`^${escaped}$`, 'i') }
       });
-      return res.json(updated);
+
+      if (existing) {
+        // Update existing record rather than creating a duplicate document
+        const updateData = { ...req.body };
+        delete updateData._id;
+        const updated = await Customer.findByIdAndUpdate(existing._id, updateData, {
+          new: true,
+          runValidators: true
+        });
+        return res.json(updated);
+      }
+
+      // Allocate next available unique customer ID
+      const allCusts = await Customer.find({}, 'customerId');
+      const existingIds = new Set(allCusts.map((c) => c.customerId).filter(Boolean));
+      let nextNum = 101;
+      while (existingIds.has(`CUST-${nextNum}`)) {
+        nextNum++;
+      }
+
+      const payload = {
+        ...req.body,
+        companyName: name,
+        customerId: req.body.customerId && !existingIds.has(req.body.customerId)
+          ? req.body.customerId
+          : `CUST-${nextNum}`
+      };
+
+      const created = await Customer.create(payload);
+      return res.status(201).json(created);
     }
-
-    // Allocate next available unique customer ID
-    const allCusts = await Customer.find({}, 'customerId');
-    const existingIds = new Set(allCusts.map((c) => c.customerId).filter(Boolean));
-    let nextNum = 101;
-    while (existingIds.has(`CUST-${nextNum}`)) {
-      nextNum++;
-    }
-
-    const payload = {
-      ...req.body,
-      companyName: name,
-      customerId: req.body.customerId && !existingIds.has(req.body.customerId)
-        ? req.body.customerId
-        : `CUST-${nextNum}`
-    };
-
-    const created = await Customer.create(payload);
-    res.status(201).json(created);
   } catch (e) {
-    res.status(400).json({ message: e.message });
+    console.warn('Customer DB create fallback:', e.message);
   }
+
+  // Memory store fallback
+  if (!memStore.customers) memStore.customers = [];
+  const existingIdx = memStore.customers.findIndex(
+    (c) => (c.companyName || '').trim().toLowerCase() === name.toLowerCase()
+  );
+  if (existingIdx >= 0) {
+    memStore.customers[existingIdx] = {
+      ...memStore.customers[existingIdx],
+      ...req.body
+    };
+    return res.json(memStore.customers[existingIdx]);
+  }
+  const nextNum = 101 + memStore.customers.length;
+  const newCust = {
+    ...req.body,
+    _id: `cust-${Date.now()}`,
+    customerId: req.body.customerId || `CUST-${nextNum}`,
+    createdAt: new Date().toISOString()
+  };
+  memStore.customers.unshift(newCust);
+  return res.status(201).json(newCust);
 });
 
 app.put('/api/customers/:id', async (req, res) => {
   try {
-    const row = await Customer.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    });
-    if (!row) return res.status(404).json({ message: 'Record not found' });
-    res.json(row);
-  } catch (e) {
-    res.status(400).json({ message: e.message });
+    if (mongoose.connection.readyState === 1) {
+      const row = await Customer.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+        runValidators: true
+      });
+      if (row) return res.json(row);
+    }
+  } catch (e) {}
+
+  if (!memStore.customers) memStore.customers = [];
+  const idx = memStore.customers.findIndex(
+    (c) => c._id === req.params.id || c.customerId === req.params.id
+  );
+  if (idx >= 0) {
+    memStore.customers[idx] = { ...memStore.customers[idx], ...req.body };
+    return res.json(memStore.customers[idx]);
   }
+  return res.status(404).json({ message: 'Record not found' });
 });
 
 app.delete('/api/customers/:id', async (req, res) => {
   try {
-    await Customer.findByIdAndDelete(req.params.id);
-    res.json({ ok: true });
-  } catch (e) {
-    res.status(400).json({ message: e.message });
+    if (mongoose.connection.readyState === 1) {
+      await Customer.findByIdAndDelete(req.params.id);
+      return res.json({ ok: true });
+    }
+  } catch (e) {}
+
+  if (memStore.customers) {
+    memStore.customers = memStore.customers.filter((c) => c._id !== req.params.id && c.customerId !== req.params.id);
   }
+  res.json({ ok: true });
 });
 
 // Generic CRUD
@@ -581,14 +647,20 @@ function calculateQuotationFinancials(items = [], shippingCharges = 0) {
 // Generate unique quotation number
 async function generateUniqueQuotationNo() {
   const currentYear = new Date().getFullYear();
-  const count = await Quotation.countDocuments();
-  let seq = count + 1;
-  let candidate = `QUO-${currentYear}-${String(seq).padStart(4, '0')}`;
-  while (await Quotation.findOne({ quotationNo: candidate })) {
-    seq++;
-    candidate = `QUO-${currentYear}-${String(seq).padStart(4, '0')}`;
-  }
-  return candidate;
+  try {
+    if (mongoose.connection.readyState === 1) {
+      const count = await Quotation.countDocuments();
+      let seq = count + 1;
+      let candidate = `QUO-${currentYear}-${String(seq).padStart(4, '0')}`;
+      while (await Quotation.findOne({ quotationNo: candidate })) {
+        seq++;
+        candidate = `QUO-${currentYear}-${String(seq).padStart(4, '0')}`;
+      }
+      return candidate;
+    }
+  } catch (e) {}
+  const count = (memStore.quotations || []).length + 1;
+  return `QUO-${currentYear}-${String(count).padStart(4, '0')}`;
 }
 
 // =========================================================
@@ -598,339 +670,471 @@ async function generateUniqueQuotationNo() {
 // GET /api/quotations - list with search & filters
 app.get('/api/quotations', async (req, res) => {
   try {
-    const { q, status, customer, startDate, endDate } = req.query;
-    const filter = {};
+    if (mongoose.connection.readyState === 1) {
+      const { q, status, customer, startDate, endDate } = req.query;
+      const filter = {};
 
-    if (q) {
-      const regex = new RegExp(q, 'i');
-      filter.$or = [
-        { quotationNo: regex },
-        { customer: regex },
-        { contactPerson: regex },
-        { enquiryNo: regex }
-      ];
+      if (q) {
+        const regex = new RegExp(q, 'i');
+        filter.$or = [
+          { quotationNo: regex },
+          { customer: regex },
+          { contactPerson: regex },
+          { enquiryNo: regex }
+        ];
+      }
+
+      if (status && status !== 'All') {
+        filter.status = status;
+      }
+
+      if (customer && customer !== 'All') {
+        filter.customer = customer;
+      }
+
+      if (startDate || endDate) {
+        filter.quotationDate = {};
+        if (startDate) filter.quotationDate.$gte = startDate;
+        if (endDate) filter.quotationDate.$lte = endDate;
+      }
+
+      const rows = await Quotation.find(filter).sort({ createdAt: -1 });
+      return res.json(rows);
     }
-
-    if (status && status !== 'All') {
-      filter.status = status;
-    }
-
-    if (customer && customer !== 'All') {
-      filter.customer = customer;
-    }
-
-    if (startDate || endDate) {
-      filter.quotationDate = {};
-      if (startDate) filter.quotationDate.$gte = startDate;
-      if (endDate) filter.quotationDate.$lte = endDate;
-    }
-
-    const rows = await Quotation.find(filter).sort({ createdAt: -1 });
-    res.json(rows);
   } catch (e) {
-    res.status(500).json({ message: e.message });
+    console.warn('Quotations DB read fallback:', e.message);
   }
+
+  let list = memStore.quotations || [];
+  const { q, status, customer } = req.query;
+  if (q) {
+    const lq = q.toLowerCase();
+    list = list.filter((item) =>
+      (item.quotationNo || '').toLowerCase().includes(lq) ||
+      (item.customer || '').toLowerCase().includes(lq) ||
+      (item.contactPerson || '').toLowerCase().includes(lq) ||
+      (item.enquiryNo || '').toLowerCase().includes(lq)
+    );
+  }
+  if (status && status !== 'All') {
+    list = list.filter((item) => item.status === status);
+  }
+  if (customer && customer !== 'All') {
+    list = list.filter((item) => item.customer === customer);
+  }
+  res.json(list);
 });
 
 // GET /api/quotations/:id - single quotation
 app.get('/api/quotations/:id', async (req, res) => {
   try {
-    let quotation = await Quotation.findById(req.params.id);
-    if (!quotation) {
-      quotation = await Quotation.findOne({ quotationNo: req.params.id });
+    if (mongoose.connection.readyState === 1) {
+      let quotation = await Quotation.findById(req.params.id);
+      if (!quotation) {
+        quotation = await Quotation.findOne({ quotationNo: req.params.id });
+      }
+      if (quotation) return res.json(quotation);
     }
-    if (!quotation) return res.status(404).json({ message: 'Quotation not found' });
-    res.json(quotation);
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  } catch (e) {}
+
+  const mem = (memStore.quotations || []).find(
+    (q) => q._id === req.params.id || q.quotationNo === req.params.id
+  );
+  if (mem) return res.json(mem);
+  res.status(404).json({ message: 'Quotation not found' });
 });
 
 // POST /api/quotations - create new quotation
 app.post('/api/quotations', async (req, res) => {
-  try {
-    const {
-      customer,
-      companyName,
-      contactPerson,
-      email,
-      phone,
-      address,
-      destination,
-      origin,
-      quotationDate,
-      validUntil,
-      currency = 'USD',
-      items = [],
-      shippingCharges = 0,
-      paymentTerms = 'Net 30',
-      deliveryTerms = 'CIF Destination Port',
-      incoterm = 'CIF',
-      notes,
-      termsAndConditions,
-      status = 'Draft',
-      enquiryNo = ''
-    } = req.body;
+  const {
+    customer,
+    companyName,
+    contactPerson,
+    email,
+    phone,
+    address,
+    destination,
+    origin,
+    quotationDate,
+    validUntil,
+    currency = 'USD',
+    items = [],
+    shippingCharges = 0,
+    paymentTerms = 'Net 30',
+    deliveryTerms = 'CIF Destination Port',
+    incoterm = 'CIF',
+    notes,
+    termsAndConditions,
+    status = 'Draft',
+    enquiryNo = ''
+  } = req.body;
 
-    if (!customer) {
-      return res.status(400).json({ message: 'Customer is required' });
-    }
-
-    if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ message: 'At least one line item is required' });
-    }
-
-    const quotationNo = req.body.quotationNo || (await generateUniqueQuotationNo());
-    const qDate = quotationDate || new Date().toISOString().slice(0, 10);
-    const vDate =
-      validUntil || new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
-
-    // Calculate financials on server
-    const financials = calculateQuotationFinancials(items, shippingCharges);
-
-    const quotation = await Quotation.create({
-      quotationNo,
-      quotationDate: qDate,
-      validUntil: vDate,
-      customer,
-      companyName: companyName || customer,
-      contactPerson,
-      email,
-      phone,
-      address,
-      destination,
-      origin: origin || 'Nhava Sheva, Mumbai, India',
-      items: financials.items,
-      currency,
-      subtotal: financials.subtotal,
-      totalDiscount: financials.totalDiscount,
-      taxableAmount: financials.taxableAmount,
-      taxTotal: financials.taxTotal,
-      shippingCharges: financials.shippingCharges,
-      grandTotal: financials.grandTotal,
-      paymentTerms,
-      deliveryTerms,
-      incoterm,
-      notes,
-      termsAndConditions,
-      status: ['Draft', 'Sent', 'Accepted', 'Rejected', 'Expired'].includes(status)
-        ? status
-        : 'Draft',
-      enquiryNo
-    });
-
-    // Also sync/reflect into Sale model
-    await Sale.findOneAndUpdate(
-      { quotationNo },
-      {
-        type: 'Quotation',
-        quotationNo,
-        enquiryNo,
-        customer,
-        destination,
-        currency,
-        incoterm,
-        freight: financials.shippingCharges,
-        paymentTerms,
-        validity: vDate,
-        totalAmount: financials.grandTotal,
-        status: status === 'Draft' ? 'Pending' : status,
-        products: financials.items.map((it) => ({
-          name: it.name,
-          sku: it.productId || '',
-          quantity: it.quantity,
-          unitPrice: it.unitPrice,
-          total: it.lineTotal
-        }))
-      },
-      { upsert: true, new: true }
-    );
-
-    res.status(201).json(quotation);
-  } catch (e) {
-    res.status(400).json({ message: e.message });
+  if (!customer) {
+    return res.status(400).json({ message: 'Customer is required' });
   }
+
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ message: 'At least one line item is required' });
+  }
+
+  const quotationNo = req.body.quotationNo || (await generateUniqueQuotationNo());
+  const qDate = quotationDate || new Date().toISOString().slice(0, 10);
+  const vDate =
+    validUntil || new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+
+  const financials = calculateQuotationFinancials(items, shippingCharges);
+
+  const quotationData = {
+    quotationNo,
+    quotationDate: qDate,
+    validUntil: vDate,
+    customer,
+    companyName: companyName || customer,
+    contactPerson,
+    email,
+    phone,
+    address,
+    destination,
+    origin: origin || 'Nhava Sheva, Mumbai, India',
+    items: financials.items,
+    currency,
+    subtotal: financials.subtotal,
+    totalDiscount: financials.totalDiscount,
+    taxableAmount: financials.taxableAmount,
+    taxTotal: financials.taxTotal,
+    shippingCharges: financials.shippingCharges,
+    grandTotal: financials.grandTotal,
+    paymentTerms,
+    deliveryTerms,
+    incoterm,
+    notes,
+    termsAndConditions,
+    status: ['Draft', 'Sent', 'Accepted', 'Rejected', 'Expired'].includes(status)
+      ? status
+      : 'Draft',
+    enquiryNo
+  };
+
+  try {
+    if (mongoose.connection.readyState === 1) {
+      const quotation = await Quotation.create(quotationData);
+      await Sale.findOneAndUpdate(
+        { quotationNo },
+        {
+          type: 'Quotation',
+          quotationNo,
+          enquiryNo,
+          customer,
+          destination,
+          currency,
+          incoterm,
+          freight: financials.shippingCharges,
+          paymentTerms,
+          validity: vDate,
+          totalAmount: financials.grandTotal,
+          status: status === 'Draft' ? 'Pending' : status,
+          products: financials.items.map((it) => ({
+            name: it.name,
+            sku: it.productId || '',
+            quantity: it.quantity,
+            unitPrice: it.unitPrice,
+            total: it.lineTotal
+          }))
+        },
+        { upsert: true, new: true }
+      );
+      return res.status(201).json(quotation);
+    }
+  } catch (e) {
+    console.warn('Quotation DB create fallback:', e.message);
+  }
+
+  // Memory fallback
+  const memQuotation = {
+    ...quotationData,
+    _id: `quot-${Date.now()}`,
+    createdAt: new Date().toISOString()
+  };
+  if (!memStore.quotations) memStore.quotations = [];
+  memStore.quotations.unshift(memQuotation);
+
+  // Sync to memStore sales
+  if (!memStore.sales) memStore.sales = [];
+  const sIdx = memStore.sales.findIndex((s) => s.quotationNo === quotationNo);
+  const saleItem = {
+    _id: `sale-q-${Date.now()}`,
+    type: 'Quotation',
+    quotationNo,
+    enquiryNo,
+    customer,
+    destination,
+    currency,
+    incoterm,
+    freight: financials.shippingCharges,
+    paymentTerms,
+    validity: vDate,
+    totalAmount: financials.grandTotal,
+    status: status === 'Draft' ? 'Pending' : status,
+    products: financials.items.map((it) => ({
+      name: it.name,
+      sku: it.productId || '',
+      quantity: it.quantity,
+      unitPrice: it.unitPrice,
+      total: it.lineTotal
+    }))
+  };
+  if (sIdx >= 0) memStore.sales[sIdx] = saleItem;
+  else memStore.sales.unshift(saleItem);
+
+  return res.status(201).json(memQuotation);
 });
 
 // PUT /api/quotations/:id - update quotation
 app.put('/api/quotations/:id', async (req, res) => {
   try {
-    const existing = await Quotation.findById(req.params.id);
-    if (!existing) return res.status(404).json({ message: 'Quotation not found' });
+    if (mongoose.connection.readyState === 1) {
+      const existing = await Quotation.findById(req.params.id);
+      if (existing) {
+        const upFinancials = calculateQuotationFinancials(
+          req.body.items || existing.items,
+          req.body.shippingCharges !== undefined ? req.body.shippingCharges : existing.shippingCharges
+        );
 
-    const items = req.body.items || existing.items;
-    const shipping = req.body.shippingCharges !== undefined ? req.body.shippingCharges : existing.shippingCharges;
-    const financials = calculateQuotationFinancials(items, shipping);
+        const updateData = {
+          ...req.body,
+          items: upFinancials.items,
+          subtotal: upFinancials.subtotal,
+          totalDiscount: upFinancials.totalDiscount,
+          taxableAmount: upFinancials.taxableAmount,
+          taxTotal: upFinancials.taxTotal,
+          shippingCharges: upFinancials.shippingCharges,
+          grandTotal: upFinancials.grandTotal
+        };
 
-    const updateData = {
-      ...req.body,
-      items: financials.items,
-      subtotal: financials.subtotal,
-      totalDiscount: financials.totalDiscount,
-      taxableAmount: financials.taxableAmount,
-      taxTotal: financials.taxTotal,
-      shippingCharges: financials.shippingCharges,
-      grandTotal: financials.grandTotal
-    };
+        const updated = await Quotation.findByIdAndUpdate(req.params.id, updateData, {
+          new: true,
+          runValidators: true
+        });
 
-    const updated = await Quotation.findByIdAndUpdate(req.params.id, updateData, {
-      new: true,
-      runValidators: true
-    });
-
-    // Sync with Sale model
-    await Sale.findOneAndUpdate(
-      { quotationNo: updated.quotationNo },
-      {
-        totalAmount: updated.grandTotal,
-        status: updated.status,
-        paymentTerms: updated.paymentTerms,
-        validity: updated.validUntil,
-        customer: updated.customer,
-        destination: updated.destination,
-        currency: updated.currency
+        await Sale.findOneAndUpdate(
+          { quotationNo: updated.quotationNo },
+          {
+            totalAmount: updated.grandTotal,
+            status: updated.status,
+            paymentTerms: updated.paymentTerms,
+            validity: updated.validUntil,
+            customer: updated.customer,
+            destination: updated.destination,
+            currency: updated.currency
+          }
+        );
+        return res.json(updated);
       }
-    );
+    }
+  } catch (e) {}
 
-    res.json(updated);
-  } catch (e) {
-    res.status(400).json({ message: e.message });
+  if (!memStore.quotations) memStore.quotations = [];
+  const idx = memStore.quotations.findIndex(
+    (q) => q._id === req.params.id || q.quotationNo === req.params.id
+  );
+  if (idx >= 0) {
+    const existing = memStore.quotations[idx];
+    const upFin = calculateQuotationFinancials(
+      req.body.items || existing.items,
+      req.body.shippingCharges !== undefined ? req.body.shippingCharges : existing.shippingCharges
+    );
+    memStore.quotations[idx] = {
+      ...existing,
+      ...req.body,
+      items: upFin.items,
+      subtotal: upFin.subtotal,
+      totalDiscount: upFin.totalDiscount,
+      taxableAmount: upFin.taxableAmount,
+      taxTotal: upFin.taxTotal,
+      shippingCharges: upFin.shippingCharges,
+      grandTotal: upFin.grandTotal
+    };
+    return res.json(memStore.quotations[idx]);
   }
+  return res.status(404).json({ message: 'Quotation not found' });
 });
 
 // DELETE /api/quotations/:id
 app.delete('/api/quotations/:id', async (req, res) => {
   try {
-    const quotation = await Quotation.findByIdAndDelete(req.params.id);
-    if (quotation) {
-      await Sale.findOneAndDelete({ quotationNo: quotation.quotationNo });
+    if (mongoose.connection.readyState === 1) {
+      const quotation = await Quotation.findByIdAndDelete(req.params.id);
+      if (quotation) {
+        await Sale.findOneAndDelete({ quotationNo: quotation.quotationNo });
+      }
+      return res.json({ ok: true });
     }
-    res.json({ ok: true });
-  } catch (e) {
-    res.status(400).json({ message: e.message });
+  } catch (e) {}
+
+  if (memStore.quotations) {
+    const q = memStore.quotations.find((x) => x._id === req.params.id || x.quotationNo === req.params.id);
+    memStore.quotations = memStore.quotations.filter((x) => x._id !== req.params.id && x.quotationNo !== req.params.id);
+    if (q && memStore.sales) {
+      memStore.sales = memStore.sales.filter((s) => s.quotationNo !== q.quotationNo);
+    }
   }
+  res.json({ ok: true });
 });
 
 // POST /api/quotations/:id/convert-to-order
 app.post('/api/quotations/:id/convert-to-order', async (req, res) => {
-  try {
-    const rawId = req.params.id;
-    let quotation = null;
+  const rawId = req.params.id;
 
-    if (mongoose.Types.ObjectId.isValid(rawId)) {
-      quotation = await Quotation.findById(rawId);
-    }
-    if (!quotation) {
-      quotation = await Quotation.findOne({ quotationNo: rawId });
-    }
-    if (!quotation) {
-      // Look in Sale model if it was stored as a quotation there
-      const saleRow = await Sale.findOne({
-        $or: [
-          mongoose.Types.ObjectId.isValid(rawId) ? { _id: rawId } : null,
-          { quotationNo: rawId }
-        ].filter(Boolean)
-      });
-      if (saleRow) {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      let quotation = null;
+      if (mongoose.Types.ObjectId.isValid(rawId)) {
+        quotation = await Quotation.findById(rawId);
+      }
+      if (!quotation) {
+        quotation = await Quotation.findOne({ quotationNo: rawId });
+      }
+      if (!quotation) {
+        const saleRow = await Sale.findOne({
+          $or: [
+            mongoose.Types.ObjectId.isValid(rawId) ? { _id: rawId } : null,
+            { quotationNo: rawId }
+          ].filter(Boolean)
+        });
+        if (saleRow) {
+          const count = await Sale.countDocuments({ orderNo: { $exists: true, $ne: '' } });
+          const orderNo = `SO-${1024 + count}`;
+          saleRow.status = 'Accepted';
+          saleRow.orderNo = orderNo;
+          await saleRow.save();
+
+          const newOrder = await Sale.create({
+            type: 'Sales Order',
+            orderNo,
+            quotationNo: saleRow.quotationNo || rawId,
+            enquiryNo: saleRow.enquiryNo || '',
+            customer: saleRow.customer,
+            contactPerson: saleRow.contactPerson,
+            email: saleRow.email,
+            phone: saleRow.phone,
+            origin: saleRow.origin || 'Nhava Sheva Port, Mumbai, India',
+            destination: saleRow.destination,
+            products: saleRow.products || [],
+            currency: saleRow.currency || 'INR',
+            incoterm: saleRow.incoterm || 'CIF',
+            freight: saleRow.freight || 0,
+            paymentTerms: saleRow.paymentTerms || 'Net 30',
+            validity: saleRow.validity || '30 Days',
+            notes: saleRow.notes,
+            totalAmount: saleRow.totalAmount,
+            status: 'Confirmed'
+          });
+          return res.status(201).json({ quotation: saleRow, salesOrder: newOrder, orderNo });
+        }
+      }
+
+      if (quotation) {
         const count = await Sale.countDocuments({ orderNo: { $exists: true, $ne: '' } });
         const orderNo = `SO-${1024 + count}`;
-        saleRow.status = 'Accepted';
-        saleRow.orderNo = orderNo;
-        await saleRow.save();
 
-        const newOrder = await Sale.create({
+        quotation.status = 'Accepted';
+        quotation.orderNo = orderNo;
+        await quotation.save();
+
+        let existingSale = await Sale.findOne({ quotationNo: quotation.quotationNo });
+        if (existingSale) {
+          existingSale.status = 'Accepted';
+          existingSale.orderNo = orderNo;
+          await existingSale.save();
+        }
+
+        const salesOrder = await Sale.create({
           type: 'Sales Order',
           orderNo,
-          quotationNo: saleRow.quotationNo || rawId,
-          enquiryNo: saleRow.enquiryNo || '',
-          customer: saleRow.customer,
-          contactPerson: saleRow.contactPerson,
-          email: saleRow.email,
-          phone: saleRow.phone,
-          origin: saleRow.origin || 'Nhava Sheva Port, Mumbai, India',
-          destination: saleRow.destination,
-          products: saleRow.products || [],
-          currency: saleRow.currency || 'INR',
-          incoterm: saleRow.incoterm || 'CIF',
-          freight: saleRow.freight || 0,
-          paymentTerms: saleRow.paymentTerms || 'Net 30',
-          validity: saleRow.validity || '30 Days',
-          notes: saleRow.notes,
-          totalAmount: saleRow.totalAmount,
+          quotationNo: quotation.quotationNo,
+          enquiryNo: quotation.enquiryNo || '',
+          customer: quotation.customer,
+          contactPerson: quotation.contactPerson,
+          email: quotation.email,
+          phone: quotation.phone,
+          origin: quotation.origin || 'Nhava Sheva Port, Mumbai, India',
+          destination: quotation.destination,
+          products: (quotation.items || []).map((it) => ({
+            name: it.name,
+            quantity: it.quantity,
+            unitPrice: it.unitPrice,
+            total: it.lineTotal
+          })),
+          currency: quotation.currency || 'INR',
+          incoterm: quotation.incoterm || 'CIF',
+          freight: quotation.shippingCharges || 0,
+          paymentTerms: quotation.paymentTerms || 'Net 30',
+          validity: quotation.validUntil,
+          notes: quotation.notes,
+          totalAmount: quotation.grandTotal,
           status: 'Confirmed'
         });
-        return res.status(201).json({ quotation: saleRow, salesOrder: newOrder, orderNo });
+
+        return res.status(201).json({ quotation, salesOrder, orderNo });
       }
     }
-
-    if (!quotation && req.body && req.body.customer) {
-      // Create from payload if not found
-      const financials = calculateQuotationFinancials(req.body.items || [], req.body.shippingCharges || 0);
-      quotation = await Quotation.create({
-        ...req.body,
-        quotationNo: req.body.quotationNo || (await generateUniqueQuotationNo()),
-        subtotal: financials.subtotal,
-        totalDiscount: financials.totalDiscount,
-        taxableAmount: financials.taxableAmount,
-        taxTotal: financials.taxTotal,
-        shippingCharges: financials.shippingCharges,
-        grandTotal: financials.grandTotal,
-        status: 'Accepted'
-      });
-    }
-
-    if (!quotation) {
-      return res.status(404).json({ message: 'Quotation not found' });
-    }
-
-    // Generate Sales Order number
-    const count = await Sale.countDocuments({ orderNo: { $exists: true, $ne: '' } });
-    const orderNo = `SO-${1024 + count}`;
-
-    quotation.status = 'Accepted';
-    quotation.orderNo = orderNo;
-    await quotation.save();
-
-    // Update existing Sale record if exists to Accepted
-    let existingSale = await Sale.findOne({ quotationNo: quotation.quotationNo });
-    if (existingSale) {
-      existingSale.status = 'Accepted';
-      existingSale.orderNo = orderNo;
-      await existingSale.save();
-    }
-
-    const salesOrder = await Sale.create({
-      type: 'Sales Order',
-      orderNo,
-      quotationNo: quotation.quotationNo,
-      enquiryNo: quotation.enquiryNo || '',
-      customer: quotation.customer,
-      contactPerson: quotation.contactPerson,
-      email: quotation.email,
-      phone: quotation.phone,
-      origin: quotation.origin || 'Nhava Sheva Port, Mumbai, India',
-      destination: quotation.destination,
-      products: (quotation.items || []).map((it) => ({
-        name: it.name,
-        quantity: it.quantity,
-        unitPrice: it.unitPrice,
-        total: it.lineTotal
-      })),
-      currency: quotation.currency || 'INR',
-      incoterm: quotation.incoterm || 'CIF',
-      freight: quotation.shippingCharges || 0,
-      paymentTerms: quotation.paymentTerms || 'Net 30',
-      validity: quotation.validUntil,
-      notes: quotation.notes,
-      totalAmount: quotation.grandTotal,
-      status: 'Confirmed'
-    });
-
-    res.status(201).json({ quotation, salesOrder, orderNo });
   } catch (e) {
-    console.error('Convert quotation error:', e);
-    res.status(400).json({ message: e.message });
+    console.warn('Quotation convert DB fallback:', e.message);
   }
+
+  // Memory fallback for convert-to-order
+  if (!memStore.quotations) memStore.quotations = [];
+  if (!memStore.sales) memStore.sales = [];
+
+  let q = memStore.quotations.find((x) => x._id === rawId || x.quotationNo === rawId);
+  if (!q && req.body && req.body.customer) {
+    q = req.body;
+  }
+
+  const existingOrders = memStore.sales.filter((s) => s.type === 'Sales Order' || s.orderNo);
+  const orderNo = `SO-${1024 + existingOrders.length}`;
+
+  if (q) {
+    q.status = 'Accepted';
+    q.orderNo = orderNo;
+  }
+
+  const newSalesOrder = {
+    _id: `so-${Date.now()}`,
+    type: 'Sales Order',
+    orderNo,
+    quotationNo: q?.quotationNo || rawId,
+    enquiryNo: q?.enquiryNo || '',
+    customer: q?.customer || req.body?.customer || 'Buyer',
+    contactPerson: q?.contactPerson || '',
+    email: q?.email || '',
+    phone: q?.phone || '',
+    origin: q?.origin || 'Nhava Sheva Port, Mumbai, India',
+    destination: q?.destination || 'Destination Port',
+    products: (q?.items || []).map((it) => ({
+      name: it.name,
+      quantity: it.quantity,
+      unitPrice: it.unitPrice,
+      total: it.lineTotal || (it.quantity * it.unitPrice)
+    })),
+    currency: q?.currency || 'INR',
+    incoterm: q?.incoterm || 'CIF',
+    freight: q?.shippingCharges || 0,
+    paymentTerms: q?.paymentTerms || 'Net 30',
+    validity: q?.validUntil || '30 Days',
+    notes: q?.notes || '',
+    totalAmount: q?.grandTotal || q?.totalAmount || 0,
+    status: 'Confirmed',
+    createdAt: new Date().toISOString()
+  };
+
+  memStore.sales.unshift(newSalesOrder);
+
+  return res.status(201).json({
+    quotation: q || {},
+    salesOrder: newSalesOrder,
+    orderNo
+  });
 });
 
 // Sales Order Status Pipeline

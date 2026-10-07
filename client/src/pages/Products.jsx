@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Edit, Trash2, Sparkles, ChevronDown } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Sparkles, ChevronDown, Eye, X } from 'lucide-react';
 import { get, post, put, del } from '../api';
 import Modal from '../components/Modal';
 import { useCurrency } from '../context/CurrencyContext';
@@ -100,9 +100,16 @@ const defaultProducts = [
 
 export default function Products() {
   const { currencySymbol, formatAmount } = useCurrency();
-  const [products, setProducts] = useState(defaultProducts);
+  const [products, setProducts] = useState(() => {
+    try {
+      const saved = localStorage.getItem('export_pro_products');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return defaultProducts;
+  });
   const [search, setSearch] = useState('');
   const [unitFilter, setUnitFilter] = useState('');
+  const [viewProduct, setViewProduct] = useState(null);
   const [editProduct, setEditProduct] = useState(null); // object to add or edit
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -118,9 +125,10 @@ export default function Products() {
           isLowStock: p.stock <= (p.minStock || 25) || p.availableStock?.includes('18 MT')
         }));
         setProducts(mapped);
+        localStorage.setItem('export_pro_products', JSON.stringify(mapped));
       }
     } catch (e) {
-      console.warn('Failed to load products from backend, using defaults:', e);
+      console.warn('Failed to load products from backend, using saved/defaults:', e);
     }
   };
 
@@ -169,11 +177,14 @@ export default function Products() {
       setEditProduct(null);
     } catch (err) {
       // Offline fallback
+      let updatedList;
       if (editProduct?._id) {
-        setProducts((prev) => prev.map((x) => (x._id === editProduct._id ? { ...x, ...o } : x)));
+        updatedList = products.map((x) => (x._id === editProduct._id ? { ...x, ...o } : x));
       } else {
-        setProducts((prev) => [...prev, { ...o, _id: `prd-${Date.now()}` }]);
+        updatedList = [...products, { ...o, _id: `prd-${Date.now()}` }];
       }
+      setProducts(updatedList);
+      localStorage.setItem('export_pro_products', JSON.stringify(updatedList));
       setModalOpen(false);
       setEditProduct(null);
     }
@@ -185,7 +196,9 @@ export default function Products() {
         await del(`/products/${id}`);
         await load();
       } catch (err) {
-        setProducts((prev) => prev.filter((x) => x._id !== id));
+        const remaining = products.filter((x) => x._id !== id);
+        setProducts(remaining);
+        localStorage.setItem('export_pro_products', JSON.stringify(remaining));
       }
     }
   };
@@ -337,7 +350,14 @@ export default function Products() {
                     </div>
                   </td>
                   <td style={{ textAlign: 'right' }}>
-                    <div className="actions" style={{ justifyContent: 'flex-end' }}>
+                    <div className="actions" style={{ justifyContent: 'flex-end', gap: '6px' }}>
+                      <button
+                        className="small-btn"
+                        title="View Product Details"
+                        onClick={() => setViewProduct(p)}
+                      >
+                        <Eye size={14} />
+                      </button>
                       <button
                         className="small-btn"
                         title="Edit Product"
@@ -369,6 +389,78 @@ export default function Products() {
         <Sparkles size={16} className="tip-icon" />
         <span>Pick a product in any quotation or order and we auto-fill its HS Code, unit and base price.</span>
       </div>
+
+      {/* View Product Modal */}
+      {viewProduct && (
+        <Modal
+          eyebrow="COMMODITY PROFILE"
+          title={`${viewProduct.name} (${viewProduct.sku})`}
+          onClose={() => setViewProduct(null)}
+          footer={
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', gap: '12px' }}>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => setViewProduct(null)}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="btn-purple"
+                onClick={() => {
+                  const p = viewProduct;
+                  setViewProduct(null);
+                  setEditProduct(p);
+                  setModalOpen(true);
+                }}
+              >
+                <Edit size={14} style={{ marginRight: '6px' }} /> Edit Commodity
+              </button>
+            </div>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              <span style={{ fontSize: '36px', lineHeight: 1 }}>{viewProduct.icon || '📦'}</span>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ margin: '0 0 4px', fontSize: '18px', fontWeight: 800, color: '#1e1e2d' }}>{viewProduct.name}</h3>
+                <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>SKU: {viewProduct.sku} • HS Code: {viewProduct.hsCode || 'N/A'}</span>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ display: 'block', fontSize: '11px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Base Price</span>
+                <strong style={{ fontSize: '18px', color: '#0c5a48', fontWeight: 800 }}>{formatAmount(viewProduct.price || 0)} / {viewProduct.unit}</strong>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+              <div style={{ padding: '12px 14px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
+                <small style={{ color: '#64748b', fontSize: '11px', display: 'block', marginBottom: '2px', fontWeight: 700 }}>AVAILABLE STOCK</small>
+                <strong style={{ fontSize: '14px', color: '#1e1e2d' }}>{viewProduct.availableStock || `${viewProduct.stock} ${viewProduct.unit}`}</strong>
+              </div>
+              <div style={{ padding: '12px 14px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
+                <small style={{ color: '#64748b', fontSize: '11px', display: 'block', marginBottom: '2px', fontWeight: 700 }}>UNIT OF MEASURE</small>
+                <strong style={{ fontSize: '14px', color: '#1e1e2d' }}>{viewProduct.unit}</strong>
+              </div>
+              <div style={{ padding: '12px 14px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
+                <small style={{ color: '#64748b', fontSize: '11px', display: 'block', marginBottom: '2px', fontWeight: 700 }}>STOCK STATUS</small>
+                {viewProduct.isLowStock ? (
+                  <span style={{ color: '#dc2626', fontWeight: 700, fontSize: '13px' }}>⚠️ Low Stock</span>
+                ) : (
+                  <span style={{ color: '#10b981', fontWeight: 700, fontSize: '13px' }}>✓ Normal Stock</span>
+                )}
+              </div>
+            </div>
+
+            <div style={{ padding: '14px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+              <strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Export Specifications & Packaging</strong>
+              <p style={{ margin: 0, fontSize: '13px', color: '#1e1e2d', lineHeight: 1.5 }}>
+                {viewProduct.description || 'Standard seaworthy export packaging and specifications.'}
+              </p>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* Add / Edit Product Modal */}
       {modalOpen && (

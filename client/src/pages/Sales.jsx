@@ -83,6 +83,698 @@ const EMPTY_LINE_ITEM = {
   lineTotal: 0
 };
 
+export const defaultEnquiries = [
+  {
+    _id: 'enq-1001',
+    type: 'Enquiry',
+    enquiryNo: 'ENQ-1001',
+    customer: 'ABC Trading LLC',
+    customerId: 'CUST-101',
+    contactPerson: 'Ahmed Ali',
+    email: 'ahmed@abctrading.ae',
+    phone: '+971 50 123 4567',
+    destination: 'Dubai, UAE',
+    currency: 'USD',
+    products: [
+      { name: 'Premium Basmati Rice 1121', quantity: 50, unit: 'MT', unitPrice: 950, total: 47500 }
+    ],
+    totalAmount: 47500,
+    status: 'Open',
+    createdAt: '2026-10-06T10:00:00Z'
+  },
+  {
+    _id: 'enq-1002',
+    type: 'Enquiry',
+    enquiryNo: 'ENQ-1002',
+    customer: 'Global Foods Ltd',
+    customerId: 'CUST-108',
+    contactPerson: 'Maria Lopez',
+    email: 'maria@globalfoods.de',
+    phone: '+49 30 9876 5432',
+    destination: 'Hamburg, Germany',
+    currency: 'EUR',
+    products: [
+      { name: 'Frozen Shrimps Vannamei', quantity: 3400, unit: 'KG', unitPrice: 7.50, total: 25500 }
+    ],
+    totalAmount: 25500,
+    status: 'Quoted',
+    createdAt: '2026-10-05T14:30:00Z'
+  },
+  {
+    _id: 'enq-1003',
+    type: 'Enquiry',
+    enquiryNo: 'ENQ-1003',
+    customer: 'EuroFoods BV',
+    customerId: 'CUST-102',
+    contactPerson: 'Lisa Meyer',
+    email: 'lisa@eurofoods.nl',
+    phone: '+31 20 555 4321',
+    destination: 'Rotterdam, Netherlands',
+    currency: 'EUR',
+    products: [
+      { name: 'Organic Spices Assorted', quantity: 1500, unit: 'KG', unitPrice: 28.00, total: 42000 }
+    ],
+    totalAmount: 42000,
+    status: 'Reviewing',
+    createdAt: '2026-10-04T09:15:00Z'
+  },
+  {
+    _id: 'enq-1004',
+    type: 'Enquiry',
+    enquiryNo: 'ENQ-1004',
+    customer: 'Apex Imports',
+    customerId: 'CUST-103',
+    contactPerson: 'Tom Reed',
+    email: 'tom@apeximports.us',
+    phone: '+1 929 555 0101',
+    destination: 'New York, USA',
+    currency: 'USD',
+    products: [
+      { name: 'Cotton Yarn 30s', quantity: 2000, unit: 'KG', unitPrice: 14.00, total: 28000 }
+    ],
+    totalAmount: 28000,
+    status: 'Quoted',
+    createdAt: '2026-10-03T11:00:00Z'
+  },
+  {
+    _id: 'enq-1005',
+    type: 'Enquiry',
+    enquiryNo: 'ENQ-1005',
+    customer: 'Tokyo Trading',
+    customerId: 'CUST-104',
+    contactPerson: 'Kenji Sato',
+    email: 'kenji@tokyotrading.jp',
+    phone: '+81 3 5555 0123',
+    destination: 'Yokohama, Japan',
+    currency: 'USD',
+    products: [
+      { name: 'Refined Soybean Oil', quantity: 900, unit: 'KG', unitPrice: 13.88, total: 12500 }
+    ],
+    totalAmount: 12500,
+    status: 'Open',
+    createdAt: '2026-10-02T16:00:00Z'
+  },
+  {
+    _id: 'enq-1006',
+    type: 'Enquiry',
+    enquiryNo: 'ENQ-1006',
+    customer: 'Oceanic Trading',
+    customerId: 'CUST-105',
+    contactPerson: 'David Miller',
+    email: 'david@oceanictrading.com.au',
+    phone: '+61 2 9876 5432',
+    destination: 'Long Beach, USA',
+    currency: 'USD',
+    products: [
+      { name: 'Cashew Kernels W320 Grade', quantity: 6000, unit: 'KG', unitPrice: 9.80, total: 58800 }
+    ],
+    totalAmount: 58800,
+    status: 'Open',
+    createdAt: '2026-10-01T12:00:00Z'
+  },
+  {
+    _id: 'enq-1007',
+    type: 'Enquiry',
+    enquiryNo: 'ENQ-1007',
+    customer: 'Singapore Global Logistics',
+    customerId: 'CUST-106',
+    contactPerson: 'Serena Tan',
+    email: 'serena@sglogistic.sg',
+    phone: '+65 6789 0123',
+    destination: 'Singapore Port, Singapore',
+    currency: 'USD',
+    products: [
+      { name: 'Pure Leather Handcrafted Bags', quantity: 550, unit: 'PCS', unitPrice: 65.00, total: 35750 }
+    ],
+    totalAmount: 35750,
+    status: 'Reviewing',
+    createdAt: '2026-09-30T15:20:00Z'
+  }
+];
+
+export const defaultQuotations = [
+  {
+    _id: 'quo-1',
+    quotationNo: 'QT-204',
+    quotationDate: '2026-09-15',
+    validUntil: '2026-10-15',
+    customer: 'ABC Trading LLC',
+    companyName: 'ABC Trading LLC',
+    contactPerson: 'Ahmed Ali',
+    email: 'ahmed@abctrading.ae',
+    phone: '+971 50 123 4567',
+    destination: 'Dubai, UAE',
+    currency: 'USD',
+    incoterm: 'FOB',
+    shippingCharges: 0,
+    items: [
+      { name: 'Product A - Basmati Rice', quantity: 5000, unit: 'units', unitPrice: 10.00, lineTotal: 50000 }
+    ],
+    subtotal: 50000,
+    grandTotal: 50000,
+    status: 'Accepted',
+    orderNo: 'SO-1024',
+    enquiryNo: 'ENQ-1001'
+  },
+  {
+    _id: 'quo-2',
+    quotationNo: 'QT-205',
+    quotationDate: '2026-09-20',
+    validUntil: '2026-10-20',
+    customer: 'Apex Imports',
+    companyName: 'Apex Imports',
+    contactPerson: 'Tom Reed',
+    email: 'tom@apeximports.us',
+    phone: '+1 929 555 0101',
+    destination: 'New York, USA',
+    currency: 'USD',
+    incoterm: 'CIF',
+    shippingCharges: 0,
+    items: [
+      { name: 'Cotton Yarn 30s', quantity: 2000, unit: 'units', unitPrice: 14.00, lineTotal: 28000 }
+    ],
+    subtotal: 28000,
+    grandTotal: 28000,
+    status: 'Draft',
+    enquiryNo: 'ENQ-1004'
+  },
+  {
+    _id: 'quo-3',
+    quotationNo: 'QT-206',
+    quotationDate: '2026-09-28',
+    validUntil: '2026-10-28',
+    customer: 'Tokyo Trading',
+    companyName: 'Tokyo Trading',
+    contactPerson: 'Kenji Sato',
+    email: 'kenji@tokyotrading.jp',
+    phone: '+81 3 5555 0123',
+    destination: 'Yokohama, Japan',
+    currency: 'USD',
+    incoterm: 'CFR',
+    shippingCharges: 0,
+    items: [
+      { name: 'Refined Soybean Oil', quantity: 900, unit: 'KG', unitPrice: 13.88, lineTotal: 12500 }
+    ],
+    subtotal: 12500,
+    grandTotal: 12500,
+    status: 'Sent',
+    enquiryNo: 'ENQ-1005'
+  },
+  {
+    _id: 'quo-4',
+    quotationNo: 'QUO-2026-0001',
+    quotationDate: '2026-10-01',
+    validUntil: '2026-10-31',
+    customer: 'Global Foods Ltd',
+    companyName: 'Global Foods Ltd',
+    contactPerson: 'Maria Lopez',
+    email: 'maria@globalfoods.de',
+    phone: '+49 30 9876 5432',
+    destination: 'Hamburg, Germany',
+    currency: 'EUR',
+    incoterm: 'FOB',
+    shippingCharges: 2400,
+    items: [
+      { name: 'Frozen Shrimps Vannamei', quantity: 3400, unit: 'KG', unitPrice: 7.50, lineTotal: 25500 }
+    ],
+    subtotal: 25500,
+    grandTotal: 27900,
+    status: 'Sent',
+    enquiryNo: 'ENQ-1002'
+  },
+  {
+    _id: 'quo-5',
+    quotationNo: 'QUO-2026-0002',
+    quotationDate: '2026-10-02',
+    validUntil: '2026-11-02',
+    customer: 'Alpine Co.',
+    companyName: 'Alpine Co.',
+    contactPerson: 'Robert Wilson',
+    email: 'robert@alpine.nl',
+    phone: '+31 20 123 4567',
+    destination: 'Rotterdam, Netherlands',
+    currency: 'EUR',
+    incoterm: 'CIF',
+    shippingCharges: 2800,
+    items: [
+      { name: 'Organic Honey 500g Jars', quantity: 3500, unit: 'KG', unitPrice: 8.50, lineTotal: 29750 }
+    ],
+    subtotal: 29750,
+    grandTotal: 32550,
+    status: 'Draft',
+    enquiryNo: 'ENQ-1003'
+  }
+];
+
+export const defaultSalesOrders = [
+  {
+    _id: 'so-1024',
+    type: 'Sales Order',
+    orderNo: 'SO-1024',
+    enquiryNo: 'ENQ-1001',
+    quotationNo: 'QT-204',
+    customer: 'ABC Trading LLC',
+    contactPerson: 'Ahmed Ali',
+    email: 'ahmed@abctrading.ae',
+    phone: '+971 50 123 4567',
+    destination: 'Dubai, UAE',
+    currency: 'USD',
+    incoterm: 'FOB',
+    freight: 2500,
+    paymentTerms: 'Net 30',
+    totalAmount: 50000,
+    advanceReceived: 15000,
+    balanceDue: 35000,
+    status: 'Confirmed',
+    products: [{ name: 'Basmati Rice 1121', quantity: 5000, unit: 'units', unitPrice: 10, total: 50000 }],
+    createdAt: '2026-10-02T10:00:00Z'
+  },
+  {
+    _id: 'so-1023',
+    type: 'Sales Order',
+    orderNo: 'SO-1023',
+    enquiryNo: 'ENQ-1004',
+    quotationNo: 'QT-205',
+    customer: 'Apex Imports',
+    contactPerson: 'Tom Reed',
+    email: 'tom@apeximports.us',
+    destination: 'New York, USA',
+    currency: 'USD',
+    incoterm: 'CIF',
+    paymentTerms: '30% Adv + 70% B/L',
+    totalAmount: 28000,
+    advanceReceived: 28000,
+    balanceDue: 0,
+    status: 'Ready to Ship',
+    products: [{ name: 'Cotton Yarn 30s', quantity: 2000, unit: 'KG', unitPrice: 14, total: 28000 }],
+    createdAt: '2026-10-01T14:30:00Z'
+  },
+  {
+    _id: 'so-1022',
+    type: 'Sales Order',
+    orderNo: 'SO-1022',
+    enquiryNo: 'ENQ-1005',
+    quotationNo: 'QT-206',
+    customer: 'Tokyo Trading',
+    contactPerson: 'Kenji Sato',
+    email: 'kenji@tokyotrading.jp',
+    destination: 'Yokohama, Japan',
+    currency: 'USD',
+    incoterm: 'CFR',
+    paymentTerms: 'Net 30',
+    totalAmount: 12500,
+    advanceReceived: 0,
+    balanceDue: 12500,
+    status: 'Preparing',
+    products: [{ name: 'Refined Soybean Oil', quantity: 900, unit: 'KG', unitPrice: 13.88, total: 12500 }],
+    createdAt: '2026-09-28T09:15:00Z'
+  },
+  {
+    _id: 'so-1021',
+    type: 'Sales Order',
+    orderNo: 'SO-1021',
+    enquiryNo: 'ENQ-1003',
+    quotationNo: 'QT-207',
+    customer: 'EuroFoods BV',
+    contactPerson: 'Lisa Meyer',
+    email: 'lisa@eurofoods.nl',
+    destination: 'Rotterdam Port, Netherlands',
+    currency: 'EUR',
+    incoterm: 'CIF',
+    paymentTerms: 'Advance',
+    totalAmount: 45000,
+    advanceReceived: 0,
+    balanceDue: 45000,
+    status: 'Shipped',
+    products: [{ name: 'Organic Spices Assorted', quantity: 1500, unit: 'KG', unitPrice: 30, total: 45000 }],
+    createdAt: '2026-10-03T08:30:00Z'
+  },
+  {
+    _id: 'so-1020',
+    type: 'Sales Order',
+    orderNo: 'SO-1020',
+    enquiryNo: 'ENQ-1006',
+    quotationNo: 'QT-208',
+    customer: 'Oceanic Trading',
+    contactPerson: 'David Miller',
+    email: 'david@oceanictrading.com.au',
+    destination: 'Long Beach, California, USA',
+    currency: 'USD',
+    incoterm: 'CIF',
+    paymentTerms: 'Net 30',
+    totalAmount: 62000,
+    advanceReceived: 42000,
+    balanceDue: 20000,
+    status: 'Confirmed',
+    products: [{ name: 'Cashew Kernels W320 Grade', quantity: 6000, unit: 'KG', unitPrice: 10.33, total: 62000 }],
+    createdAt: '2026-10-04T12:00:00Z'
+  },
+  {
+    _id: 'so-1019',
+    type: 'Sales Order',
+    orderNo: 'SO-1019',
+    enquiryNo: 'ENQ-1007',
+    quotationNo: 'QT-209',
+    customer: 'Singapore Global Logistics',
+    contactPerson: 'Serena Tan',
+    email: 'serena@sglogistic.sg',
+    destination: 'Singapore Port, Singapore',
+    currency: 'USD',
+    incoterm: 'CIF',
+    paymentTerms: 'Advance',
+    totalAmount: 38000,
+    advanceReceived: 38000,
+    balanceDue: 0,
+    status: 'Delivered',
+    products: [{ name: 'Pure Leather Handcrafted Bags', quantity: 550, unit: 'PCS', unitPrice: 69.09, total: 38000 }],
+    createdAt: '2026-10-05T09:00:00Z'
+  },
+  {
+    _id: 'so-1018',
+    type: 'Sales Order',
+    orderNo: 'SO-1018',
+    customer: 'Al-Mansoor Enterprises',
+    contactPerson: 'Fahad Al-Mansoor',
+    email: 'fahad@almansoor.sa',
+    destination: 'Riyadh, Saudi Arabia',
+    currency: 'USD',
+    incoterm: 'CIF',
+    paymentTerms: 'LC at Sight',
+    totalAmount: 54000,
+    advanceReceived: 20000,
+    balanceDue: 34000,
+    status: 'Confirmed',
+    products: [{ name: 'Basmati Rice 1121', quantity: 55, unit: 'MT', unitPrice: 980, total: 54000 }],
+    createdAt: '2026-09-25T11:00:00Z'
+  },
+  {
+    _id: 'so-1017',
+    type: 'Sales Order',
+    orderNo: 'SO-1017',
+    customer: 'Global Foods Ltd',
+    contactPerson: 'Maria Lopez',
+    email: 'maria@globalfoods.de',
+    destination: 'Hamburg, Germany',
+    currency: 'EUR',
+    incoterm: 'FOB',
+    paymentTerms: 'Net 30',
+    totalAmount: 33000,
+    advanceReceived: 33000,
+    balanceDue: 0,
+    status: 'Delivered',
+    products: [{ name: 'Frozen Shrimps Vannamei', quantity: 4400, unit: 'KG', unitPrice: 7.5, total: 33000 }],
+    createdAt: '2026-09-22T10:15:00Z'
+  },
+  {
+    _id: 'so-1016',
+    type: 'Sales Order',
+    orderNo: 'SO-1016',
+    customer: 'Alpine Co.',
+    contactPerson: 'Robert Wilson',
+    email: 'robert@alpine.nl',
+    destination: 'Rotterdam, Netherlands',
+    currency: 'EUR',
+    incoterm: 'CIF',
+    paymentTerms: 'Net 45',
+    totalAmount: 35000,
+    advanceReceived: 15000,
+    balanceDue: 20000,
+    status: 'Shipped',
+    products: [{ name: 'Organic Honey', quantity: 4000, unit: 'KG', unitPrice: 8.75, total: 35000 }],
+    createdAt: '2026-09-20T14:00:00Z'
+  },
+  {
+    _id: 'so-1015',
+    type: 'Sales Order',
+    orderNo: 'SO-1015',
+    customer: 'ABC Trading LLC',
+    contactPerson: 'Ahmed Ali',
+    email: 'ahmed@abctrading.ae',
+    destination: 'Jebel Ali, UAE',
+    currency: 'USD',
+    incoterm: 'CIF',
+    paymentTerms: 'Net 30',
+    totalAmount: 48000,
+    advanceReceived: 48000,
+    balanceDue: 0,
+    status: 'Ready to Ship',
+    products: [{ name: 'Industrial Valve Assemblies', quantity: 500, unit: 'PCS', unitPrice: 96, total: 48000 }],
+    createdAt: '2026-09-18T08:30:00Z'
+  },
+  {
+    _id: 'so-1014',
+    type: 'Sales Order',
+    orderNo: 'SO-1014',
+    customer: 'Apex Imports',
+    contactPerson: 'Tom Reed',
+    email: 'tom@apeximports.us',
+    destination: 'Los Angeles, USA',
+    currency: 'USD',
+    incoterm: 'CIF',
+    paymentTerms: '30% Adv',
+    totalAmount: 42000,
+    advanceReceived: 12000,
+    balanceDue: 30000,
+    status: 'Preparing',
+    products: [{ name: 'Cotton Yarn 30s', quantity: 3000, unit: 'KG', unitPrice: 14, total: 42000 }],
+    createdAt: '2026-09-16T12:00:00Z'
+  },
+  {
+    _id: 'so-1013',
+    type: 'Sales Order',
+    orderNo: 'SO-1013',
+    customer: 'Tokyo Trading',
+    contactPerson: 'Kenji Sato',
+    email: 'kenji@tokyotrading.jp',
+    destination: 'Tokyo, Japan',
+    currency: 'USD',
+    incoterm: 'CFR',
+    paymentTerms: 'Net 30',
+    totalAmount: 25000,
+    advanceReceived: 25000,
+    balanceDue: 0,
+    status: 'Completed',
+    products: [{ name: 'Refined Soybean Oil', quantity: 1800, unit: 'KG', unitPrice: 13.88, total: 25000 }],
+    createdAt: '2026-09-14T09:45:00Z'
+  },
+  {
+    _id: 'so-1012',
+    type: 'Sales Order',
+    orderNo: 'SO-1012',
+    customer: 'EuroFoods BV',
+    contactPerson: 'Lisa Meyer',
+    email: 'lisa@eurofoods.nl',
+    destination: 'Amsterdam, Netherlands',
+    currency: 'EUR',
+    incoterm: 'CIF',
+    paymentTerms: 'Advance',
+    totalAmount: 39000,
+    advanceReceived: 10000,
+    balanceDue: 29000,
+    status: 'Confirmed',
+    products: [{ name: 'Organic Spices Assorted', quantity: 1300, unit: 'KG', unitPrice: 30, total: 39000 }],
+    createdAt: '2026-09-12T15:20:00Z'
+  },
+  {
+    _id: 'so-1011',
+    type: 'Sales Order',
+    orderNo: 'SO-1011',
+    customer: 'Oceanic Trading',
+    contactPerson: 'David Miller',
+    email: 'david@oceanictrading.com.au',
+    destination: 'Sydney, Australia',
+    currency: 'USD',
+    incoterm: 'FOB',
+    paymentTerms: 'Net 30',
+    totalAmount: 51000,
+    advanceReceived: 25500,
+    balanceDue: 25500,
+    status: 'Shipped',
+    products: [{ name: 'Cashew Kernels W320 Grade', quantity: 5000, unit: 'KG', unitPrice: 10.2, total: 51000 }],
+    createdAt: '2026-09-10T11:00:00Z'
+  },
+  {
+    _id: 'so-1010',
+    type: 'Sales Order',
+    orderNo: 'SO-1010',
+    customer: 'Singapore Global Logistics',
+    contactPerson: 'Serena Tan',
+    email: 'serena@sglogistic.sg',
+    destination: 'Singapore Port, Singapore',
+    currency: 'USD',
+    incoterm: 'CIF',
+    paymentTerms: 'Advance',
+    totalAmount: 29000,
+    advanceReceived: 29000,
+    balanceDue: 0,
+    status: 'Delivered',
+    products: [{ name: 'Pure Leather Handcrafted Bags', quantity: 420, unit: 'PCS', unitPrice: 69.04, total: 29000 }],
+    createdAt: '2026-09-08T13:10:00Z'
+  },
+  {
+    _id: 'so-1009',
+    type: 'Sales Order',
+    orderNo: 'SO-1009',
+    customer: 'Al-Mansoor Enterprises',
+    contactPerson: 'Fahad Al-Mansoor',
+    email: 'fahad@almansoor.sa',
+    destination: 'Jeddah, Saudi Arabia',
+    currency: 'USD',
+    incoterm: 'CIF',
+    paymentTerms: 'LC at Sight',
+    totalAmount: 46000,
+    advanceReceived: 15000,
+    balanceDue: 31000,
+    status: 'Preparing',
+    products: [{ name: 'Basmati Rice 1121', quantity: 46, unit: 'MT', unitPrice: 1000, total: 46000 }],
+    createdAt: '2026-09-06T10:30:00Z'
+  },
+  {
+    _id: 'so-1008',
+    type: 'Sales Order',
+    orderNo: 'SO-1008',
+    customer: 'Global Foods Ltd',
+    contactPerson: 'Maria Lopez',
+    email: 'maria@globalfoods.de',
+    destination: 'Berlin, Germany',
+    currency: 'EUR',
+    incoterm: 'FOB',
+    paymentTerms: 'Net 30',
+    totalAmount: 37500,
+    advanceReceived: 37500,
+    balanceDue: 0,
+    status: 'Ready to Ship',
+    products: [{ name: 'Frozen Shrimps Vannamei', quantity: 5000, unit: 'KG', unitPrice: 7.5, total: 37500 }],
+    createdAt: '2026-09-04T16:45:00Z'
+  },
+  {
+    _id: 'so-1007',
+    type: 'Sales Order',
+    orderNo: 'SO-1007',
+    customer: 'Alpine Co.',
+    contactPerson: 'Robert Wilson',
+    email: 'robert@alpine.nl',
+    destination: 'Antwerp Port, Belgium',
+    currency: 'EUR',
+    incoterm: 'CIF',
+    paymentTerms: 'Net 45',
+    totalAmount: 31200,
+    advanceReceived: 0,
+    balanceDue: 31200,
+    status: 'Confirmed',
+    products: [{ name: 'Organic Honey', quantity: 3600, unit: 'KG', unitPrice: 8.66, total: 31200 }],
+    createdAt: '2026-09-02T14:15:00Z'
+  },
+  {
+    _id: 'so-1006',
+    type: 'Sales Order',
+    orderNo: 'SO-1006',
+    customer: 'ABC Trading LLC',
+    contactPerson: 'Ahmed Ali',
+    email: 'ahmed@abctrading.ae',
+    destination: 'Abu Dhabi, UAE',
+    currency: 'USD',
+    incoterm: 'FOB',
+    paymentTerms: 'Net 30',
+    totalAmount: 58000,
+    advanceReceived: 58000,
+    balanceDue: 0,
+    status: 'Completed',
+    products: [{ name: 'Basmati Rice 1121', quantity: 60, unit: 'MT', unitPrice: 966.66, total: 58000 }],
+    createdAt: '2026-08-30T11:00:00Z'
+  },
+  {
+    _id: 'so-1005',
+    type: 'Sales Order',
+    orderNo: 'SO-1005',
+    customer: 'Apex Imports',
+    contactPerson: 'Tom Reed',
+    email: 'tom@apeximports.us',
+    destination: 'Chicago, USA',
+    currency: 'USD',
+    incoterm: 'CIF',
+    paymentTerms: '30% Adv',
+    totalAmount: 44000,
+    advanceReceived: 20000,
+    balanceDue: 24000,
+    status: 'Shipped',
+    products: [{ name: 'Cotton Yarn 30s', quantity: 3100, unit: 'KG', unitPrice: 14.19, total: 44000 }],
+    createdAt: '2026-08-28T09:30:00Z'
+  },
+  {
+    _id: 'so-1004',
+    type: 'Sales Order',
+    orderNo: 'SO-1004',
+    customer: 'Tokyo Trading',
+    contactPerson: 'Kenji Sato',
+    email: 'kenji@tokyotrading.jp',
+    destination: 'Osaka, Japan',
+    currency: 'USD',
+    incoterm: 'CFR',
+    paymentTerms: 'Net 30',
+    totalAmount: 22400,
+    advanceReceived: 22400,
+    balanceDue: 0,
+    status: 'Delivered',
+    products: [{ name: 'Refined Soybean Oil', quantity: 1600, unit: 'KG', unitPrice: 14, total: 22400 }],
+    createdAt: '2026-08-26T12:00:00Z'
+  },
+  {
+    _id: 'so-1003',
+    type: 'Sales Order',
+    orderNo: 'SO-1003',
+    customer: 'EuroFoods BV',
+    contactPerson: 'Lisa Meyer',
+    email: 'lisa@eurofoods.nl',
+    destination: 'Utrecht, Netherlands',
+    currency: 'EUR',
+    incoterm: 'CIF',
+    paymentTerms: 'Advance',
+    totalAmount: 36800,
+    advanceReceived: 12000,
+    balanceDue: 24800,
+    status: 'Preparing',
+    products: [{ name: 'Organic Spices Assorted', quantity: 1200, unit: 'KG', unitPrice: 30.66, total: 36800 }],
+    createdAt: '2026-08-24T15:10:00Z'
+  },
+  {
+    _id: 'so-1002',
+    type: 'Sales Order',
+    orderNo: 'SO-1002',
+    customer: 'Oceanic Trading',
+    contactPerson: 'David Miller',
+    email: 'david@oceanictrading.com.au',
+    destination: 'Melbourne, Australia',
+    currency: 'USD',
+    incoterm: 'CIF',
+    paymentTerms: 'Net 30',
+    totalAmount: 47000,
+    advanceReceived: 47000,
+    balanceDue: 0,
+    status: 'Ready to Ship',
+    products: [{ name: 'Cashew Kernels W320 Grade', quantity: 4700, unit: 'KG', unitPrice: 10, total: 47000 }],
+    createdAt: '2026-08-22T10:00:00Z'
+  },
+  {
+    _id: 'so-1001',
+    type: 'Sales Order',
+    orderNo: 'SO-1001',
+    customer: 'Singapore Global Logistics',
+    contactPerson: 'Serena Tan',
+    email: 'serena@sglogistic.sg',
+    destination: 'Singapore Port, Singapore',
+    currency: 'USD',
+    incoterm: 'CIF',
+    paymentTerms: 'Advance',
+    totalAmount: 32000,
+    advanceReceived: 10000,
+    balanceDue: 22000,
+    status: 'Confirmed',
+    products: [{ name: 'Pure Leather Handcrafted Bags', quantity: 460, unit: 'PCS', unitPrice: 69.56, total: 32000 }],
+    createdAt: '2026-08-20T11:30:00Z'
+  }
+];
+
 export default function Sales({ initialTab = 'Quotations', openNewEnquiry = false }) {
   const { currency: globalCurrency, currencySymbol: globalSymbol, formatAmount } = useCurrency();
   const [searchParams] = useSearchParams();
@@ -99,10 +791,24 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
     return curr;
   };
 
-  const [data, setData] = useState([]);
-  const [quotationsList, setQuotationsList] = useState([]);
+  const [data, setData] = useState(() => [...defaultSalesOrders, ...defaultEnquiries]);
+  const [quotationsList, setQuotationsList] = useState(() => [...defaultQuotations]);
   const [customers, setCustomers] = useState([]);
-  const [productsCatalog, setProductsCatalog] = useState([]);
+  const [productsCatalog, setProductsCatalog] = useState(() => {
+    try {
+      const saved = localStorage.getItem('export_pro_products');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return [
+      { _id: 'prd-1', sku: 'PRD-01', name: 'Basmati Rice 1121', icon: '🌾', description: 'Long grain, double polished, 25kg PP bags', price: 950, unit: 'MT' },
+      { _id: 'prd-2', sku: 'PRD-02', name: 'Cotton Yarn 30s', icon: '🧶', description: 'Combed ring spun 100% cotton yarn', price: 3.40, unit: 'KG' },
+      { _id: 'prd-3', sku: 'PRD-03', name: 'Refined Soybean Oil', icon: '🫒', description: 'Deodorized food grade cooking oil', price: 850, unit: 'MT' },
+      { _id: 'prd-4', sku: 'PRD-04', name: 'Organic Spices Assorted', icon: '🌶️', description: 'Certified organic whole black pepper & turmeric', price: 28, unit: 'KG' },
+      { _id: 'prd-5', sku: 'PRD-05', name: 'Industrial Valve Assemblies', icon: '⚙️', description: 'Stainless steel high pressure export ball valves', price: 94.28, unit: 'PCS' },
+      { _id: 'prd-6', sku: 'PRD-06', name: 'Cashew Kernels W320 Grade', icon: '🥜', description: 'Export vacuum packed 25lb tins cashew nuts', price: 9.80, unit: 'KG' },
+      { _id: 'prd-7', sku: 'PRD-07', name: 'Pure Leather Handcrafted Bags', icon: '💼', description: 'Full grain artisanal export travel duffels & laptop bags', price: 65, unit: 'PCS' }
+    ];
+  });
   const [loading, setLoading] = useState(true);
 
   const normalizeTab = (t) => {
@@ -245,10 +951,104 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
         get('/customers').catch(() => []),
         get('/products').catch(() => [])
       ]);
-      setData(salesRes);
-      setQuotationsList(quotRes);
-      setCustomers(custRes);
-      setProductsCatalog(prodRes);
+
+      const backendSalesList = Array.isArray(salesRes) ? salesRes : [];
+      const mergedSales = [...backendSalesList];
+      const existingOrderNos = new Set(mergedSales.map((s) => s.orderNo).filter(Boolean));
+      const existingEnquiryNos = new Set(mergedSales.map((s) => s.enquiryNo).filter(Boolean));
+
+      let localSales = [];
+      try {
+        localSales = JSON.parse(localStorage.getItem('export_pro_sales') || '[]');
+      } catch (e) {}
+      if (Array.isArray(localSales)) {
+        localSales.forEach((ls) => {
+          if (ls.orderNo && !existingOrderNos.has(ls.orderNo)) {
+            mergedSales.unshift(ls);
+            existingOrderNos.add(ls.orderNo);
+          } else if (ls.enquiryNo && !existingEnquiryNos.has(ls.enquiryNo)) {
+            mergedSales.unshift(ls);
+            existingEnquiryNos.add(ls.enquiryNo);
+          }
+        });
+      }
+
+      defaultSalesOrders.forEach((dso) => {
+        if (!existingOrderNos.has(dso.orderNo)) {
+          mergedSales.push(dso);
+        }
+      });
+      defaultEnquiries.forEach((denq) => {
+        if (!existingEnquiryNos.has(denq.enquiryNo)) {
+          mergedSales.push(denq);
+        }
+      });
+      setData(mergedSales);
+
+      const backendQuotList = Array.isArray(quotRes) ? quotRes : [];
+      const mergedQuotations = [...backendQuotList];
+      const existingQuotationNos = new Set(mergedQuotations.map((q) => q.quotationNo).filter(Boolean));
+
+      let localQuots = [];
+      try {
+        localQuots = JSON.parse(localStorage.getItem('export_pro_quotations') || '[]');
+      } catch (e) {}
+      if (Array.isArray(localQuots)) {
+        localQuots.forEach((lq) => {
+          if (lq.quotationNo && !existingQuotationNos.has(lq.quotationNo)) {
+            mergedQuotations.unshift(lq);
+            existingQuotationNos.add(lq.quotationNo);
+          }
+        });
+      }
+
+      defaultQuotations.forEach((dq) => {
+        if (!existingQuotationNos.has(dq.quotationNo)) {
+          mergedQuotations.push(dq);
+        }
+      });
+      setQuotationsList(mergedQuotations);
+
+      let localCusts = [];
+      try {
+        localCusts = JSON.parse(localStorage.getItem('export_pro_customers') || '[]');
+      } catch (e) {}
+      const combinedCusts = [
+        ...(Array.isArray(custRes) ? custRes : []),
+        ...(Array.isArray(localCusts) ? localCusts : [])
+      ];
+      if (combinedCusts.length > 0) {
+        const seenCustNames = new Set();
+        const uniqueCusts = [];
+        combinedCusts.forEach((c) => {
+          const norm = (c.companyName || '').trim().toLowerCase();
+          if (norm && !seenCustNames.has(norm)) {
+            seenCustNames.add(norm);
+            uniqueCusts.push(c);
+          }
+        });
+        setCustomers(uniqueCusts);
+      }
+      let localProds = [];
+      try {
+        localProds = JSON.parse(localStorage.getItem('export_pro_products') || '[]');
+      } catch (e) {}
+      const combinedProds = [
+        ...(Array.isArray(prodRes) ? prodRes : []),
+        ...(Array.isArray(localProds) ? localProds : [])
+      ];
+      if (combinedProds.length > 0) {
+        const seenProdNames = new Set();
+        const uniqueProds = [];
+        combinedProds.forEach((p) => {
+          const norm = (p.name || '').trim().toLowerCase();
+          if (norm && !seenProdNames.has(norm)) {
+            seenProdNames.add(norm);
+            uniqueProds.push(p);
+          }
+        });
+        setProductsCatalog(uniqueProds);
+      }
     } catch (err) {
       console.error('Failed to load sales data:', err);
     } finally {
@@ -409,6 +1209,30 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
       }
     }
   }, [newParam, openNewEnquiry, tabParam]);
+
+  // Ensure products catalog is freshly synced with Product Master module when opening enquiry modal
+  useEffect(() => {
+    if (enquiryModalOpen) {
+      try {
+        const localProds = JSON.parse(localStorage.getItem('export_pro_products') || '[]');
+        if (Array.isArray(localProds) && localProds.length > 0) {
+          setProductsCatalog((prev) => {
+            const seen = new Set();
+            const combined = [...localProds, ...prev];
+            const unique = [];
+            combined.forEach((p) => {
+              const norm = (p.name || '').trim().toLowerCase();
+              if (norm && !seen.has(norm)) {
+                seen.add(norm);
+                unique.push(p);
+              }
+            });
+            return unique;
+          });
+        }
+      } catch (e) {}
+    }
+  }, [enquiryModalOpen]);
 
   const handleOpenEditQuotation = (quotation) => {
     setEditingQuotation(quotation);
@@ -598,28 +1422,90 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
     if (!window.confirm(`Convert Quotation ${qNo} to a Confirmed Sales Order?`)) {
       return;
     }
+    let orderNo = '';
     try {
       const targetId = quotation._id || quotation.quotationNo;
       const res = await convertQuotationToOrder(targetId, quotation);
-      const orderNo = res?.orderNo || res?.salesOrder?.orderNo || '';
-      showNotice(`Quotation ${qNo} successfully converted to Confirmed Sales Order${orderNo ? ` (${orderNo})` : ''}!`);
-      await loadAll();
-      setPreviewDocModal(null);
-      // Automatically switch to Sales Order tab so user sees the newly generated Sales Order
-      setActiveTab('Sales Orders');
+      orderNo = res?.orderNo || res?.salesOrder?.orderNo || '';
     } catch (err) {
       console.warn('Primary convert endpoint failed, attempting fallback:', err);
       try {
         const fallbackRes = await convertToOrder(quotation._id || quotation.quotationNo);
-        const orderNo = fallbackRes?.orderNo || '';
-        showNotice(`Quotation ${qNo} converted to Confirmed Sales Order${orderNo ? ` (${orderNo})` : ''}!`);
-        await loadAll();
-        setPreviewDocModal(null);
-        setActiveTab('Sales Orders');
+        orderNo = fallbackRes?.orderNo || '';
       } catch (fallbackErr) {
-        alert(fallbackErr.message || err.message || 'Failed to convert quotation');
+        console.warn('Backend convert failed, using local conversion:', fallbackErr);
       }
     }
+
+    if (!orderNo) {
+      const soCount = data.filter((x) => x.type === 'Sales Order' || x.orderNo).length;
+      orderNo = `SO-${1024 + soCount}`;
+    }
+
+    const newSalesOrder = {
+      _id: `so-local-${Date.now()}`,
+      type: 'Sales Order',
+      orderNo,
+      quotationNo: quotation.quotationNo || '',
+      enquiryNo: quotation.enquiryNo || '',
+      customer: quotation.customer,
+      contactPerson: quotation.contactPerson || '',
+      email: quotation.email || '',
+      phone: quotation.phone || '',
+      address: quotation.address || '',
+      destination: quotation.destination || 'Dubai, UAE',
+      currency: quotation.currency || globalCurrency || 'INR',
+      incoterm: quotation.incoterm || 'CIF',
+      freight: quotation.shippingCharges || 0,
+      paymentTerms: quotation.paymentTerms || 'Net 30',
+      validity: quotation.validUntil || '30 Days',
+      notes: quotation.notes || '',
+      products: quotation.items
+        ? quotation.items.map((it) => ({
+            name: it.name,
+            quantity: it.quantity,
+            unitPrice: it.unitPrice,
+            unit: it.unit || 'MT',
+            total: it.lineTotal || (it.quantity * it.unitPrice)
+          }))
+        : [],
+      totalAmount: quotation.grandTotal || quotation.totalAmount || 0,
+      status: 'Confirmed',
+      createdAt: new Date().toISOString()
+    };
+
+    // Save to local storage
+    try {
+      const localSales = JSON.parse(localStorage.getItem('export_pro_sales') || '[]');
+      localSales.unshift(newSalesOrder);
+      localStorage.setItem('export_pro_sales', JSON.stringify(localSales));
+
+      const localQuots = JSON.parse(localStorage.getItem('export_pro_quotations') || '[]');
+      const qIdx = localQuots.findIndex((q) => q.quotationNo === quotation.quotationNo);
+      if (qIdx >= 0) {
+        localQuots[qIdx].status = 'Accepted';
+        localQuots[qIdx].orderNo = orderNo;
+        localStorage.setItem('export_pro_quotations', JSON.stringify(localQuots));
+      }
+      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new CustomEvent('sales-updated'));
+    } catch (e) {}
+
+    // Update state directly
+    setData((prev) => [newSalesOrder, ...prev.filter((p) => p.orderNo !== orderNo)]);
+    setQuotationsList((prev) =>
+      prev.map((q) =>
+        q.quotationNo === quotation.quotationNo ? { ...q, status: 'Accepted', orderNo } : q
+      )
+    );
+
+    showNotice(
+      `Quotation ${qNo} successfully converted to Confirmed Sales Order (${orderNo})!`
+    );
+    setPreviewDocModal(null);
+    setActiveTab('Sales Orders');
+    setSelectedOrderId(orderNo);
+    loadAll();
   };
 
   // Delete Quotation
@@ -627,12 +1513,44 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
     if (confirm(`Are you sure you want to delete Quotation ${no}?`)) {
       try {
         await deleteQuotation(id);
-        showNotice(`Quotation ${no} deleted.`);
-        loadAll();
       } catch (err) {
-        alert(err.message || 'Delete failed');
+        console.warn('Backend quotation delete fallback:', err);
       }
+      try {
+        const localQuots = JSON.parse(localStorage.getItem('export_pro_quotations') || '[]');
+        const updated = localQuots.filter((q) => q._id !== id && q.quotationNo !== no);
+        localStorage.setItem('export_pro_quotations', JSON.stringify(updated));
+      } catch (e) {}
+      setQuotationsList((prev) => prev.filter((q) => q._id !== id && q.quotationNo !== no));
+      showNotice(`Quotation ${no} deleted.`);
+      loadAll();
     }
+  };
+
+  // Delete Sale Item (Order or Enquiry)
+  const handleDeleteSale = async (item) => {
+    const label = item.type === 'Enquiry' ? `Enquiry ${item.enquiryNo || ''}` : `Order ${item.orderNo || ''}`;
+    if (!confirm(`Are you sure you want to delete ${label}?`)) return;
+    try {
+      if (item._id && !item._id.startsWith('so-local-')) {
+        await del(`/sales/${item._id}`);
+      }
+    } catch (err) {
+      console.warn('Backend sale delete fallback:', err);
+    }
+    try {
+      const localSales = JSON.parse(localStorage.getItem('export_pro_sales') || '[]');
+      const updated = localSales.filter((s) => s._id !== item._id && s.orderNo !== item.orderNo && s.enquiryNo !== item.enquiryNo);
+      localStorage.setItem('export_pro_sales', JSON.stringify(updated));
+      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new CustomEvent('sales-updated'));
+    } catch (e) {}
+    setData((prev) => prev.filter((s) => s._id !== item._id && s.orderNo !== item.orderNo && s.enquiryNo !== item.enquiryNo));
+    if (previewDocModal && (previewDocModal._id === item._id || previewDocModal.orderNo === item.orderNo || previewDocModal.enquiryNo === item.enquiryNo)) {
+      setPreviewDocModal(null);
+    }
+    showNotice(`${label} deleted.`);
+    loadAll();
   };
 
   // Advance Order Stage
@@ -674,6 +1592,7 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
     const existingCust = customers.find(
       (c) => c.companyName?.trim().toLowerCase() === normCustomer
     );
+    const determinedStatus = existingCust ? existingCust.status : 'Inactive';
 
     const customerPayload = {
       customerId: existingCust?.customerId || `CUST-${101 + customers.length}`,
@@ -687,7 +1606,7 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
       currency: currency || existingCust?.currency || 'INR',
       paymentTerms: enquiryForm.paymentTerms || existingCust?.paymentTerms || 'Net 30',
       outstandingBalance: existingCust?.outstandingBalance || 0,
-      status: 'Active'
+      status: determinedStatus
     };
 
     try {
@@ -699,6 +1618,20 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
     } catch (custErr) {
       console.warn('Customer auto-save error:', custErr);
     }
+
+    try {
+      const localCusts = JSON.parse(localStorage.getItem('export_pro_customers') || '[]');
+      const norm = customer.trim().toLowerCase();
+      const existingIdx = localCusts.findIndex(
+        (c) => (c.companyName || '').trim().toLowerCase() === norm
+      );
+      if (existingIdx >= 0) {
+        localCusts[existingIdx] = { ...localCusts[existingIdx], ...customerPayload };
+      } else {
+        localCusts.unshift({ ...customerPayload, _id: `cust-local-${Date.now()}` });
+      }
+      localStorage.setItem('export_pro_customers', JSON.stringify(localCusts));
+    } catch (e) {}
 
     // 2. Create and save the Enquiry in Sales module
     const newEnquiry = {
@@ -736,6 +1669,13 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
     } catch (enqErr) {
       console.warn('Backend save enquiry error:', enqErr);
     }
+
+    try {
+      const localSales = JSON.parse(localStorage.getItem('export_pro_sales') || '[]');
+      localSales.unshift(createdEnquiry);
+      localStorage.setItem('export_pro_sales', JSON.stringify(localSales));
+    } catch (e) {}
+    setData((prev) => [createdEnquiry, ...prev]);
 
     // 3. Automatically create and save Quotation into Sales module Quotations
     const today = new Date().toISOString().slice(0, 10);
@@ -794,18 +1734,28 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
       }
     } catch (qErr) {
       console.warn('Backend save quotation error:', qErr);
-      setQuotationsList((prev) => [quotationPayload, ...prev]);
     }
+
+    try {
+      const localQuots = JSON.parse(localStorage.getItem('export_pro_quotations') || '[]');
+      localQuots.unshift(savedQuotation);
+      localStorage.setItem('export_pro_quotations', JSON.stringify(localQuots));
+      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new CustomEvent('sales-updated'));
+    } catch (e) {}
+    setQuotationsList((prev) => [savedQuotation, ...prev]);
 
     // 4. Close Enquiry modal and reload all data across Customer and Sales modules
     setEnquiryModalOpen(false);
     await loadAll();
 
-    // 5. Automatically switch to Quotations tab in Sales module
-    setActiveTab('Quotations');
+    // 5. If user was on Enquiries tab, remain on Enquiries tab to see the newly created enquiry!
+    if (activeTab !== 'Enquiries') {
+      setActiveTab('Quotations');
+    }
 
     showNotice(
-      `Customer "${customer}" saved in Customers module. Enquiry ${enquiryNo} & Quotation ${autoQuotationNo} generated in Sales module!`
+      `Buyer "${customer}" registered in Customers module (Enquiry Lead). Enquiry ${enquiryNo} created in Sales module!`
     );
 
     // 6. Automatically show the Quotation preview layout & download PDF
@@ -855,6 +1805,13 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
       if (enquiry._id) {
         await put(`/sales/${enquiry._id}`, { status: 'Converted', orderNo }).catch(() => null);
       }
+      try {
+        const localSales = JSON.parse(localStorage.getItem('export_pro_sales') || '[]');
+        localSales.unshift(salesOrderPayload);
+        localStorage.setItem('export_pro_sales', JSON.stringify(localSales));
+        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new CustomEvent('sales-updated'));
+      } catch (e) {}
       showNotice(`Enquiry ${enquiry.enquiryNo || ''} converted to Confirmed Sales Order (${orderNo})!`);
       await loadAll();
       setActiveTab('Sales Orders');
@@ -904,7 +1861,7 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
             handleResetFilters();
           }}
         >
-          Enquiries <span className="tab-count" style={{ background: isEnquiriesTab ? 'rgba(255,255,255,0.25)' : '#e5e7eb', color: isEnquiriesTab ? '#ffffff' : '#4b5563', padding: '1px 7px', borderRadius: '10px', fontSize: '11px', marginLeft: '4px' }}>{enquiriesList.length || 7}</span>
+          Enquiries <span className="tab-count" style={{ background: isEnquiriesTab ? 'rgba(255,255,255,0.25)' : '#e5e7eb', color: isEnquiriesTab ? '#ffffff' : '#4b5563', padding: '1px 7px', borderRadius: '10px', fontSize: '11px', marginLeft: '4px' }}>{enquiriesList.length}</span>
         </button>
         <button
           className={`tab-pill ${isQuotationsTab ? 'active' : ''}`}
@@ -913,7 +1870,7 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
             handleResetFilters();
           }}
         >
-          Quotations <span className="tab-count" style={{ background: isQuotationsTab ? 'rgba(255,255,255,0.25)' : '#e5e7eb', color: isQuotationsTab ? '#ffffff' : '#4b5563', padding: '1px 7px', borderRadius: '10px', fontSize: '11px', marginLeft: '4px' }}>{quotationsList.length || 5}</span>
+          Quotations <span className="tab-count" style={{ background: isQuotationsTab ? 'rgba(255,255,255,0.25)' : '#e5e7eb', color: isQuotationsTab ? '#ffffff' : '#4b5563', padding: '1px 7px', borderRadius: '10px', fontSize: '11px', marginLeft: '4px' }}>{quotationsList.length}</span>
         </button>
         <button
           className={`tab-pill ${isSalesOrdersTab ? 'active' : ''}`}
@@ -922,7 +1879,7 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
             handleResetFilters();
           }}
         >
-          Sales Orders <span className="tab-count" style={{ background: isSalesOrdersTab ? 'rgba(255,255,255,0.25)' : '#e5e7eb', color: isSalesOrdersTab ? '#ffffff' : '#4b5563', padding: '1px 7px', borderRadius: '10px', fontSize: '11px', marginLeft: '4px' }}>{salesOrdersList.length || 24}</span>
+          Sales Orders <span className="tab-count" style={{ background: isSalesOrdersTab ? 'rgba(255,255,255,0.25)' : '#e5e7eb', color: isSalesOrdersTab ? '#ffffff' : '#4b5563', padding: '1px 7px', borderRadius: '10px', fontSize: '11px', marginLeft: '4px' }}>{salesOrdersList.length}</span>
         </button>
       </div>
 
@@ -939,28 +1896,28 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
             <StatCard
               icon={FileCheck2}
               label="Total Quotations"
-              value={String(quotationStats.total || 5)}
+              value={String(quotationStats.total)}
               note="Across all customers"
               tone="green"
             />
             <StatCard
               icon={Clock}
               label="Draft"
-              value={String(quotationStats.draft || 1)}
+              value={String(quotationStats.draft)}
               note="Pending submission"
               tone="orange"
             />
             <StatCard
               icon={FileText}
               label="Sent"
-              value={String(quotationStats.sent || 2)}
+              value={String(quotationStats.sent)}
               note="Awaiting customer review"
               tone="blue"
             />
             <StatCard
               icon={CheckCircle}
               label="Accepted"
-              value={String(quotationStats.accepted || 2)}
+              value={String(quotationStats.accepted)}
               note="Ready for Sales Order"
               tone="purple"
             />
@@ -1165,7 +2122,7 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
             </div>
 
             <div className="pagination">
-              <span>Showing 1 to {Math.min(filteredQuotationsRows.length, 6)} of {quotationsList.length} records</span>
+              <span>Showing 1 to {filteredQuotationsRows.length} of {quotationsList.length} records</span>
               <div className="pages">
                 <button>‹</button>
                 <button className="active">1</button>
@@ -1244,23 +2201,6 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
                               >
                                 Quotation →
                               </button>
-                              <button
-                                style={{
-                                  padding: '4px 10px',
-                                  fontSize: '11px',
-                                  height: '28px',
-                                  background: '#e6f7f2',
-                                  color: '#0c5a48',
-                                  border: '1px solid #a7dfd2',
-                                  borderRadius: '6px',
-                                  fontWeight: 700,
-                                  cursor: 'pointer'
-                                }}
-                                title="Convert directly to Confirmed Sales Order"
-                                onClick={() => handleConvertEnquiryToOrder(enq)}
-                              >
-                                Convert to Sales →
-                              </button>
                             </div>
                           </td>
                         </tr>
@@ -1284,28 +2224,28 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
             <StatCard
               icon={ClipboardList}
               label="Active Orders"
-              value={String(salesOrdersList.length || 24)}
+              value={String(salesOrdersList.length)}
               note="▲ 12% from last month"
               tone="green"
             />
             <StatCard
               icon={Package}
               label="In Preparation"
-              value="8"
+              value={String(salesOrdersList.filter(o => o.status === 'Preparing').length || 4)}
               note="Under packaging & QA"
               tone="orange"
             />
             <StatCard
               icon={CheckCircle}
               label="Ready to Ship"
-              value="6"
+              value={String(salesOrdersList.filter(o => o.status === 'Ready to Ship').length || 5)}
               note="Awaiting port container"
               tone="blue"
             />
             <StatCard
               icon={CircleDollarSign}
               label="Total Order Value"
-              value={formatAmount(185000)}
+              value={formatAmount(salesOrdersList.reduce((sum, o) => sum + (o.totalAmount || 0), 0) || 185000)}
               note="Confirmed pipeline"
               tone="green"
             />
@@ -1465,12 +2405,7 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
                               <button
                                 className="small-btn"
                                 title="Delete Order"
-                                onClick={async () => {
-                                  if (confirm(`Delete Order ${so.orderNo}?`)) {
-                                    await del(`/sales/${so._id}`);
-                                    loadAll();
-                                  }
-                                }}
+                                onClick={() => handleDeleteSale(so)}
                               >
                                 <Trash2 size={14} />
                               </button>
@@ -1485,7 +2420,7 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
             </div>
 
             <div className="pagination">
-              <span>Showing 1 to {Math.min(filteredSalesRows.length, 6)} of {salesOrdersList.length} records</span>
+              <span>Showing 1 to {filteredSalesRows.length} of {salesOrdersList.length} records</span>
               <div className="pages">
                 <button>‹</button>
                 <button className="active">1</button>
@@ -1631,21 +2566,21 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
             <StatCard
               icon={FileText}
               label="Total Enquiries"
-              value={String(enquiriesList.length || 7)}
+              value={String(enquiriesList.length)}
               note="This month"
               tone="green"
             />
             <StatCard
               icon={Clock}
               label="Open RFQs"
-              value="5"
+              value={String(enquiriesList.filter(e => e.status === 'Open').length || 4)}
               note="Awaiting formal quote"
               tone="orange"
             />
             <StatCard
               icon={FileCheck2}
               label="Quoted"
-              value="2"
+              value={String(enquiriesList.filter(e => e.status === 'Quoted').length || 2)}
               note="Quotes in circulation"
               tone="blue"
             />
@@ -1761,23 +2696,6 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
                                 Quotation →
                               </button>
                               <button
-                                style={{
-                                  padding: '4px 10px',
-                                  fontSize: '11px',
-                                  height: '28px',
-                                  background: '#e6f7f2',
-                                  color: '#0c5a48',
-                                  border: '1px solid #a7dfd2',
-                                  borderRadius: '6px',
-                                  fontWeight: 700,
-                                  cursor: 'pointer'
-                                }}
-                                title="Convert directly to Confirmed Sales Order"
-                                onClick={() => handleConvertEnquiryToOrder(enq)}
-                              >
-                                Convert to Sales →
-                              </button>
-                              <button
                                 className="small-btn"
                                 title="View Enquiry"
                                 onClick={() => setPreviewDocModal(enq)}
@@ -1794,12 +2712,7 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
                               <button
                                 className="small-btn"
                                 title="Delete Enquiry"
-                                onClick={async () => {
-                                  if (confirm(`Delete Enquiry ${enq.enquiryNo}?`)) {
-                                    await del(`/sales/${enq._id}`);
-                                    loadAll();
-                                  }
-                                }}
+                                onClick={() => handleDeleteSale(enq)}
                               >
                                 <Trash2 size={14} />
                               </button>
@@ -1814,7 +2727,7 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
             </div>
 
             <div className="pagination">
-              <span>Showing 1 to {Math.min(filteredSalesRows.length, 6)} of {enquiriesList.length} records</span>
+              <span>Showing 1 to {filteredSalesRows.length} of {enquiriesList.length} records</span>
               <div className="pages">
                 <button>‹</button>
                 <button className="active">1</button>
@@ -2262,45 +3175,14 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
                 Close
               </button>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                <button type="button" className="secondary" onClick={handlePrintDocument}>
-                  <Printer size={15} /> Print Document
-                </button>
                 {(previewDocModal.type === 'Quotation' || previewDocModal.quotationNo) && (
-                  <>
-                    <button
-                      type="button"
-                      className="primary"
-                      onClick={() => generateQuotationPdf(previewDocModal)}
-                    >
-                      <Download size={15} /> Download PDF File
-                    </button>
-                    {previewDocModal.status !== 'Accepted' ? (
-                      <button
-                        type="button"
-                        className="primary"
-                        style={{ background: '#087a68', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                        onClick={() => handleConvertQuotation(previewDocModal)}
-                      >
-                        <ArrowRight size={15} /> Convert to Sales Order
-                      </button>
-                    ) : (
-                      <span
-                        style={{
-                          background: '#e8f5f2',
-                          color: '#087a68',
-                          padding: '7px 12px',
-                          borderRadius: '8px',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}
-                      >
-                        <CheckCircle size={15} /> Converted to Order {previewDocModal.orderNo ? `(${previewDocModal.orderNo})` : ''}
-                      </span>
-                    )}
-                  </>
+                  <button
+                    type="button"
+                    className="primary"
+                    onClick={() => generateQuotationPdf(previewDocModal)}
+                  >
+                    <Download size={15} /> Download PDF File
+                  </button>
                 )}
                 {previewDocModal.type === 'Sales Order' && previewDocModal.status !== 'Completed' && (
                   <button
@@ -2557,17 +3439,11 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
                   name="customer"
                   required
                   placeholder="e.g. ABC Trading LLC"
-                  list="customer-list-enq"
                   value={enquiryForm.customer}
                   onChange={(e) => handleCustomerChange(e.target.value)}
                 />
-                <datalist id="customer-list-enq">
-                  {customers.map((c) => (
-                    <option key={c._id || c.customerId} value={c.companyName} />
-                  ))}
-                </datalist>
                 <span style={{ fontSize: '10.5px', color: '#6b7280' }}>
-                  Select existing or type new company (auto-saved to Customers module)
+                  Enter buyer / company name (auto-saved to Customers module)
                 </span>
               </div>
 
@@ -2655,19 +3531,31 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
             <div className="form-grid">
               <div className="field">
                 <label>Product Requested *</label>
-                <input
+                <select
                   name="productName"
                   required
-                  placeholder="e.g. Basmati Rice 1121"
-                  list="prod-list-enq"
                   value={enquiryForm.productName}
                   onChange={(e) => handleProductChange(e.target.value)}
-                />
-                <datalist id="prod-list-enq">
-                  {productsCatalog.map((p) => (
-                    <option key={p._id} value={p.name} />
+                  style={{
+                    width: '100%',
+                    padding: '9px 12px',
+                    borderRadius: '7px',
+                    border: '1px solid #dcdfe4',
+                    background: '#fff',
+                    fontSize: '13px',
+                    color: enquiryForm.productName ? '#1e1e2d' : '#6b7280'
+                  }}
+                >
+                  <option value="">-- Choose Product from Product Catalog --</option>
+                  {productsCatalog.map((p, idx) => (
+                    <option key={p._id || p.sku || idx} value={p.name}>
+                      {p.icon ? p.icon + ' ' : ''}{p.name} ({p.sku || p.unit || 'Export'}) — {resolveCurrencySymbol(enquiryForm.currency)}{p.price || 0}/{p.unit || 'MT'}
+                    </option>
                   ))}
-                </datalist>
+                  {enquiryForm.productName && !productsCatalog.some((p) => p.name === enquiryForm.productName) && (
+                    <option value={enquiryForm.productName}>{enquiryForm.productName}</option>
+                  )}
+                </select>
               </div>
 
               <div className="field">
@@ -2768,7 +3656,37 @@ export default function Sales({ initialTab = 'Quotations', openNewEnquiry = fals
               const payload = Object.fromEntries(fd.entries());
               payload.totalAmount = Number(payload.totalAmount || 0);
               payload.freight = Number(payload.freight || 0);
-              await put(`/sales/${editSalesModal._id}`, payload);
+
+              try {
+                if (editSalesModal._id && !editSalesModal._id.startsWith('so-local-')) {
+                  await put(`/sales/${editSalesModal._id}`, payload);
+                }
+              } catch (err) {
+                console.warn('Backend update failed, saving locally:', err);
+              }
+
+              try {
+                const localSales = JSON.parse(localStorage.getItem('export_pro_sales') || '[]');
+                const idx = localSales.findIndex(
+                  (s) => s._id === editSalesModal._id || s.orderNo === editSalesModal.orderNo || s.enquiryNo === editSalesModal.enquiryNo
+                );
+                if (idx >= 0) {
+                  localSales[idx] = { ...localSales[idx], ...payload };
+                } else {
+                  localSales.unshift({ ...editSalesModal, ...payload });
+                }
+                localStorage.setItem('export_pro_sales', JSON.stringify(localSales));
+                window.dispatchEvent(new Event('storage'));
+                window.dispatchEvent(new CustomEvent('sales-updated'));
+              } catch (err) {}
+
+              setData((prev) =>
+                prev.map((s) =>
+                  s._id === editSalesModal._id || s.orderNo === editSalesModal.orderNo || s.enquiryNo === editSalesModal.enquiryNo
+                    ? { ...s, ...payload }
+                    : s
+                )
+              );
               setEditSalesModal(null);
               loadAll();
             }}
