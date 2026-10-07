@@ -511,8 +511,8 @@ export default function Shipments() {
       </div>
 
       {/* Main Table Card (Dedicated Clean Columns for Required Fields) */}
-      <div className="panel" style={{ marginTop: '16px', background: '#ffffff', borderRadius: '18px', border: '1px solid rgba(224, 236, 232, 0.9)', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)', overflow: 'hidden' }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid #edf4f2', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+      <div className="panel" style={{ marginTop: '16px', background: '#ffffff', borderRadius: '20px', border: '1px solid rgba(226, 232, 240, 0.85)', padding: '22px 24px', marginBottom: '24px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)' }}>
+        <div style={{ paddingBottom: '16px', marginBottom: '14px', borderBottom: '1px solid #edf4f2', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
           <div>
             <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#1e1e2d' }}>
               Physical Export Deliveries
@@ -524,23 +524,23 @@ export default function Shipments() {
         </div>
 
         <div className="table-wrap" style={{ overflowX: 'auto', width: '100%' }}>
-          <table className="data-table" style={{ width: '100%', minWidth: '1680px', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <table className="data-table" style={{ width: '100%', minWidth: '1150px', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr>
-                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>SHIPMENT NO.</th>
-                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>ORDER</th>
-                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>CUSTOMER</th>
-                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>ORIGIN</th>
-                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>DESTINATION</th>
-                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>MODE</th>
-                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>CONTAINER NO.</th>
-                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>CARRIER</th>
-                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>ETD</th>
-                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>ETA</th>
-                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>TRACKING NO.</th>
-                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>DOCUMENTS</th>
-                <th style={{ padding: '16px 26px', whiteSpace: 'nowrap' }}>STATUS</th>
-                <th style={{ padding: '16px 26px', textAlign: 'right', whiteSpace: 'nowrap' }}>ACTIONS</th>
+                <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>SHIPMENT NO.</th>
+                <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>ORDER</th>
+                <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>CUSTOMER</th>
+                <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>ORIGIN</th>
+                <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>DESTINATION</th>
+                <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>MODE</th>
+                <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>CONTAINER NO.</th>
+                <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>CARRIER</th>
+                <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>ETD</th>
+                <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>ETA</th>
+                <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>TRACKING NO.</th>
+                <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>DOCUMENTS</th>
+                <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>STATUS</th>
+                <th style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>ACTIONS</th>
               </tr>
             </thead>
             <tbody>
@@ -578,32 +578,32 @@ export default function Shipments() {
                     style={{ cursor: 'pointer', transition: 'background 0.15s ease' }}
                   >
                     {/* 1. Shipment Number */}
-                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '13px 16px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <span className="shipment-id-badge">{row.shipmentNo}</span>
                     </td>
 
                     {/* 2. Order */}
-                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '13px 16px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <span className="order-badge">{row.orderNo || 'SO-1024'}</span>
                     </td>
 
                     {/* 3. Customer */}
-                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '13px 16px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <span className="customer-cell-name">{row.customer || 'Consignee Client'}</span>
                     </td>
 
                     {/* 4. Origin */}
-                    <td style={{ padding: '20px 26px', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '13px 16px', verticalAlign: 'middle' }}>
                       <span className="port-cell" title={row.origin}>{row.origin || 'Origin Port'}</span>
                     </td>
 
                     {/* 5. Destination */}
-                    <td style={{ padding: '20px 26px', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '13px 16px', verticalAlign: 'middle' }}>
                       <span className="port-cell" title={row.destination}>{row.destination || 'Destination Port'}</span>
                     </td>
 
                     {/* 6. Transport Mode */}
-                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '13px 16px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <span className={`mode-badge ${(row.transportMode || 'sea').toLowerCase()}`}>
                         {renderModeIcon(row.transportMode, 13)}
                         <span>{row.transportMode || 'Sea'}</span>
@@ -611,32 +611,32 @@ export default function Shipments() {
                     </td>
 
                     {/* 7. Container Number */}
-                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '13px 16px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <code className="mono-code">{row.containerNo || 'N/A'}</code>
                     </td>
 
                     {/* 8. Carrier */}
-                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '13px 16px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <span className="carrier-name">{row.carrier || 'Carrier'}</span>
                     </td>
 
                     {/* 9. ETD */}
-                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '13px 16px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <span className="date-cell">{row.etd || 'TBD'}</span>
                     </td>
 
                     {/* 10. ETA */}
-                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '13px 16px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <span className="date-cell eta-highlight">{row.eta || 'TBD'}</span>
                     </td>
 
                     {/* 11. Tracking Number */}
-                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '13px 16px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <code className="mono-code">{row.trackingNo || 'N/A'}</code>
                     </td>
 
                     {/* 12. Documents */}
-                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }} onClick={(e) => { e.stopPropagation(); setViewShipment(row); }}>
+                    <td style={{ padding: '13px 16px', whiteSpace: 'nowrap', verticalAlign: 'middle' }} onClick={(e) => { e.stopPropagation(); setViewShipment(row); }}>
                       <span className="doc-badge" title={row.docs?.join(', ') || 'View Documents'}>
                         <FileText size={12} />
                         <span>{row.docs?.length || 0} Docs</span>
@@ -644,12 +644,12 @@ export default function Shipments() {
                     </td>
 
                     {/* Status */}
-                    <td style={{ padding: '20px 26px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                    <td style={{ padding: '13px 16px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                       <Status>{row.status}</Status>
                     </td>
 
                     {/* Actions */}
-                    <td style={{ padding: '20px 26px', textAlign: 'right', whiteSpace: 'nowrap', verticalAlign: 'middle' }} onClick={(e) => e.stopPropagation()}>
+                    <td style={{ padding: '13px 16px', textAlign: 'right', whiteSpace: 'nowrap', verticalAlign: 'middle' }} onClick={(e) => e.stopPropagation()}>
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                         {/* Track / Details Button */}
                         <button
