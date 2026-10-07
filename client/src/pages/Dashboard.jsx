@@ -5,7 +5,9 @@ import {
   Eye,
   Plus,
   Ship,
-  Clock
+  Clock,
+  ChevronRight,
+  Check
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { get } from '../api';
@@ -120,13 +122,32 @@ export default function Dashboard() {
     });
   }, []);
 
+  // Dynamic greeting based on time of day:
+  // Before 12:00 PM: Good morning
+  // 12:00 PM - 3:29 PM: Good afternoon
+  // 3:30 PM (15:30) onwards: Good evening
+  const getGreeting = () => {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const totalMinutes = hours * 60 + minutes;
+
+    if (totalMinutes >= 930) {
+      return 'Good evening';
+    } else if (totalMinutes >= 720) {
+      return 'Good afternoon';
+    } else {
+      return 'Good morning';
+    }
+  };
+
   return (
     <div className="dashboard-page">
       {/* Header matching Image 2 */}
       <div className="dash-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px' }}>
         <div className="dash-copy">
           <h1 style={{ fontSize: '26px', fontWeight: 800, margin: '0 0 6px', color: '#1e1e2d' }}>
-            Good morning, Admin 👋
+            {getGreeting()}, Admin 👋
           </h1>
           <p style={{ margin: 0, color: '#7e8299', fontSize: '13.5px' }}>
             Here's how your export business is doing today
@@ -197,96 +218,172 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Export Workflow Stepper matching Image 2 */}
+      {/* Export Workflow Stepper with Directional Arrows */}
       <div className="export-workflow-card">
         <div className="export-workflow-head">
-          <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#1e1e2d', margin: 0 }}>Export Workflow</h3>
-          <Link to="/sales" className="live-link" style={{ color: '#0c5a48', fontWeight: 600, fontSize: '12.5px', textDecoration: 'none' }}>
-            Live pipeline
-          </Link>
+          <h3 className="workflow-title">Export Workflow</h3>
         </div>
-        <div className="pipeline-stepper">
-          {/* 1. Enquiry */}
-          <div
-            className="pipeline-step green"
-            onClick={() => navigate('/sales?tab=Enquiries')}
-            style={{ cursor: 'pointer' }}
-            title="View Enquiries"
-          >
-            <div className="pipeline-circle">{pipeline.enquiry}</div>
-            <span className="pipeline-label">Enquiry</span>
-          </div>
-          <div className="pipeline-connector passed" />
 
-          {/* 2. Quotation */}
-          <div
-            className="pipeline-step green"
-            onClick={() => navigate('/sales?tab=Quotations')}
-            style={{ cursor: 'pointer' }}
-            title="View Quotations"
-          >
-            <div className="pipeline-circle">{pipeline.quotation}</div>
-            <span className="pipeline-label">Quotation</span>
-          </div>
-          <div className="pipeline-connector passed" />
+        <div className="pipeline-stepper-container">
+          <div className="pipeline-stepper">
+            {/* 1. Enquiry */}
+            <div
+              className="pipeline-step passed"
+              onClick={() => navigate('/sales?tab=Enquiries')}
+              title="Step 1: Inbound Buyer Enquiries (Click to open)"
+            >
+              <div className="pipeline-circle-wrapper">
+                <div className="pipeline-circle">{pipeline.enquiry}</div>
+                <div className="step-mini-check">
+                  <Check size={9} strokeWidth={3} />
+                </div>
+              </div>
+              <div className="pipeline-label-group">
+                <span className="pipeline-label">Enquiry</span>
+              </div>
+            </div>
 
-          {/* 3. Sales Order (Active) */}
-          <div
-            className="pipeline-step active"
-            onClick={() => navigate('/sales?tab=Sales Orders')}
-            style={{ cursor: 'pointer' }}
-            title="View Sales Orders"
-          >
-            <div className="pipeline-circle">{pipeline.salesOrder}</div>
-            <span className="pipeline-label" style={{ color: '#0c5a48', fontWeight: 700 }}>Sales Order</span>
-          </div>
-          <div className="pipeline-connector" />
+            {/* Connector 1 -> 2 */}
+            <div className="pipeline-connector passed" title="Proceeds to Quotation">
+              <div className="connector-track-line" />
+              <div className="connector-arrow-pill">
+                <ChevronRight size={13} strokeWidth={2.5} />
+              </div>
+              <div className="connector-track-line" />
+            </div>
 
-          {/* 4. Shipment */}
-          <div
-            className="pipeline-step"
-            onClick={() => navigate('/shipments')}
-            style={{ cursor: 'pointer' }}
-            title="View Shipments"
-          >
-            <div className="pipeline-circle">{pipeline.shipment}</div>
-            <span className="pipeline-label">Shipment</span>
-          </div>
-          <div className="pipeline-connector" />
+            {/* 2. Quotation */}
+            <div
+              className="pipeline-step passed"
+              onClick={() => navigate('/sales?tab=Quotations')}
+              title="Step 2: Formal Quotations Issued (Click to open)"
+            >
+              <div className="pipeline-circle-wrapper">
+                <div className="pipeline-circle">{pipeline.quotation}</div>
+                <div className="step-mini-check">
+                  <Check size={9} strokeWidth={3} />
+                </div>
+              </div>
+              <div className="pipeline-label-group">
+                <span className="pipeline-label">Quotation</span>
+              </div>
+            </div>
 
-          {/* 5. Invoice */}
-          <div
-            className="pipeline-step"
-            onClick={() => navigate('/invoices')}
-            style={{ cursor: 'pointer' }}
-            title="View Invoices"
-          >
-            <div className="pipeline-circle">{pipeline.invoice}</div>
-            <span className="pipeline-label">Invoice</span>
-          </div>
-          <div className="pipeline-connector" />
+            {/* Connector 2 -> 3 */}
+            <div className="pipeline-connector passed" title="Confirmed into Sales Order">
+              <div className="connector-track-line" />
+              <div className="connector-arrow-pill">
+                <ChevronRight size={13} strokeWidth={2.5} />
+              </div>
+              <div className="connector-track-line" />
+            </div>
 
-          {/* 6. Payment */}
-          <div
-            className="pipeline-step"
-            onClick={() => navigate('/invoices')}
-            style={{ cursor: 'pointer' }}
-            title="View Payments"
-          >
-            <div className="pipeline-circle">{pipeline.payment}</div>
-            <span className="pipeline-label">Payment</span>
-          </div>
-          <div className="pipeline-connector" />
+            {/* 3. Sales Order (Active Current Stage) */}
+            <div
+              className="pipeline-step active"
+              onClick={() => navigate('/sales?tab=Sales Orders')}
+              title="Step 3: Confirmed Sales Orders (Click to open)"
+            >
+              <div className="pipeline-circle-wrapper">
+                <div className="pipeline-circle">{pipeline.salesOrder}</div>
+                <div className="step-active-radar" />
+              </div>
+              <div className="pipeline-label-group">
+                <span className="pipeline-label" style={{ color: '#0c5a48', fontWeight: 700 }}>Sales Order</span>
+              </div>
+            </div>
 
-          {/* 7. Completed */}
-          <div
-            className="pipeline-step"
-            onClick={() => navigate('/sales')}
-            style={{ cursor: 'pointer' }}
-            title="View Completed Orders"
-          >
-            <div className="pipeline-circle">{pipeline.completed}</div>
-            <span className="pipeline-label">Completed</span>
+            {/* Connector 3 -> 4 (Active Flow) */}
+            <div className="pipeline-connector active-flow" title="Active order preparing for dispatch">
+              <div className="connector-track-line" />
+              <div className="connector-arrow-pill">
+                <ChevronRight size={13} strokeWidth={2.5} />
+              </div>
+              <div className="connector-track-line" />
+            </div>
+
+            {/* 4. Shipment */}
+            <div
+              className="pipeline-step"
+              onClick={() => navigate('/shipments')}
+              title="Step 4: Ocean & Air Shipments (Click to open)"
+            >
+              <div className="pipeline-circle-wrapper">
+                <div className="pipeline-circle">{pipeline.shipment}</div>
+              </div>
+              <div className="pipeline-label-group">
+                <span className="pipeline-label">Shipment</span>
+              </div>
+            </div>
+
+            {/* Connector 4 -> 5 */}
+            <div className="pipeline-connector" title="Customs cleared to Commercial Invoicing">
+              <div className="connector-track-line" />
+              <div className="connector-arrow-pill">
+                <ChevronRight size={13} strokeWidth={2.5} />
+              </div>
+              <div className="connector-track-line" />
+            </div>
+
+            {/* 5. Invoice */}
+            <div
+              className="pipeline-step"
+              onClick={() => navigate('/invoices')}
+              title="Step 5: Commercial & Proforma Invoices (Click to open)"
+            >
+              <div className="pipeline-circle-wrapper">
+                <div className="pipeline-circle">{pipeline.invoice}</div>
+              </div>
+              <div className="pipeline-label-group">
+                <span className="pipeline-label">Invoice</span>
+              </div>
+            </div>
+
+            {/* Connector 5 -> 6 */}
+            <div className="pipeline-connector" title="Awaiting settlement remittance">
+              <div className="connector-track-line" />
+              <div className="connector-arrow-pill">
+                <ChevronRight size={13} strokeWidth={2.5} />
+              </div>
+              <div className="connector-track-line" />
+            </div>
+
+            {/* 6. Payment */}
+            <div
+              className="pipeline-step"
+              onClick={() => navigate('/invoices')}
+              title="Step 6: LC & Wire Transfer Payments (Click to open)"
+            >
+              <div className="pipeline-circle-wrapper">
+                <div className="pipeline-circle">{pipeline.payment}</div>
+              </div>
+              <div className="pipeline-label-group">
+                <span className="pipeline-label">Payment</span>
+              </div>
+            </div>
+
+            {/* Connector 6 -> 7 */}
+            <div className="pipeline-connector" title="Final settlement completion">
+              <div className="connector-track-line" />
+              <div className="connector-arrow-pill">
+                <ChevronRight size={13} strokeWidth={2.5} />
+              </div>
+              <div className="connector-track-line" />
+            </div>
+
+            {/* 7. Completed */}
+            <div
+              className="pipeline-step"
+              onClick={() => navigate('/sales')}
+              title="Step 7: Completed Export Orders (Click to open)"
+            >
+              <div className="pipeline-circle-wrapper">
+                <div className="pipeline-circle">{pipeline.completed}</div>
+              </div>
+              <div className="pipeline-label-group">
+                <span className="pipeline-label">Completed</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

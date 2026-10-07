@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Menu, Search, X, Package, Users, FileText, Globe, ChevronDown } from 'lucide-react';
+import { Menu, Search, X, Package, Users, FileText, Globe, ChevronDown, LogOut, Settings as SettingsIcon, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { get, getQuotations } from '../../api';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 
 export default function Navbar({ onOpen, currency, setCurrency, currencies }) {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const toast = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [data, setData] = useState({
     products: [],
     customers: [],
@@ -15,6 +20,7 @@ export default function Navbar({ onOpen, currency, setCurrency, currencies }) {
   });
   const [hasLoaded, setHasLoaded] = useState(false);
   const containerRef = useRef(null);
+  const userDropdownRef = useRef(null);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -22,10 +28,20 @@ export default function Navbar({ onOpen, currency, setCurrency, currencies }) {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         setIsOpen(false);
       }
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
+        setUserDropdownOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleLogout = () => {
+    setUserDropdownOpen(false);
+    logout();
+    toast.info('You have safely signed out of Master Export Pro.', 'Session Ended');
+    navigate('/login', { replace: true });
+  };
 
   const loadSearchData = async () => {
     if (hasLoaded) return;
@@ -336,10 +352,197 @@ export default function Navbar({ onOpen, currency, setCurrency, currencies }) {
           <ChevronDown size={13} style={{ color: '#64748b', pointerEvents: 'none' }} />
         </div>
 
-        {/* Admin User Profile Pill matching picture */}
-        <div className="user-pill" title="User Profile">
-          <div className="user-avatar-circle">A</div>
-          <span className="user-name">Admin</span>
+        {/* Admin User Profile Pill with Interactive Dropdown */}
+        <div style={{ position: 'relative' }} ref={userDropdownRef}>
+          <div
+            className="user-pill"
+            title="User Profile & Settings"
+            onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+            style={{ cursor: 'pointer', userSelect: 'none' }}
+          >
+            <div className="user-avatar-circle">A</div>
+            <span className="user-name">{user?.name ? 'Admin' : 'Admin'}</span>
+            <ChevronDown
+              size={13}
+              style={{
+                color: '#64748b',
+                transition: 'transform 0.15s ease',
+                transform: userDropdownOpen ? 'rotate(180deg)' : 'rotate(0)'
+              }}
+            />
+          </div>
+
+          {/* Professional Admin Dropdown */}
+          {userDropdownOpen && (
+            <div
+              className="user-profile-dropdown"
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                right: 0,
+                width: '280px',
+                background: '#ffffff',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 16px 36px -8px rgba(0, 0, 0, 0.12), 0 6px 12px -4px rgba(0, 0, 0, 0.06)',
+                zIndex: 1000,
+                padding: '12px',
+                animation: 'modalFadeIn 0.18s ease-out forwards'
+              }}
+            >
+              {/* Profile Card Header */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '8px 10px 14px',
+                  borderBottom: '1px solid #f1f5f9'
+                }}
+              >
+                <div style={{ position: 'relative' }}>
+                  <div
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #0c5a48 0%, #084335 100%)',
+                      color: '#ffffff',
+                      border: '1.5px solid #d97706',
+                      display: 'grid',
+                      placeItems: 'center',
+                      fontWeight: 800,
+                      fontSize: '15px'
+                    }}
+                  >
+                    A
+                  </div>
+                  {/* Online indicator dot */}
+                  <span
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      right: 0,
+                      width: '10px',
+                      height: '10px',
+                      borderRadius: '50%',
+                      background: '#10b981',
+                      border: '2px solid #ffffff'
+                    }}
+                  />
+                </div>
+
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <strong style={{ fontSize: '13.5px', color: '#0f172a' }}>Administrator</strong>
+                    <span style={{ fontSize: '10px', background: '#ecfdf5', color: '#065f46', fontWeight: 700, padding: '1px 6px', borderRadius: '4px' }}>
+                      SUPER
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: '1px' }}>
+                    admin@masterexport.com
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Menu Links */}
+              <div style={{ padding: '8px 0', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserDropdownOpen(false);
+                    navigate('/settings');
+                  }}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'transparent',
+                    fontSize: '12.5px',
+                    fontWeight: 500,
+                    color: '#334155',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'background 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#f8fafc')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <SettingsIcon size={15} style={{ color: '#64748b' }} />
+                  <span>ERP System Settings</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserDropdownOpen(false);
+                    navigate('/reports');
+                  }}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'transparent',
+                    fontSize: '12.5px',
+                    fontWeight: 500,
+                    color: '#334155',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'background 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = '#f8fafc')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <ShieldCheck size={15} style={{ color: '#0c5a48' }} />
+                  <span>Audit & Reports</span>
+                </button>
+              </div>
+
+              {/* Divider */}
+              <div style={{ height: '1px', background: '#f1f5f9', margin: '4px 0 6px' }} />
+
+              {/* Professional Logout Option */}
+              <button
+                type="button"
+                onClick={handleLogout}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '9px 10px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: '#fef2f2',
+                  color: '#dc2626',
+                  fontSize: '12.5px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#fee2e2';
+                  e.currentTarget.style.color = '#b91c1c';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#fef2f2';
+                  e.currentTarget.style.color = '#dc2626';
+                }}
+              >
+                <LogOut size={15} />
+                <span>Sign Out of Portal</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

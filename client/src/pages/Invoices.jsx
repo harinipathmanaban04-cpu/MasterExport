@@ -32,6 +32,7 @@ import Modal from '../components/Modal';
 import Logo from '../components/Logo';
 import { PageHeader, StatCard, Status } from '../components/Layout';
 import { useCurrency } from '../context/CurrencyContext';
+import { useToast } from '../context/ToastContext';
 
 // Clean initial export invoices matching requirements
 const defaultInvoices = [
@@ -315,6 +316,11 @@ const defaultPayments = [
     paymentDate: '2026-10-03',
     paymentMethod: 'Wire Transfer (TT)',
     reference: 'TXN-SCB-891024',
+    accountHolder: 'ABC Trading LLC',
+    payerBank: 'Standard Chartered Bank UAE',
+    accountNumber: 'AE29 0330 0000 0012 3456 789',
+    swiftCode: 'SCBLAEADXXX',
+    bankBranch: 'Downtown Dubai Branch, UAE',
     notes: 'Part payment 40% initial advance received.'
   },
   {
@@ -328,6 +334,11 @@ const defaultPayments = [
     paymentDate: '2026-10-02',
     paymentMethod: 'Letter of Credit (LC)',
     reference: 'LC-CITI-442100',
+    accountHolder: 'Apex Imports Inc.',
+    payerBank: 'Citibank N.A. New York',
+    accountNumber: 'US44 CITI 0001 2345 6789 01',
+    swiftCode: 'CITIUS33XXX',
+    bankBranch: 'Wall Street Commercial, New York, USA',
     notes: '100% LC realization confirmed by overseas correspondent.'
   },
   {
@@ -341,6 +352,11 @@ const defaultPayments = [
     paymentDate: '2026-09-15',
     paymentMethod: 'Wire Transfer (TT)',
     reference: 'TXN-HSBC-29104',
+    accountHolder: 'ABC Trading LLC',
+    payerBank: 'HSBC Bank Middle East',
+    accountNumber: 'AE44 0200 0000 0098 7654 321',
+    swiftCode: 'HBMEAEADXXX',
+    bankBranch: 'Sheikh Zayed Road, Dubai, UAE',
     notes: 'Full invoice settlement received.'
   },
   {
@@ -354,6 +370,11 @@ const defaultPayments = [
     paymentDate: '2026-10-04',
     paymentMethod: 'Wire Transfer (TT)',
     reference: 'TXN-ANZ-771920',
+    accountHolder: 'Oceanic Trading Pty Ltd',
+    payerBank: 'ANZ Bank Australia',
+    accountNumber: 'AU88 ANZ0 0102 9384 7561 02',
+    swiftCode: 'ANZBAU3MXXX',
+    bankBranch: 'Collins Street, Melbourne, Australia',
     notes: 'Initial production deposit and freight allocation.'
   },
   {
@@ -367,6 +388,11 @@ const defaultPayments = [
     paymentDate: '2026-10-05',
     paymentMethod: 'Wire Transfer (TT)',
     reference: 'SWIFT-DBS-991204',
+    accountHolder: 'Singapore Global Logistics Pte Ltd',
+    payerBank: 'DBS Bank Ltd Singapore',
+    accountNumber: 'SG12 DBSS 0039 1827 3645 00',
+    swiftCode: 'DBSSSGSGXXX',
+    bankBranch: 'Marina Bay Financial Centre, Singapore',
     notes: '100% advance wire settlement via DBS Singapore.'
   },
   {
@@ -380,6 +406,11 @@ const defaultPayments = [
     paymentDate: '2026-10-04',
     paymentMethod: 'Wire Transfer (TT)',
     reference: 'TXN-ENBD-339182',
+    accountHolder: 'ABC Trading LLC',
+    payerBank: 'Emirates NBD Bank PJSC',
+    accountNumber: 'AE29 0330 0000 0012 3456 789',
+    swiftCode: 'EBILAEADXXX',
+    bankBranch: 'Business Bay Branch, Dubai, UAE',
     notes: 'Interim stage payment received against dispatch note.'
   },
   {
@@ -393,12 +424,18 @@ const defaultPayments = [
     paymentDate: '2026-10-05',
     paymentMethod: 'Letter of Credit (LC)',
     reference: 'LC-WBC-552109',
+    accountHolder: 'Oceanic Trading Pty Ltd',
+    payerBank: 'Westpac Banking Corporation',
+    accountNumber: 'AU12 WPAC 1928 3746 5019 82',
+    swiftCode: 'WPACAU2SXXX',
+    bankBranch: 'Sydney Commercial Centre, Australia',
     notes: 'Document release tranche cleared through Westpac.'
   }
 ];
 
 export default function Invoices({ initialTab = 'Invoices' }) {
   const { formatAmount } = useCurrency();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState(initialTab === 'Payments' ? 'Payments' : 'Invoices');
 
   const [invoices, setInvoices] = useState(defaultInvoices);
@@ -416,17 +453,23 @@ export default function Invoices({ initialTab = 'Invoices' }) {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [recordPaymentModalOpen, setRecordPaymentModalOpen] = useState(false);
   const [viewInvoice, setViewInvoice] = useState(null);
+  const [viewPaymentVoucher, setViewPaymentVoucher] = useState(null);
   const [activeInvoiceTab, setActiveInvoiceTab] = useState('document');
   const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState(null);
 
-  // Payment form state with real-time validation
+  // Payment form state with real-time validation & customer account details
   const [paymentForm, setPaymentForm] = useState({
     invoiceNo: '',
     amount: '',
     paymentMethod: 'Wire Transfer (TT)',
     paymentDate: new Date().toISOString().slice(0, 10),
     reference: '',
-    notes: ''
+    notes: '',
+    accountHolder: '',
+    payerBank: '',
+    accountNumber: '',
+    swiftCode: '',
+    bankBranch: ''
   });
   const [paymentError, setPaymentError] = useState('');
 
@@ -528,6 +571,9 @@ export default function Invoices({ initialTab = 'Invoices' }) {
         (pay.invoiceNo && pay.invoiceNo.toLowerCase().includes(q)) ||
         (pay.orderNo && pay.orderNo.toLowerCase().includes(q)) ||
         (pay.customer && pay.customer.toLowerCase().includes(q)) ||
+        (pay.payerBank && pay.payerBank.toLowerCase().includes(q)) ||
+        (pay.accountNumber && pay.accountNumber.toLowerCase().includes(q)) ||
+        (pay.swiftCode && pay.swiftCode.toLowerCase().includes(q)) ||
         (pay.reference && pay.reference.toLowerCase().includes(q));
 
       const matchCustomer = !customerFilter || pay.customer === customerFilter;
@@ -545,14 +591,22 @@ export default function Invoices({ initialTab = 'Invoices' }) {
 
   // Open Record Payment Modal for a specific invoice
   const handleOpenPaymentModal = (invoice) => {
+    const target = invoice || invoices[0];
+    const prevPayment = target ? payments.find((p) => p.customer === target.customer && p.payerBank) : null;
+
     setSelectedInvoiceForPayment(invoice);
     setPaymentForm({
-      invoiceNo: invoice ? invoice.invoiceNo : (invoices[0]?.invoiceNo || ''),
-      amount: invoice ? (invoice.remainingBalance > 0 ? invoice.remainingBalance : '') : '',
+      invoiceNo: target ? target.invoiceNo : (invoices[0]?.invoiceNo || ''),
+      amount: target ? (target.remainingBalance > 0 ? String(target.remainingBalance) : '') : '',
       paymentMethod: 'Wire Transfer (TT)',
       paymentDate: new Date().toISOString().slice(0, 10),
       reference: '',
-      notes: ''
+      notes: '',
+      accountHolder: target?.customer || '',
+      payerBank: prevPayment?.payerBank || '',
+      accountNumber: prevPayment?.accountNumber || '',
+      swiftCode: prevPayment?.swiftCode || '',
+      bankBranch: prevPayment?.bankBranch || ''
     });
     setPaymentError('');
     setRecordPaymentModalOpen(true);
@@ -618,7 +672,12 @@ export default function Invoices({ initialTab = 'Invoices' }) {
         paymentDate: paymentForm.paymentDate,
         paymentMethod: paymentForm.paymentMethod,
         reference: paymentForm.reference,
-        notes: paymentForm.notes
+        notes: paymentForm.notes,
+        accountHolder: paymentForm.accountHolder || currentTargetInvoice.customer || '',
+        payerBank: paymentForm.payerBank || '',
+        accountNumber: paymentForm.accountNumber || '',
+        swiftCode: paymentForm.swiftCode || '',
+        bankBranch: paymentForm.bankBranch || ''
       };
 
       const result = await recordPayment(payload);
@@ -647,9 +706,14 @@ export default function Invoices({ initialTab = 'Invoices' }) {
 
       setRecordPaymentModalOpen(false);
       setSelectedInvoiceForPayment(null);
+      toast.success(
+        `Payment of ${formatAmount(payload.amount)} recorded for ${payload.invoiceNo}!`,
+        'Payment Realized'
+      );
     } catch (err) {
       console.error('Payment submission failed:', err);
       setPaymentError(err.message || 'Payment submission failed');
+      toast.error(err.message || 'Payment submission failed', 'Payment Failed');
     }
   };
 
@@ -763,9 +827,10 @@ export default function Invoices({ initialTab = 'Invoices' }) {
       const created = await createInvoice(payload);
       setInvoices((prev) => [created, ...prev]);
       setCreateModalOpen(false);
+      toast.success(`Invoice ${created.invoiceNo || payload.invoiceNo} generated successfully!`, 'Invoice Created');
     } catch (err) {
       console.error('Failed to create invoice:', err);
-      alert('Error creating invoice: ' + err.message);
+      toast.error('Error creating invoice: ' + err.message, 'Creation Failed');
     }
   };
 
@@ -776,8 +841,10 @@ export default function Invoices({ initialTab = 'Invoices' }) {
     try {
       await deleteInvoice(invId);
       setInvoices((prev) => prev.filter((i) => i._id !== invId && i.invoiceNo !== invId));
+      toast.info('Invoice deleted successfully.', 'Invoice Removed');
     } catch (err) {
       console.error('Delete invoice failed:', err);
+      toast.error('Failed to delete invoice: ' + err.message, 'Delete Failed');
     }
   };
 
@@ -1249,24 +1316,22 @@ export default function Invoices({ initialTab = 'Invoices' }) {
           </div>
 
           <div className="table-wrap">
-            <table className="data-table" style={{ width: '100%', minWidth: '1360px', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                 <tr>
-                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>PAYMENT ID</th>
-                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>CUSTOMER</th>
-                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>ORDER REF</th>
-                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>INVOICE REF</th>
-                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>PAYMENT DATE</th>
-                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>AMOUNT PAID</th>
-                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>METHOD</th>
-                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>TRANSACTION REF</th>
-                  <th style={{ padding: '16px 24px', whiteSpace: 'nowrap' }}>STATUS</th>
+                  <th style={{ padding: '14px 18px', whiteSpace: 'nowrap' }}>PAYMENT ID</th>
+                  <th style={{ padding: '14px 18px', whiteSpace: 'nowrap' }}>CUSTOMER & INVOICE</th>
+                  <th style={{ padding: '14px 18px', whiteSpace: 'nowrap' }}>BANK & ACCOUNT</th>
+                  <th style={{ padding: '14px 18px', whiteSpace: 'nowrap' }}>DATE</th>
+                  <th style={{ padding: '14px 18px', whiteSpace: 'nowrap' }}>AMOUNT</th>
+                  <th style={{ padding: '14px 18px', whiteSpace: 'nowrap' }}>METHOD</th>
+                  <th style={{ padding: '14px 18px', whiteSpace: 'nowrap' }}>STATUS</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredPayments.length === 0 ? (
                   <tr>
-                    <td colSpan="9" style={{ textAlign: 'center', padding: '48px 24px', color: '#94a3b8' }}>
+                    <td colSpan="7" style={{ textAlign: 'center', padding: '48px 24px', color: '#94a3b8' }}>
                       <CreditCard size={36} style={{ margin: '0 auto 10px', display: 'block', opacity: 0.4 }} />
                       <strong style={{ display: 'block', color: '#475569', fontSize: '14px', marginBottom: '4px' }}>No payments recorded yet</strong>
                       <span style={{ fontSize: '12.5px' }}>Click "Record Payment" to post a remittance against an export invoice</span>
@@ -1275,77 +1340,82 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                 ) : (
                   filteredPayments.map((p) => {
                     const matchedInv = invoices.find((i) => i.invoiceNo === p.invoiceNo);
-                    const status = matchedInv ? matchedInv.status : 'Paid';
 
                     return (
-                      <tr key={p._id || p.paymentId} style={{ transition: 'background 0.15s ease' }}>
-                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                          <span style={{ display: 'inline-block', padding: '4px 10px', background: '#e8f5f1', border: '1px solid #c7ece2', borderRadius: '6px', color: '#0c5a48', fontSize: '12.5px', fontWeight: 700 }}>
+                      <tr
+                        key={p._id || p.paymentId}
+                        onClick={() => setViewPaymentVoucher(p)}
+                        style={{ cursor: 'pointer', transition: 'background 0.15s ease' }}
+                        title="Click to view payment and account details"
+                      >
+                        <td style={{ padding: '14px 18px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <span style={{ display: 'inline-block', padding: '4px 9px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', color: '#475569', fontSize: '12px', fontWeight: 600 }}>
                             {p.paymentId || 'PAY-REF'}
                           </span>
                         </td>
-                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                          <strong style={{ color: '#1e1e2d', fontSize: '13.5px' }}>{p.customer}</strong>
+                        <td style={{ padding: '14px 18px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <strong style={{ color: '#1e1e2d', fontSize: '13px', display: 'block' }}>{p.customer}</strong>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                            <span
+                              style={{
+                                color: '#64748b',
+                                fontSize: '11.5px',
+                                fontWeight: 500
+                              }}
+                            >
+                              {p.invoiceNo}
+                            </span>
+                            {p.orderNo && (
+                              <span style={{ fontSize: '11px', color: '#94a3b8' }}>• {p.orderNo}</span>
+                            )}
+                          </div>
                         </td>
-                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                          <span className="order-badge" style={{ padding: '4px 10px', fontSize: '12px' }}>
-                            {p.orderNo || '—'}
-                          </span>
+                        <td style={{ padding: '14px 18px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          {p.payerBank || p.accountNumber ? (
+                            <div>
+                              <div style={{ color: '#334155', fontSize: '12.5px', fontWeight: 600 }}>
+                                {p.payerBank || 'Customer Bank'}
+                              </div>
+                              <div style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace', marginTop: '1px' }}>
+                                {p.accountNumber ? `A/C: ${p.accountNumber.length > 14 ? p.accountNumber.slice(0, 4) + ' •••• ' + p.accountNumber.slice(-4) : p.accountNumber}` : '—'}
+                                {p.swiftCode ? ` • ${p.swiftCode}` : ''}
+                              </div>
+                            </div>
+                          ) : (
+                            <span style={{ color: '#94a3b8', fontSize: '12px' }}>—</span>
+                          )}
                         </td>
-                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                          <span
-                            onClick={() => {
-                              if (matchedInv) {
-                                setViewInvoice(matchedInv);
-                                setActiveInvoiceTab('document');
-                              }
-                            }}
-                            style={{
-                              display: 'inline-block',
-                              padding: '4px 10px',
-                              background: '#e6f4f0',
-                              border: '1px solid #cce8e0',
-                              borderRadius: '6px',
-                              color: '#0c5a48',
-                              fontWeight: 700,
-                              fontSize: '12px',
-                              cursor: matchedInv ? 'pointer' : 'default'
-                            }}
-                          >
-                            {p.invoiceNo}
-                          </span>
+                        <td style={{ padding: '14px 18px', verticalAlign: 'middle', whiteSpace: 'nowrap', fontSize: '12.5px', color: '#64748b' }}>
+                          {p.paymentDate}
                         </td>
-                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                          <span style={{ color: '#334155', fontSize: '12.5px', fontWeight: 600 }}>{p.paymentDate}</span>
-                        </td>
-                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                          <strong style={{ color: '#059669', fontSize: '14px', fontWeight: 700 }}>
+                        <td style={{ padding: '14px 18px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <strong style={{ color: '#1e293b', fontSize: '13.5px', fontWeight: 700 }}>
                             {formatAmount(p.amount)}
                           </strong>
                         </td>
-                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                          <span style={{ color: '#475569', fontSize: '12px', background: '#f1f5f9', padding: '4px 10px', borderRadius: '6px', fontWeight: 600, border: '1px solid #e2e8f0' }}>
+                        <td style={{ padding: '14px 18px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <div style={{ color: '#475569', fontSize: '12px', fontWeight: 500 }}>
                             {p.paymentMethod || 'Wire Transfer'}
-                          </span>
+                          </div>
+                          {p.reference && (
+                            <div style={{ fontSize: '11px', color: '#94a3b8', fontFamily: 'monospace' }}>
+                              Ref: {p.reference}
+                            </div>
+                          )}
                         </td>
-                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                          <code className="mono-code" style={{ fontSize: '12px', padding: '3px 8px' }}>
-                            {p.reference || '—'}
-                          </code>
-                        </td>
-                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '14px 18px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                           <span
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '6px',
-                              padding: '4px 12px',
+                              gap: '4px',
+                              padding: '3px 9px',
                               borderRadius: '20px',
-                              fontSize: '11.5px',
-                              fontWeight: 700,
-                              background: '#ecfdf5',
-                              color: '#059669',
-                              border: '1px solid #a7f3d0'
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              background: '#f0fdf4',
+                              color: '#166534',
+                              border: '1px solid #dcfce7'
                             }}
                           >
                             <CheckCircle2 size={12} /> Received
@@ -1396,11 +1466,17 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                     onChange={(e) => {
                       const invNo = e.target.value;
                       const found = invoices.find((i) => i.invoiceNo === invNo);
+                      const prevPayment = found ? payments.find((p) => p.customer === found.customer && p.payerBank) : null;
                       setSelectedInvoiceForPayment(null);
                       setPaymentForm((prev) => ({
                         ...prev,
                         invoiceNo: invNo,
-                        amount: found ? (found.remainingBalance > 0 ? String(found.remainingBalance) : '') : ''
+                        amount: found ? (found.remainingBalance > 0 ? String(found.remainingBalance) : '') : '',
+                        accountHolder: found ? found.customer : prev.accountHolder,
+                        payerBank: prevPayment?.payerBank || prev.payerBank,
+                        accountNumber: prevPayment?.accountNumber || prev.accountNumber,
+                        swiftCode: prevPayment?.swiftCode || prev.swiftCode,
+                        bankBranch: prevPayment?.bankBranch || prev.bankBranch
                       }));
                     }}
                     required
@@ -1676,6 +1752,137 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                     padding: '10px 12px',
                     fontSize: '13px',
                     fontWeight: 500,
+                    color: '#1e293b',
+                    background: '#ffffff',
+                    border: '1.5px solid #cbd5e1',
+                    borderRadius: '10px',
+                    outline: 'none',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                  }}
+                />
+              </div>
+
+              {/* Customer Account & Bank Details Section */}
+              <div style={{ gridColumn: 'span 2', marginTop: '6px', paddingTop: '14px', borderTop: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                    <Building size={15} style={{ color: '#0c5a48' }} />
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      Customer Bank & Account Details
+                    </span>
+                  </div>
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>Remitting customer account information</span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+                  Account Holder / Remitter
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Al-Mansoor Trading LLC"
+                  value={paymentForm.accountHolder}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, accountHolder: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    fontSize: '13px',
+                    color: '#1e293b',
+                    background: '#ffffff',
+                    border: '1.5px solid #cbd5e1',
+                    borderRadius: '10px',
+                    outline: 'none',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+                  Customer Bank Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Emirates NBD, Chase, HSBC"
+                  value={paymentForm.payerBank}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, payerBank: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    fontSize: '13px',
+                    color: '#1e293b',
+                    background: '#ffffff',
+                    border: '1.5px solid #cbd5e1',
+                    borderRadius: '10px',
+                    outline: 'none',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+                  Account / IBAN Number
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. AE29 0330 0000 0012 3456 789"
+                  value={paymentForm.accountNumber}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, accountNumber: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    fontSize: '13px',
+                    fontFamily: 'monospace',
+                    color: '#1e293b',
+                    background: '#ffffff',
+                    border: '1.5px solid #cbd5e1',
+                    borderRadius: '10px',
+                    outline: 'none',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+                  SWIFT / BIC Code
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. EBILAEADXXX"
+                  value={paymentForm.swiftCode}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, swiftCode: e.target.value.toUpperCase() })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    fontSize: '13px',
+                    fontFamily: 'monospace',
+                    fontWeight: 600,
+                    color: '#0c5a48',
+                    background: '#ffffff',
+                    border: '1.5px solid #cbd5e1',
+                    borderRadius: '10px',
+                    outline: 'none',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+                  }}
+                />
+              </div>
+
+              <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column' }}>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+                  Bank Branch / Location
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Deira Commercial Branch, Dubai, UAE"
+                  value={paymentForm.bankBranch}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, bankBranch: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    fontSize: '13px',
                     color: '#1e293b',
                     background: '#ffffff',
                     border: '1.5px solid #cbd5e1',
@@ -2714,6 +2921,7 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                         <thead>
                           <tr style={{ background: '#f8fafc', color: '#475569', fontSize: '11px', textTransform: 'uppercase' }}>
                             <th style={{ padding: '9px 14px' }}>PAYMENT ID</th>
+                            <th style={{ padding: '9px 14px' }}>CUSTOMER REMITTING BANK & A/C</th>
                             <th style={{ padding: '9px 14px' }}>DATE</th>
                             <th style={{ padding: '9px 14px' }}>METHOD</th>
                             <th style={{ padding: '9px 14px' }}>REFERENCE</th>
@@ -2724,6 +2932,14 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                           {matchedPayments.map((p) => (
                             <tr key={p._id || p.paymentId} style={{ borderBottom: '1px solid #f1f5f9' }}>
                               <td style={{ padding: '10px 14px', fontWeight: 700, color: '#0c5a48' }}>{p.paymentId}</td>
+                              <td style={{ padding: '10px 14px' }}>
+                                <div style={{ fontWeight: 600, color: '#1e293b' }}>{p.payerBank || 'Customer Bank'}</div>
+                                {p.accountNumber && (
+                                  <div style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace' }}>
+                                    A/C: {p.accountNumber}
+                                  </div>
+                                )}
+                              </td>
                               <td style={{ padding: '10px 14px', color: '#64748b' }}>{p.paymentDate}</td>
                               <td style={{ padding: '10px 14px' }}>{p.paymentMethod}</td>
                               <td style={{ padding: '10px 14px' }}>
@@ -2744,6 +2960,148 @@ export default function Invoices({ initialTab = 'Invoices' }) {
               </div>
             </div>
           )}
+        </Modal>
+      )}
+
+      {/* =========================================================
+          MODAL 4: PAYMENT RECEIPT & CUSTOMER ACCOUNT DETAILS
+          ========================================================= */}
+      {viewPaymentVoucher && (
+        <Modal
+          open={!!viewPaymentVoucher}
+          onClose={() => setViewPaymentVoucher(null)}
+          title={`Payment Details — ${viewPaymentVoucher.paymentId}`}
+          maxWidth="540px"
+          footer={
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <span style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CheckCircle2 size={14} style={{ color: '#10b981' }} /> Settled & Verified
+              </span>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => window.print()}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px' }}
+                >
+                  <Printer size={13} /> Print
+                </button>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => setViewPaymentVoucher(null)}
+                  style={{ fontSize: '12.5px', padding: '6px 16px' }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Payment & Settlement Summary Grid (Clean & Faded) */}
+            <div
+              style={{
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                padding: '14px 16px'
+              }}
+            >
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px 16px', fontSize: '12.5px' }}>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>Payment Amount</span>
+                  <strong style={{ fontSize: '18px', color: '#1e293b', fontWeight: 700 }}>
+                    {formatAmount(viewPaymentVoucher.amount)}
+                  </strong>
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>Payment Status</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#166534', fontWeight: 600, marginTop: '3px' }}>
+                    <CheckCircle2 size={13} style={{ color: '#10b981' }} /> {viewPaymentVoucher.status || 'Settled'}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>Commercial Invoice</span>
+                  <span style={{ color: '#334155', fontWeight: 600 }}>{viewPaymentVoucher.invoiceNo}</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>Payment Date</span>
+                  <span style={{ color: '#334155' }}>{viewPaymentVoucher.paymentDate}</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>Payment Method</span>
+                  <span style={{ color: '#334155' }}>{viewPaymentVoucher.paymentMethod}</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>Reference / TXN ID</span>
+                  <code style={{ fontSize: '11.5px', color: '#475569' }}>{viewPaymentVoucher.reference || '—'}</code>
+                </div>
+              </div>
+            </div>
+
+            {/* Customer Bank & Account Details (Clean & Faded) */}
+            <div
+              style={{
+                background: '#ffffff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                padding: '14px 16px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
+                <Building size={14} style={{ color: '#64748b' }} />
+                <strong style={{ fontSize: '12px', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                  Customer Bank & Account Details
+                </strong>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px 16px', fontSize: '12px' }}>
+                <div>
+                  <span style={{ color: '#64748b', display: 'block', fontSize: '11px' }}>Account Holder / Payer</span>
+                  <strong style={{ color: '#1e293b' }}>
+                    {viewPaymentVoucher.accountHolder || viewPaymentVoucher.customer}
+                  </strong>
+                </div>
+
+                <div>
+                  <span style={{ color: '#64748b', display: 'block', fontSize: '11px' }}>Remitting Bank</span>
+                  <span style={{ color: '#1e293b', fontWeight: 600 }}>
+                    {viewPaymentVoucher.payerBank || 'Not recorded'}
+                  </span>
+                </div>
+
+                <div>
+                  <span style={{ color: '#64748b', display: 'block', fontSize: '11px' }}>Account / IBAN Number</span>
+                  <code style={{ background: '#f8fafc', padding: '2px 6px', borderRadius: '4px', border: '1px solid #e2e8f0', color: '#334155' }}>
+                    {viewPaymentVoucher.accountNumber || '—'}
+                  </code>
+                </div>
+
+                <div>
+                  <span style={{ color: '#64748b', display: 'block', fontSize: '11px' }}>SWIFT / BIC Code</span>
+                  <code style={{ background: '#f8fafc', padding: '2px 6px', borderRadius: '4px', border: '1px solid #e2e8f0', color: '#475569' }}>
+                    {viewPaymentVoucher.swiftCode || '—'}
+                  </code>
+                </div>
+
+                <div style={{ gridColumn: 'span 2' }}>
+                  <span style={{ color: '#64748b', display: 'block', fontSize: '11px' }}>Branch / Location</span>
+                  <span style={{ color: '#475569' }}>
+                    {viewPaymentVoucher.bankBranch || 'Commercial Overseas Branch'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Notes if present */}
+            {viewPaymentVoucher.notes && (
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 14px', fontSize: '11.5px', color: '#64748b' }}>
+                <span style={{ fontWeight: 600, color: '#475569' }}>Notes: </span>
+                {viewPaymentVoucher.notes}
+              </div>
+            )}
+          </div>
         </Modal>
       )}
     </div>

@@ -207,7 +207,13 @@ const paymentSchema = new mongoose.Schema({
   paymentDate: { type: String, default: () => new Date().toISOString().slice(0, 10) },
   paymentMethod: { type: String, default: 'Wire Transfer (TT)' },
   reference: String,
-  notes: String
+  notes: String,
+  // Customer Remitting Account & Banking Details
+  accountHolder: String,
+  payerBank: String,
+  accountNumber: String,
+  swiftCode: String,
+  bankBranch: String
 }, { timestamps: true });
 
 export const Payment = mongoose.model('Payment', paymentSchema);
