@@ -2179,6 +2179,60 @@ button {
   width: 320px;
 }
 
+/* Filter Pill Selects (Products & Customers) - Eliminates duplicate native browser arrows */
+.pill-select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pill-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 8px 36px 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e293b;
+  cursor: pointer;
+  outline: none;
+  height: 38px;
+  line-height: 20px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.pill-select::-ms-expand {
+  display: none;
+}
+
+.pill-select:hover {
+  border-color: #0c5a48;
+  box-shadow: 0 4px 12px rgba(12, 90, 72, 0.08);
+}
+
+.pill-select:focus {
+  border-color: #0c5a48;
+  box-shadow: 0 0 0 3px rgba(12, 90, 72, 0.12);
+}
+
+.pill-select-arrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #64748b;
+  transition: color 0.2s ease;
+}
+
+.pill-select-wrap:hover .pill-select-arrow {
+  color: #0c5a48;
+}
+
 .tabs-bar {
   display: flex;
   gap: 8px;
@@ -2550,7 +2604,9 @@ button {
     margin: 0 !important;
   }
 
-  .filter-toolbar select {
+  .filter-toolbar select,
+  .filter-toolbar .pill-select-wrap,
+  .filter-toolbar .pill-select {
     box-sizing: border-box !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -3199,7 +3255,7 @@ button {
   flex-shrink: 0;
 }
 
-/* Export Workflow Stepper (Dashboard Page 1) */
+/* Export Workflow Stepper (Dashboard Page 1) with Directional Arrows */
 .export-workflow-card {
   background: #ffffff;
   border: 1px solid rgba(226, 232, 240, 0.85);
@@ -3207,40 +3263,106 @@ button {
   padding: 22px 28px;
   margin-bottom: 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.export-workflow-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 30px rgba(12, 90, 72, 0.06);
 }
 
 .export-workflow-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.export-workflow-head h3 {
+.workflow-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.workflow-title {
   margin: 0;
   font-size: 15px;
   font-weight: 700;
   color: #1e1e2d;
 }
 
+.workflow-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #e8f5f1;
+  color: #0c5a48;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid rgba(12, 90, 72, 0.15);
+}
+
+.workflow-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+  animation: liveDotPulse 2s infinite ease-in-out;
+}
+
+@keyframes liveDotPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+  }
+  50% {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0);
+  }
+}
+
 .export-workflow-head .live-link {
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #0c5a48;
   text-decoration: none;
-  transition: color 0.16s ease;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: #f0fdf9;
+  border: 1px solid #d1fae5;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .export-workflow-head .live-link:hover {
-  color: #d97706;
+  background: #0c5a48;
+  color: #ffffff;
+  border-color: #0c5a48;
+  transform: translateX(2px);
+  box-shadow: 0 4px 12px rgba(12, 90, 72, 0.2);
 }
 
-/* Hidden on desktop/laptop (Active only on mobile) */
-.workflow-stage-pill,
-.workflow-progress-track,
-.workflow-swipe-hint,
-.pipeline-sub {
-  display: none;
+.export-workflow-head .live-link:hover .live-arrow {
+  transform: translateX(3px);
+}
+
+.live-arrow {
+  transition: transform 0.2s ease;
+}
+
+.pipeline-stepper-container {
+  width: 100%;
+  overflow-x: auto;
+  padding: 4px 2px 10px;
 }
 
 .pipeline-stepper {
@@ -3248,8 +3370,8 @@ button {
   align-items: center;
   justify-content: space-between;
   position: relative;
-  overflow-x: auto;
-  padding: 6px 0 10px;
+  min-width: 680px;
+  padding: 8px 0 12px;
 }
 
 .pipeline-step {
@@ -3259,53 +3381,209 @@ button {
   gap: 8px;
   position: relative;
   z-index: 2;
-  min-width: 64px;
+  min-width: 72px;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pipeline-step:hover {
+  transform: translateY(-3px);
+}
+
+.pipeline-circle-wrapper {
+  position: relative;
+  display: inline-block;
 }
 
 .pipeline-circle {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: #f1f5f9;
-  color: #475569;
+  background: #ffffff;
+  color: #64748b;
   display: grid;
   place-items: center;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
-  border: 2px solid #ffffff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.pipeline-step.green .pipeline-circle {
+.pipeline-step:hover .pipeline-circle {
+  box-shadow: 0 6px 16px rgba(12, 90, 72, 0.12);
+  border-color: #0c5a48;
+}
+
+/* Passed / Completed step state */
+.pipeline-step.passed .pipeline-circle {
   background: #e8f5f1;
   color: #0c5a48;
+  border-color: #a7f3d0;
+  font-weight: 800;
 }
 
-.pipeline-step.active .pipeline-circle {
-  background: #0c5a48;
+.pipeline-step.passed:hover .pipeline-circle {
+  background: #d1fae5;
+  border-color: #059669;
+}
+
+.step-mini-check {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #10b981;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(12, 90, 72, 0.35);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+  border: 1.5px solid #ffffff;
+}
+
+/* Active current step state */
+.pipeline-step.active .pipeline-circle {
+  background: linear-gradient(135deg, #0c5a48 0%, #064033 100%);
+  color: #ffffff;
+  border-color: #ffffff;
+  box-shadow: 0 6px 18px rgba(12, 90, 72, 0.38);
+  font-size: 14.5px;
+  font-weight: 800;
+  transform: scale(1.06);
+}
+
+.step-active-radar {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 2px solid rgba(12, 90, 72, 0.3);
+  animation: activeRadarRing 2s infinite ease-out;
+  pointer-events: none;
+}
+
+@keyframes activeRadarRing {
+  0% {
+    transform: scale(0.96);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.28);
+    opacity: 0;
+  }
+}
+
+.pipeline-label-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
 }
 
 .pipeline-label {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
-  color: #4b5563;
+  color: #475569;
   text-align: center;
+  white-space: nowrap;
+  transition: color 0.18s ease;
 }
 
+.pipeline-step:hover .pipeline-label {
+  color: #0c5a48;
+}
+
+.pipeline-step.active .pipeline-label {
+  color: #0c5a48;
+  font-weight: 800;
+}
+
+.step-current-tag {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+/* CONNECTORS WITH DIRECTIONAL ARROWS */
 .pipeline-connector {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 -4px 24px;
+  position: relative;
+  z-index: 1;
+  min-width: 32px;
+}
+
+.connector-track-line {
   flex: 1;
   height: 2px;
   background: #e2e8f0;
-  margin: 0 -8px 24px;
-  position: relative;
-  z-index: 1;
+  transition: background-color 0.22s ease;
 }
 
-.pipeline-connector.passed {
+.connector-arrow-pill {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  color: #94a3b8;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  margin: 0 2px;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* Passed connector with green arrow */
+.pipeline-connector.passed .connector-track-line {
   background: #a7f3d0;
+}
+
+.pipeline-connector.passed .connector-arrow-pill {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #059669;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.15);
+}
+
+/* Active flow connector (flowing from active to next) */
+.pipeline-connector.active-flow .connector-track-line {
+  background: linear-gradient(90deg, #10b981 0%, #cbd5e1 100%);
+  height: 2.5px;
+}
+
+.pipeline-connector.active-flow .connector-arrow-pill {
+  background: #0c5a48;
+  border-color: #0c5a48;
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(12, 90, 72, 0.3);
+  animation: activeArrowPulse 2s infinite ease-in-out;
+}
+
+@keyframes activeArrowPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(12, 90, 72, 0.4);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 4px rgba(12, 90, 72, 0);
+  }
+}
+
+.pipeline-connector:hover .connector-arrow-pill {
+  transform: translateX(2px) scale(1.1);
 }
 
 /* Shipments 4-Card Status Pipeline (Shipments Page 6) */
@@ -4308,3 +4586,365 @@ button {
   border-color: #0c5a48 !important;
   color: #0c5a48 !important;
 }
+
+/* =========================================================
+   LOGIN & TOAST ANIMATIONS
+   ========================================================= */
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.spin-animate {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.corner-credentials-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* =========================================================
+   GLOBAL ANIMATIONS & HOVER INTERACTIONS SUITE
+   ========================================================= */
+
+/* 1. Global Page Entrance Animation */
+@keyframes pageEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.content {
+  animation: pageEntrance 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 2. Pulse, Float, and Shimmer Keyframes */
+@keyframes pulseSubtle {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.85;
+  }
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 4px rgba(217, 119, 6, 0);
+  }
+}
+
+.dot-badge {
+  animation: dotPulse 2s infinite ease-in-out;
+}
+
+/* 3. Button Micro-Interactions & Hover Lift */
+button,
+.btn,
+.primary,
+.secondary,
+.btn-primary,
+.btn-secondary,
+.btn-new-enquiry,
+.action-pill-btn,
+.invoice-tab-btn,
+.reset,
+.date-control {
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+
+.primary:hover,
+.btn-primary:hover,
+.btn-new-enquiry:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.32), 0 2px 6px rgba(12, 90, 72, 0.15);
+}
+
+.primary:active,
+.btn-primary:active,
+.btn-new-enquiry:active {
+  transform: translateY(0.5px) scale(0.98);
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.2);
+}
+
+.secondary:hover,
+.btn-secondary:hover {
+  transform: translateY(-1.5px);
+  border-color: #0c5a48;
+  background: #edf7f4;
+  box-shadow: 0 4px 14px rgba(12, 90, 72, 0.12);
+}
+
+.secondary:active,
+.btn-secondary:active {
+  transform: translateY(0.5px) scale(0.98);
+}
+
+.date-control:hover,
+.reset:hover {
+  transform: translateY(-1.5px);
+  border-color: #a7f3d0;
+  box-shadow: 0 4px 12px rgba(12, 90, 72, 0.08);
+}
+
+.date-control:active,
+.reset:active {
+  transform: translateY(0.5px) scale(0.985);
+}
+
+/* 4. Table Row Hover & Visual Feedback */
+.data-table tbody tr,
+table tbody tr {
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.data-table tbody tr:hover,
+table tbody tr:hover {
+  background-color: #f2faf7 !important;
+  box-shadow: inset 3.5px 0 0 #0c5a48, 0 2px 8px rgba(12, 90, 72, 0.04);
+}
+
+.data-table tbody tr:hover td strong {
+  color: #0c5a48;
+}
+
+/* Action buttons inside table rows */
+.small-btn {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.small-btn:hover {
+  transform: translateY(-2px) scale(1.08);
+  border-color: #0c5a48;
+  color: #0c5a48;
+  box-shadow: 0 4px 12px rgba(12, 90, 72, 0.18);
+  background: #ffffff;
+}
+
+.small-btn:active {
+  transform: translateY(0.5px) scale(0.95);
+}
+
+.data-table tbody tr:hover .small-btn {
+  border-color: #cbd5e1;
+}
+
+/* 5. Stat Cards & KPI Containers Hover */
+.stat-card {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform, box-shadow;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px) !important;
+  border-color: #a7f3d0 !important;
+  box-shadow: 0 14px 34px rgba(12, 90, 72, 0.12), 0 2px 6px rgba(0, 0, 0, 0.02) !important;
+}
+
+.stat-card:hover .stat-icon {
+  transform: scale(1.1) rotate(2deg);
+}
+
+.stat-card:hover .stat-decor-disc {
+  transform: scale(1.15);
+  opacity: 1;
+}
+
+/* 6. General Panels & Cards Elevation */
+.panel,
+.table-panel,
+.setting-card,
+.sidebar-tip-card {
+  transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+}
+
+.panel:hover,
+.table-panel:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 26px rgba(12, 90, 72, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.sidebar-tip-card:hover {
+  transform: translateY(-2px);
+  border-color: #f59e0b;
+  box-shadow: 0 6px 18px rgba(217, 119, 6, 0.14);
+}
+
+/* 7. Sidebar Navigation Links Animation */
+.sidebar nav a {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.sidebar nav a:hover {
+  transform: translateX(4px);
+  background: #edf7f4 !important;
+  color: #0c5a48 !important;
+}
+
+.sidebar nav a:hover svg {
+  transform: scale(1.12);
+  color: #d97706 !important;
+}
+
+.sidebar nav a.active {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.sidebar nav a.active:hover {
+  transform: translateX(3px);
+  box-shadow: 0 6px 20px rgba(12, 90, 72, 0.38) !important;
+}
+
+/* 8. Topbar Interactive Controls */
+.user-pill {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.user-pill:hover {
+  transform: translateY(-1.5px);
+  border-color: #0c5a48 !important;
+  box-shadow: 0 6px 20px rgba(12, 90, 72, 0.14) !important;
+}
+
+.user-pill:hover .user-avatar-circle {
+  transform: scale(1.06);
+  border-color: #f59e0b;
+}
+
+.user-avatar-circle {
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.icon-btn {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.icon-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(12, 90, 72, 0.14) !important;
+}
+
+.icon-btn:active {
+  transform: translateY(0.5px) scale(0.96);
+}
+
+/* 9. Form Inputs & Search Box Focus Glow */
+.search-box,
+.select,
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
+}
+
+.search-box:hover,
+.select:hover {
+  border-color: #94a3b8;
+}
+
+.search-box:focus-within {
+  border-color: #0c5a48 !important;
+  box-shadow: 0 0 0 3px rgba(12, 90, 72, 0.14) !important;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+  border-color: #0c5a48 !important;
+  box-shadow: 0 0 0 3px rgba(12, 90, 72, 0.14) !important;
+  outline: none;
+}
+
+/* 10. Status Badges & Pills Micro-Scaling */
+.status {
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease !important;
+}
+
+.status:hover {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.nav-badge {
+  transition: transform 0.18s ease;
+}
+
+.nav-badge:hover {
+  transform: scale(1.12);
+}
+
+/* 11. Tabs Interactive Feedback */
+.tab-btn {
+  transition: all 0.2s ease !important;
+}
+
+.tab-btn:hover {
+  transform: translateY(-1px);
+  color: #0c5a48 !important;
+}
+
+.invoice-tab-btn {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.invoice-tab-btn:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* 12. Modal Close Button Rotate on Hover */
+.modal-close {
+  transition: all 0.2s ease !important;
+}
+
+.modal-close:hover {
+  transform: rotate(90deg) scale(1.1);
+  background: #fee2e2 !important;
+  color: #ef4444 !important;
+}
+
+.modal-close:active {
+  transform: rotate(90deg) scale(0.95);
+}
+
+

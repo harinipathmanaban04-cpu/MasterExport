@@ -348,7 +348,12 @@ app.post('/api/payments', async (req, res) => {
       paymentDate = new Date().toISOString().slice(0, 10),
       paymentMethod = 'Wire Transfer (TT)',
       reference = '',
-      notes = ''
+      notes = '',
+      accountHolder = '',
+      payerBank = '',
+      accountNumber = '',
+      swiftCode = '',
+      bankBranch = ''
     } = req.body;
 
     if (!invoiceNo) {
@@ -434,7 +439,12 @@ app.post('/api/payments', async (req, res) => {
       paymentDate,
       paymentMethod,
       reference,
-      notes
+      notes,
+      accountHolder: accountHolder || customer || invoice.customer || '',
+      payerBank,
+      accountNumber,
+      swiftCode,
+      bankBranch
     };
 
     let savedPayment = null;

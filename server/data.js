@@ -235,12 +235,12 @@ export const sales = [
     notes: 'Standard seaworthy export packaging.',
     products: [
       {
-        name: 'Product A',
+        name: 'Basmati Rice 1121',
         sku: 'PRD-01',
         hsCode: '1006.30.20',
-        unit: 'units',
-        quantity: 5000,
-        unitPrice: 10.00,
+        unit: 'MT',
+        quantity: 50,
+        unitPrice: 1000.00,
         total: 50000
       }
     ],
@@ -478,10 +478,10 @@ export const sales = [
     orderNo: 'SO-1024',
     products: [
       {
-        name: 'Product A',
-        quantity: 5000,
-        unit: 'units',
-        unitPrice: 10.00,
+        name: 'Basmati Rice 1121',
+        quantity: 50,
+        unit: 'MT',
+        unitPrice: 1000.00,
         total: 50000
       }
     ]
@@ -594,11 +594,11 @@ export const initialQuotations = [
     currency: 'USD',
     items: [
       {
-        name: 'Product A',
-        description: 'Standard Export Consignment',
-        quantity: 5000,
-        unit: 'units',
-        unitPrice: 10.00,
+        name: 'Basmati Rice 1121',
+        description: 'Super Kernel Basmati Rice 1121 Steam Grade, 50kg PP Bags',
+        quantity: 50,
+        unit: 'MT',
+        unitPrice: 1000.00,
         discount: 0,
         discountType: 'percent',
         taxRate: 0,
@@ -1334,6 +1334,11 @@ export const payments = [
     paymentDate: '2026-10-03',
     paymentMethod: 'Wire Transfer (TT)',
     reference: 'TXN-SCB-891024',
+    accountHolder: 'ABC Trading LLC',
+    payerBank: 'Standard Chartered Bank UAE',
+    accountNumber: 'AE29 0330 0000 0012 3456 789',
+    swiftCode: 'SCBLAEADXXX',
+    bankBranch: 'Downtown Dubai Branch, UAE',
     notes: 'Part payment 40% initial advance received.'
   },
   {
@@ -1346,6 +1351,11 @@ export const payments = [
     paymentDate: '2026-10-02',
     paymentMethod: 'Letter of Credit (LC)',
     reference: 'LC-CITI-442100',
+    accountHolder: 'Apex Imports Inc.',
+    payerBank: 'Citibank N.A. New York',
+    accountNumber: 'US44 CITI 0001 2345 6789 01',
+    swiftCode: 'CITIUS33XXX',
+    bankBranch: 'Wall Street Commercial, New York, USA',
     notes: '100% LC realization confirmed by overseas correspondent.'
   },
   {
@@ -1358,6 +1368,11 @@ export const payments = [
     paymentDate: '2026-09-15',
     paymentMethod: 'Wire Transfer (TT)',
     reference: 'TXN-HSBC-29104',
+    accountHolder: 'ABC Trading LLC',
+    payerBank: 'HSBC Bank Middle East',
+    accountNumber: 'AE44 0200 0000 0098 7654 321',
+    swiftCode: 'HBMEAEADXXX',
+    bankBranch: 'Sheikh Zayed Road, Dubai, UAE',
     notes: 'Full invoice settlement received.'
   },
   {
@@ -1370,6 +1385,11 @@ export const payments = [
     paymentDate: '2026-10-04',
     paymentMethod: 'Wire Transfer (TT)',
     reference: 'TXN-ANZ-771920',
+    accountHolder: 'Oceanic Trading Pty Ltd',
+    payerBank: 'ANZ Bank Australia',
+    accountNumber: 'AU88 ANZ0 0102 9384 7561 02',
+    swiftCode: 'ANZBAU3MXXX',
+    bankBranch: 'Collins Street, Melbourne, Australia',
     notes: 'Initial production deposit and freight allocation.'
   },
   {
@@ -1382,6 +1402,11 @@ export const payments = [
     paymentDate: '2026-10-05',
     paymentMethod: 'Wire Transfer (TT)',
     reference: 'SWIFT-DBS-991204',
+    accountHolder: 'Singapore Global Logistics Pte Ltd',
+    payerBank: 'DBS Bank Ltd Singapore',
+    accountNumber: 'SG12 DBSS 0039 1827 3645 00',
+    swiftCode: 'DBSSSGSGXXX',
+    bankBranch: 'Marina Bay Financial Centre, Singapore',
     notes: '100% advance wire settlement via DBS Singapore.'
   },
   {
@@ -1394,6 +1419,11 @@ export const payments = [
     paymentDate: '2026-10-04',
     paymentMethod: 'Wire Transfer (TT)',
     reference: 'TXN-ENBD-339182',
+    accountHolder: 'ABC Trading LLC',
+    payerBank: 'Emirates NBD Bank PJSC',
+    accountNumber: 'AE29 0330 0000 0012 3456 789',
+    swiftCode: 'EBILAEADXXX',
+    bankBranch: 'Business Bay Branch, Dubai, UAE',
     notes: 'Interim stage payment received against dispatch note.'
   },
   {
@@ -1406,6 +1436,11 @@ export const payments = [
     paymentDate: '2026-10-05',
     paymentMethod: 'Letter of Credit (LC)',
     reference: 'LC-WBC-552109',
+    accountHolder: 'Oceanic Trading Pty Ltd',
+    payerBank: 'Westpac Banking Corporation',
+    accountNumber: 'AU12 WPAC 1928 3746 5019 82',
+    swiftCode: 'WPACAU2SXXX',
+    bankBranch: 'Sydney Commercial Centre, Australia',
     notes: 'Document release tranche cleared through Westpac.'
   }
 ];
