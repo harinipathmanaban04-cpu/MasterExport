@@ -143,7 +143,13 @@ const defaultShipments = [
 ];
 
 export default function Shipments() {
-  const [data, setData] = useState(defaultShipments);
+  const [data, setData] = useState(() => {
+    try {
+      const saved = localStorage.getItem('export_pro_shipments');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return defaultShipments;
+  });
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -162,9 +168,10 @@ export default function Shipments() {
       const rows = await get('/shipments');
       if (Array.isArray(rows) && rows.length > 0) {
         setData(rows);
+        localStorage.setItem('export_pro_shipments', JSON.stringify(rows));
       }
     } catch (e) {
-      console.warn('Backend /api/shipments not responding or empty, using default shipments:', e.message);
+      console.warn('Backend /api/shipments not responding or empty, using saved/default shipments:', e.message);
     } finally {
       setLoading(false);
     }
@@ -283,38 +290,44 @@ export default function Shipments() {
       docs: docValues
     };
 
-    if (editModal && editModal._id && !editModal._id.startsWith('shp-')) {
+    let updatedList;
+    if (editModal && editModal._id) {
       try {
         const res = await put(`/shipments/${editModal._id}`, payload);
-        setData((prev) => prev.map((item) => (item._id === editModal._id ? (res || { ...payload, _id: editModal._id }) : item)));
+        updatedList = data.map((item) => (item._id === editModal._id ? (res || { ...payload, _id: editModal._id }) : item));
       } catch (err) {
         console.warn('Backend update failed, updating local state:', err);
-        setData((prev) => prev.map((item) => (item._id === editModal._id ? { ...payload, _id: editModal._id } : item)));
+        updatedList = data.map((item) => (item._id === editModal._id ? { ...payload, _id: editModal._id } : item));
       }
     } else {
       const newId = `shp-${Date.now()}`;
       try {
         const res = await post('/shipments', payload);
-        setData((prev) => [res || { ...payload, _id: newId }, ...prev]);
+        updatedList = [res || { ...payload, _id: newId }, ...data];
       } catch (err) {
         console.warn('Backend create failed, creating in local state:', err);
-        setData((prev) => [{ ...payload, _id: newId }, ...prev]);
+        updatedList = [{ ...payload, _id: newId }, ...data];
       }
     }
 
+    setData(updatedList);
+    localStorage.setItem('export_pro_shipments', JSON.stringify(updatedList));
     setEditModal(null);
   };
 
   // Delete shipment
   const handleDelete = async (shipment) => {
-    setData((prev) => prev.filter((s) => s._id !== shipment._id));
+    const remaining = data.filter((s) => s._id !== shipment._id);
+    setData(remaining);
+    localStorage.setItem('export_pro_shipments', JSON.stringify(remaining));
+
     if (viewShipment && viewShipment._id === shipment._id) {
       setViewShipment(null);
     }
     setDeleteConfirm(null);
 
     try {
-      if (shipment._id && !shipment._id.startsWith('shp-')) {
+      if (shipment._id) {
         await del(`/shipments/${shipment._id}`);
       }
     } catch (err) {

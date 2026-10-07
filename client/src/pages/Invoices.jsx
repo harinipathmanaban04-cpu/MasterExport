@@ -25,9 +25,10 @@ import {
   User,
   Layers,
   Package,
-  ArrowRight
+  ArrowRight,
+  Edit2
 } from 'lucide-react';
-import { get, post, del, getInvoices, createInvoice, deleteInvoice, getPayments, recordPayment } from '../api';
+import { get, post, del, getInvoices, createInvoice, updateInvoice, deleteInvoice, getPayments, recordPayment } from '../api';
 import Modal from '../components/Modal';
 import Logo from '../components/Logo';
 import { PageHeader, StatCard, Status } from '../components/Layout';
@@ -438,8 +439,20 @@ export default function Invoices({ initialTab = 'Invoices' }) {
   const toast = useToast();
   const [activeTab, setActiveTab] = useState(initialTab === 'Payments' ? 'Payments' : 'Invoices');
 
-  const [invoices, setInvoices] = useState(defaultInvoices);
-  const [payments, setPayments] = useState(defaultPayments);
+  const [invoices, setInvoices] = useState(() => {
+    try {
+      const saved = localStorage.getItem('export_pro_invoices');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return defaultInvoices;
+  });
+  const [payments, setPayments] = useState(() => {
+    try {
+      const saved = localStorage.getItem('export_pro_payments');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return defaultPayments;
+  });
   const [availableOrders, setAvailableOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -451,6 +464,7 @@ export default function Invoices({ initialTab = 'Invoices' }) {
 
   // Modals
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editInvoiceModal, setEditInvoiceModal] = useState(null);
   const [recordPaymentModalOpen, setRecordPaymentModalOpen] = useState(false);
   const [viewInvoice, setViewInvoice] = useState(null);
   const [viewPaymentVoucher, setViewPaymentVoucher] = useState(null);
@@ -485,14 +499,12 @@ export default function Invoices({ initialTab = 'Invoices' }) {
 
       if (Array.isArray(invData) && invData.length > 0) {
         setInvoices(invData);
-      } else {
-        setInvoices(defaultInvoices);
+        localStorage.setItem('export_pro_invoices', JSON.stringify(invData));
       }
 
       if (Array.isArray(payData) && payData.length > 0) {
         setPayments(payData);
-      } else {
-        setPayments(defaultPayments);
+        localStorage.setItem('export_pro_payments', JSON.stringify(payData));
       }
 
       if (Array.isArray(salesData)) {
@@ -683,26 +695,28 @@ export default function Invoices({ initialTab = 'Invoices' }) {
       const result = await recordPayment(payload);
 
       // Local optimistic update
-      setInvoices((prev) =>
-        prev.map((inv) =>
-          inv.invoiceNo === currentTargetInvoice.invoiceNo
-            ? {
-                ...inv,
-                amountPaid: paymentValidation.resultingPaid,
-                remainingBalance: paymentValidation.resultingRemaining,
-                status: paymentValidation.resultingStatus
-              }
-            : inv
-        )
+      const updatedInvoices = invoices.map((inv) =>
+        inv.invoiceNo === currentTargetInvoice.invoiceNo
+          ? {
+              ...inv,
+              amountPaid: paymentValidation.resultingPaid,
+              remainingBalance: paymentValidation.resultingRemaining,
+              status: paymentValidation.resultingStatus
+            }
+          : inv
       );
+      setInvoices(updatedInvoices);
+      localStorage.setItem('export_pro_invoices', JSON.stringify(updatedInvoices));
 
-      const newPayment = result.payment || {
+      const newPayment = result?.payment || {
         _id: `pay-${Date.now()}`,
         paymentId: `PAY-${Date.now().toString().slice(-4)}`,
         ...payload
       };
 
-      setPayments((prev) => [newPayment, ...prev]);
+      const updatedPayments = [newPayment, ...payments];
+      setPayments(updatedPayments);
+      localStorage.setItem('export_pro_payments', JSON.stringify(updatedPayments));
 
       setRecordPaymentModalOpen(false);
       setSelectedInvoiceForPayment(null);
@@ -824,8 +838,17 @@ export default function Invoices({ initialTab = 'Invoices' }) {
         notes: invoiceForm.notes
       };
 
-      const created = await createInvoice(payload);
-      setInvoices((prev) => [created, ...prev]);
+      let created;
+      try {
+        created = await createInvoice(payload);
+      } catch (err) {
+        console.warn('Backend create failed, fallback to local:', err);
+        created = { ...payload, _id: `inv-${Date.now()}` };
+      }
+
+      const updated = [created, ...invoices];
+      setInvoices(updated);
+      localStorage.setItem('export_pro_invoices', JSON.stringify(updated));
       setCreateModalOpen(false);
       toast.success(`Invoice ${created.invoiceNo || payload.invoiceNo} generated successfully!`, 'Invoice Created');
     } catch (err) {
@@ -834,10 +857,77 @@ export default function Invoices({ initialTab = 'Invoices' }) {
     }
   };
 
+  // Save edited invoice
+  const handleSaveEditedInvoice = async (e) => {
+    e.preventDefault();
+    if (!editInvoiceModal) return;
+    const fd = new FormData(e.currentTarget);
+    const qty = Math.max(1, Number(fd.get('quantity') || 1));
+    const price = Math.max(0, Number(fd.get('unitPrice') || 0));
+    const subtotal = Number((qty * price).toFixed(2));
+    const shipping = Math.max(0, Number(fd.get('shippingCharges') || 0));
+    const totalAmount = Number((subtotal + shipping).toFixed(2));
+    const amountPaid = Number(editInvoiceModal.amountPaid || 0);
+    const remainingBalance = Math.max(0, totalAmount - amountPaid);
+    const status = amountPaid >= totalAmount ? 'Paid' : amountPaid > 0 ? 'Partially Paid' : 'Unpaid';
+
+    const updated = {
+      ...editInvoiceModal,
+      invoiceType: fd.get('invoiceType'),
+      customer: fd.get('customer'),
+      contactPerson: fd.get('contactPerson'),
+      destination: fd.get('destination'),
+      invoiceDate: fd.get('invoiceDate'),
+      dueDate: fd.get('dueDate'),
+      paymentTerms: fd.get('paymentTerms'),
+      incoterm: fd.get('incoterm'),
+      items: [
+        {
+          name: fd.get('itemName'),
+          description: fd.get('itemDescription') || '',
+          quantity: qty,
+          unit: fd.get('unit'),
+          unitPrice: price,
+          total: subtotal
+        }
+      ],
+      subtotal,
+      shippingCharges: shipping,
+      totalAmount,
+      remainingBalance,
+      status,
+      notes: fd.get('notes')
+    };
+
+    const updatedInvoices = invoices.map((i) =>
+      i._id === editInvoiceModal._id || i.invoiceNo === editInvoiceModal.invoiceNo ? updated : i
+    );
+    setInvoices(updatedInvoices);
+    localStorage.setItem('export_pro_invoices', JSON.stringify(updatedInvoices));
+    if (viewInvoice && (viewInvoice._id === editInvoiceModal._id || viewInvoice.invoiceNo === editInvoiceModal.invoiceNo)) {
+      setViewInvoice(updated);
+    }
+
+    try {
+      await updateInvoice(editInvoiceModal._id || editInvoiceModal.invoiceNo, updated);
+    } catch (err) {
+      console.warn('Backend invoice update failed:', err);
+    }
+    setEditInvoiceModal(null);
+  };
+
   // Delete invoice
   const handleDeleteInvoice = async (invId, e) => {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     if (!window.confirm('Are you sure you want to delete this invoice?')) return;
+    const remaining = invoices.filter((i) => i._id !== invId && i.invoiceNo !== invId);
+    setInvoices(remaining);
+    localStorage.setItem('export_pro_invoices', JSON.stringify(remaining));
+
+    if (viewInvoice && (viewInvoice._id === invId || viewInvoice.invoiceNo === invId)) {
+      setViewInvoice(null);
+    }
+
     try {
       await deleteInvoice(invId);
       setInvoices((prev) => prev.filter((i) => i._id !== invId && i.invoiceNo !== invId));
@@ -845,6 +935,43 @@ export default function Invoices({ initialTab = 'Invoices' }) {
     } catch (err) {
       console.error('Delete invoice failed:', err);
       toast.error('Failed to delete invoice: ' + err.message, 'Delete Failed');
+    }
+  };
+
+  // Delete payment
+  const handleDeletePayment = async (payment, e) => {
+    if (e) e.stopPropagation();
+    if (!window.confirm(`Delete payment record ${payment.paymentId || ''} of ${formatAmount(payment.amount)}?`)) return;
+
+    const payId = payment._id || payment.paymentId;
+    const remainingPayments = payments.filter((p) => (p._id || p.paymentId) !== payId);
+    setPayments(remainingPayments);
+    localStorage.setItem('export_pro_payments', JSON.stringify(remainingPayments));
+
+    // Reverse payment from matching invoice if found
+    if (payment.invoiceNo) {
+      const updatedInvoices = invoices.map((inv) => {
+        if (inv.invoiceNo === payment.invoiceNo) {
+          const newPaid = Math.max(0, (Number(inv.amountPaid) || 0) - Number(payment.amount));
+          const newBalance = Math.max(0, (Number(inv.totalAmount) || 0) - newPaid);
+          const newStatus = newPaid <= 0 ? 'Unpaid' : newPaid < inv.totalAmount ? 'Partially Paid' : 'Paid';
+          return {
+            ...inv,
+            amountPaid: newPaid,
+            remainingBalance: newBalance,
+            status: newStatus
+          };
+        }
+        return inv;
+      });
+      setInvoices(updatedInvoices);
+      localStorage.setItem('export_pro_invoices', JSON.stringify(updatedInvoices));
+    }
+
+    try {
+      await del(`/payments/${payId}`);
+    } catch (err) {
+      console.warn('Backend payment delete failed:', err);
     }
   };
 
@@ -1272,7 +1399,17 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                               </button>
                             )}
 
-                            {/* Action 3: Delete Invoice */}
+                            {/* Action 3: Edit Invoice */}
+                            <button
+                              type="button"
+                              className="pro-icon-btn"
+                              title="Edit Invoice"
+                              onClick={() => setEditInvoiceModal(inv)}
+                            >
+                              <Edit2 size={14} />
+                            </button>
+
+                            {/* Action 4: Delete Invoice */}
                             <button
                               type="button"
                               className="pro-icon-btn danger"
@@ -1326,12 +1463,13 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                   <th style={{ padding: '14px 18px', whiteSpace: 'nowrap' }}>AMOUNT</th>
                   <th style={{ padding: '14px 18px', whiteSpace: 'nowrap' }}>METHOD</th>
                   <th style={{ padding: '14px 18px', whiteSpace: 'nowrap' }}>STATUS</th>
+                  <th style={{ padding: '16px 24px', textAlign: 'right', whiteSpace: 'nowrap' }}>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredPayments.length === 0 ? (
                   <tr>
-                    <td colSpan="7" style={{ textAlign: 'center', padding: '48px 24px', color: '#94a3b8' }}>
+                    <td colSpan="10" style={{ textAlign: 'center', padding: '48px 24px', color: '#94a3b8' }}>
                       <CreditCard size={36} style={{ margin: '0 auto 10px', display: 'block', opacity: 0.4 }} />
                       <strong style={{ display: 'block', color: '#475569', fontSize: '14px', marginBottom: '4px' }}>No payments recorded yet</strong>
                       <span style={{ fontSize: '12.5px' }}>Click "Record Payment" to post a remittance against an export invoice</span>
@@ -1420,6 +1558,33 @@ export default function Invoices({ initialTab = 'Invoices' }) {
                           >
                             <CheckCircle2 size={12} /> Received
                           </span>
+                        </td>
+                        <td style={{ padding: '18px 24px', verticalAlign: 'middle', textAlign: 'right', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
+                            <button
+                              type="button"
+                              className="pro-icon-btn"
+                              title="View Associated Invoice"
+                              onClick={() => {
+                                if (matchedInv) {
+                                  setViewInvoice(matchedInv);
+                                  setActiveInvoiceTab('document');
+                                } else {
+                                  alert(`Associated invoice ${p.invoiceNo} not found.`);
+                                }
+                              }}
+                            >
+                              <Eye size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              className="pro-icon-btn danger"
+                              title="Delete Payment Record"
+                              onClick={(e) => handleDeletePayment(p, e)}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -2270,6 +2435,124 @@ export default function Invoices({ initialTab = 'Invoices' }) {
       )}
 
       {/* =========================================================
+          MODAL 2B: EDIT INVOICE MODAL
+          ========================================================= */}
+      {editInvoiceModal && (
+        <Modal
+          open={!!editInvoiceModal}
+          onClose={() => setEditInvoiceModal(null)}
+          title={`Edit Invoice ${editInvoiceModal.invoiceNo}`}
+        >
+          <form onSubmit={handleSaveEditedInvoice}>
+            <div className="form-grid">
+              <div className="field-group">
+                <label>Invoice Type *</label>
+                <select name="invoiceType" defaultValue={editInvoiceModal.invoiceType || 'Commercial Invoice'} required>
+                  <option value="Commercial Invoice">Commercial Invoice (CI)</option>
+                  <option value="Proforma Invoice">Proforma Invoice (PI)</option>
+                </select>
+              </div>
+
+              <div className="field-group">
+                <label>Customer Name *</label>
+                <input name="customer" type="text" defaultValue={editInvoiceModal.customer || ''} required />
+              </div>
+
+              <div className="field-group">
+                <label>Contact Person</label>
+                <input name="contactPerson" type="text" defaultValue={editInvoiceModal.contactPerson || ''} />
+              </div>
+
+              <div className="field-group">
+                <label>Destination Port & Country</label>
+                <input name="destination" type="text" defaultValue={editInvoiceModal.destination || ''} />
+              </div>
+
+              <div className="field-group">
+                <label>Invoice Date *</label>
+                <input name="invoiceDate" type="date" defaultValue={editInvoiceModal.invoiceDate || ''} required />
+              </div>
+
+              <div className="field-group">
+                <label>Payment Due Date</label>
+                <input name="dueDate" type="date" defaultValue={editInvoiceModal.dueDate || ''} />
+              </div>
+
+              <div className="field-group">
+                <label>Payment Terms</label>
+                <select name="paymentTerms" defaultValue={editInvoiceModal.paymentTerms || 'Net 30'}>
+                  <option value="Net 30">Net 30 Days</option>
+                  <option value="Advance">100% Advance TT</option>
+                  <option value="30% Adv + 70% B/L">30% Advance + 70% against B/L</option>
+                  <option value="LC at Sight">Irrevocable LC at Sight</option>
+                  <option value="Net 60">Net 60 Days</option>
+                </select>
+              </div>
+
+              <div className="field-group">
+                <label>Incoterm</label>
+                <select name="incoterm" defaultValue={editInvoiceModal.incoterm || 'FOB'}>
+                  <option value="FOB">FOB - Free on Board</option>
+                  <option value="CIF">CIF - Cost, Insurance & Freight</option>
+                  <option value="CFR">CFR - Cost and Freight</option>
+                  <option value="EXW">EXW - Ex Works</option>
+                </select>
+              </div>
+
+              {/* Line item */}
+              {(() => {
+                const item = editInvoiceModal.items && editInvoiceModal.items[0] ? editInvoiceModal.items[0] : {};
+                return (
+                  <div style={{ gridColumn: 'span 2', marginTop: '10px' }}>
+                    <h4 style={{ fontSize: '13.5px', fontWeight: 700, margin: '0 0 10px', color: '#1e1e2d' }}>
+                      Export Line Item & Commercial Value
+                    </h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '8px' }}>
+                      <div>
+                        <label style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Item Name</label>
+                        <input name="itemName" type="text" defaultValue={item.name || ''} required />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Quantity</label>
+                        <input name="quantity" type="number" min="1" defaultValue={item.quantity || 1} required />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Unit</label>
+                        <input name="unit" type="text" defaultValue={item.unit || 'MT'} required />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Unit Rate ($)</label>
+                        <input name="unitPrice" type="number" step="0.01" min="0" defaultValue={item.unitPrice || 0} required />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div className="field-group">
+                <label>Freight / Shipping Charges ($)</label>
+                <input name="shippingCharges" type="number" step="0.01" min="0" defaultValue={editInvoiceModal.shippingCharges || 0} />
+              </div>
+
+              <div className="field-group" style={{ gridColumn: 'span 2' }}>
+                <label>Commercial Invoice Terms & Declarations</label>
+                <textarea name="notes" rows="2" defaultValue={editInvoiceModal.notes || ''} />
+              </div>
+            </div>
+
+            <div className="modal-foot">
+              <button type="button" className="secondary" onClick={() => setEditInvoiceModal(null)}>
+                Cancel
+              </button>
+              <button type="submit" className="primary">
+                Save Invoice Changes
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* =========================================================
           MODAL 3: OFFICIAL EXPORT INVOICE & DETAILS MODAL
           (Neat multi-tab architecture matching Shipments module)
           ========================================================= */}
@@ -2324,6 +2607,18 @@ export default function Invoices({ initialTab = 'Invoices' }) {
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => {
+                    const inv = viewInvoice;
+                    setViewInvoice(null);
+                    setEditInvoiceModal(inv);
+                  }}
+                >
+                  <Edit2 size={14} style={{ marginRight: '6px' }} />
+                  Edit Invoice
+                </button>
                 {viewInvoice.status !== 'Paid' && (
                   <button
                     type="button"

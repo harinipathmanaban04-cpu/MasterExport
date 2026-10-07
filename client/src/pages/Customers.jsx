@@ -306,38 +306,48 @@ export default function Customers() {
         get('/shipments').catch(() => [])
       ]);
 
-      if (custList && custList.length > 0) {
-        // Deduplicate customers by normalized company name to avoid any replication
-        const seenNames = new Set();
-        const uniqueCusts = [];
-        for (const c of custList) {
-          const norm = (c.companyName || '').trim().toLowerCase();
-          if (norm && !seenNames.has(norm)) {
-            seenNames.add(norm);
-            uniqueCusts.push(c);
-          }
-        }
+      let localCusts = [];
+      try {
+        localCusts = JSON.parse(localStorage.getItem('export_pro_customers') || '[]');
+      } catch (e) {}
 
-        const mapped = uniqueCusts.map((c, idx) => ({
-          ...c,
-          customerId: c.customerId || `CUST-${101 + idx}`,
-          avatar: c.companyName?.slice(0, 2).toUpperCase() || 'CU',
-          avatarColor: idx % 4 === 0 ? 'purple' : idx % 4 === 1 ? 'coral' : idx % 4 === 2 ? 'blue' : 'teal',
-          country: c.country?.includes('🇦🇪') || c.country === 'UAE' ? 'UAE 🇦🇪' :
-                   c.country?.includes('🇳🇱') || c.country === 'Netherlands' ? 'Netherlands 🇳🇱' :
-                   c.country?.includes('🇺🇸') || c.country === 'USA' ? 'USA 🇺🇸' :
-                   c.country?.includes('🇯🇵') || c.country === 'Japan' ? 'Japan 🇯🇵' : (c.country || 'International 🌐'),
-          outstandingBalance: c.outstandingBalance !== undefined ? c.outstandingBalance : (idx === 0 ? 35000 : idx === 3 ? 12500 : 0),
-          status: c.status || 'Active'
-        }));
-        setCustomers(mapped);
-        if (!selectedCustomer) {
-          setSelectedCustomer(mapped[0]);
-        } else {
-          const match = mapped.find((m) => m._id === selectedCustomer._id || m.companyName?.trim().toLowerCase() === selectedCustomer.companyName?.trim().toLowerCase());
-          if (match) setSelectedCustomer(match);
-          else setSelectedCustomer(mapped[0]);
+      // Combine backend custList, localStorage customers, and defaultCustomers
+      const allCandidates = [
+        ...(Array.isArray(custList) ? custList : []),
+        ...(Array.isArray(localCusts) ? localCusts : []),
+        ...defaultCustomers
+      ];
+
+      // Deduplicate customers by normalized company name to avoid any replication
+      const seenNames = new Set();
+      const uniqueCusts = [];
+      for (const c of allCandidates) {
+        const norm = (c.companyName || '').trim().toLowerCase();
+        if (norm && !seenNames.has(norm)) {
+          seenNames.add(norm);
+          uniqueCusts.push(c);
         }
+      }
+
+      const mapped = uniqueCusts.map((c, idx) => ({
+        ...c,
+        customerId: c.customerId || `CUST-${101 + idx}`,
+        avatar: c.companyName?.slice(0, 2).toUpperCase() || 'CU',
+        avatarColor: idx % 4 === 0 ? 'purple' : idx % 4 === 1 ? 'coral' : idx % 4 === 2 ? 'blue' : 'teal',
+        country: c.country?.includes('🇦🇪') || c.country === 'UAE' ? 'UAE 🇦🇪' :
+                 c.country?.includes('🇳🇱') || c.country === 'Netherlands' ? 'Netherlands 🇳🇱' :
+                 c.country?.includes('🇺🇸') || c.country === 'USA' ? 'USA 🇺🇸' :
+                 c.country?.includes('🇯🇵') || c.country === 'Japan' ? 'Japan 🇯🇵' : (c.country || 'International 🌐'),
+        outstandingBalance: c.outstandingBalance !== undefined ? c.outstandingBalance : (idx === 0 ? 35000 : idx === 3 ? 12500 : 0),
+        status: c.status || 'Active'
+      }));
+      setCustomers(mapped);
+      if (!selectedCustomer) {
+        setSelectedCustomer(mapped[0]);
+      } else {
+        const match = mapped.find((m) => m._id === selectedCustomer._id || m.companyName?.trim().toLowerCase() === selectedCustomer.companyName?.trim().toLowerCase());
+        if (match) setSelectedCustomer(match);
+        else setSelectedCustomer(mapped[0]);
       }
 
       if (salesList && salesList.length > 0) {
@@ -371,6 +381,18 @@ export default function Customers() {
     if (selectedCustomer && selectedCustomer._id === customer._id) {
       setSelectedCustomer(updated);
     }
+
+    try {
+      const localCusts = JSON.parse(localStorage.getItem('export_pro_customers') || '[]');
+      const norm = (customer.companyName || '').trim().toLowerCase();
+      const idx = localCusts.findIndex(c => (c.companyName || '').trim().toLowerCase() === norm);
+      if (idx >= 0) {
+        localCusts[idx].status = nextStatus;
+      } else {
+        localCusts.push(updated);
+      }
+      localStorage.setItem('export_pro_customers', JSON.stringify(localCusts));
+    } catch (e) {}
 
     showNotice(
       `${customer.companyName} converted to ${nextStatus === 'Active' ? 'Customer (Total & Active Customers incremented)' : 'Enquiry Lead (Total & Active Customers decremented)'}.`
@@ -511,14 +533,28 @@ export default function Customers() {
         if (customer._id) {
           await del(`/customers/${customer._id}`).catch(() => null);
         }
-        setCustomers((prev) => prev.filter((c) => c._id !== customer._id));
-        if (selectedCustomer?._id === customer._id) {
-          setSelectedCustomer(customers.find((c) => c._id !== customer._id) || null);
-        }
-        showNotice(`Customer ${customer.companyName} removed.`);
-      } catch (e) {
-        alert('Failed to delete customer');
+      } catch (e) {}
+
+      try {
+        const localCusts = JSON.parse(localStorage.getItem('export_pro_customers') || '[]');
+        const norm = (customer.companyName || '').trim().toLowerCase();
+        const filtered = localCusts.filter(
+          (c) => (c.companyName || '').trim().toLowerCase() !== norm && c._id !== customer._id
+        );
+        localStorage.setItem('export_pro_customers', JSON.stringify(filtered));
+      } catch (e) {}
+
+      const remaining = customers.filter(
+        (c) => c._id !== customer._id && c.companyName !== customer.companyName
+      );
+      setCustomers(remaining);
+      if (
+        selectedCustomer?._id === customer._id ||
+        selectedCustomer?.companyName === customer.companyName
+      ) {
+        setSelectedCustomer(remaining[0] || null);
       }
+      showNotice(`Customer ${customer.companyName} removed.`);
     }
   };
 
@@ -572,6 +608,8 @@ export default function Customers() {
       (c) => c.companyName?.trim().toLowerCase() === normCustomerName
     );
 
+    const determinedStatus = existingCust ? existingCust.status : 'Inactive';
+
     const customerPayload = {
       customerId: existingCust?.customerId || `CUST-${101 + customers.length}`,
       companyName: customer,
@@ -584,7 +622,7 @@ export default function Customers() {
       currency: currency || existingCust?.currency || 'USD',
       paymentTerms: enquiryForm.paymentTerms || existingCust?.paymentTerms || 'Net 30',
       outstandingBalance: existingCust?.outstandingBalance || 0,
-      status: 'Active'
+      status: determinedStatus
     };
 
     let activeSavedCust = { ...customerPayload, _id: existingCust?._id || `cust-${Date.now()}` };
@@ -600,14 +638,15 @@ export default function Customers() {
       console.warn('Customer auto-save warning:', custErr);
     }
 
+    const finalCustObj = { ...activeSavedCust, status: determinedStatus };
     // Update customers state cleanly without any duplicates:
     setCustomers((prev) => {
       const remaining = prev.filter(
         (c) => c._id !== activeSavedCust._id && c.companyName?.trim().toLowerCase() !== normCustomerName
       );
-      return [{ ...activeSavedCust, status: 'Active' }, ...remaining];
+      return [finalCustObj, ...remaining];
     });
-    setSelectedCustomer({ ...activeSavedCust, status: 'Active' });
+    setSelectedCustomer(finalCustObj);
 
     // Step 2: Save Enquiry in /sales
     const newEnquiryPayload = {
@@ -710,7 +749,7 @@ export default function Customers() {
     setEnquiryModalOpen(false);
 
     showNotice(
-      `Enquiry ${enquiryNo} saved! Buyer registered as Active Customer. Quotation ${autoQuotationNo} generated.`
+      `Enquiry ${enquiryNo} saved! Buyer registered as Enquiry Lead. Toggle switch to convert to Customer.`
     );
 
     // Step 4: Automatically show the official Quotation document preview layout!
@@ -789,22 +828,35 @@ export default function Customers() {
     });
   }, [customers, search, countryFilter, statusFilter]);
 
-  // Resolve related commercial enquiries for selected customer
   const relatedEnquiries = useMemo(() => {
     if (!selectedCustomer) return [];
-    const fromCustObj = selectedCustomer.enquiries || [];
-    const fromSales = salesData.filter(
+    const norm = selectedCustomer.companyName?.trim().toLowerCase();
+    const fromSales = (salesData || []).filter(
       (s) =>
         s.type === 'Enquiry' &&
-        (s.customer?.trim().toLowerCase() === selectedCustomer.companyName?.trim().toLowerCase() ||
-          s.customerId === selectedCustomer.customerId)
+        (s.customer?.trim().toLowerCase() === norm || s.customerId === selectedCustomer.customerId)
     );
-    const map = new Map();
-    [...fromCustObj, ...fromSales].forEach((e) => {
-      const key = e.enquiryNo || e._id;
-      if (key && !map.has(key)) map.set(key, e);
-    });
-    return Array.from(map.values());
+    const fromCustEnqs = Array.isArray(selectedCustomer.enquiries) ? selectedCustomer.enquiries : [];
+
+    let fromLocal = [];
+    try {
+      const localSales = JSON.parse(localStorage.getItem('export_pro_sales') || '[]');
+      fromLocal = (localSales || []).filter(
+        (s) => s.type === 'Enquiry' && s.customer?.trim().toLowerCase() === norm
+      );
+    } catch (e) {}
+
+    const combined = [...fromSales, ...fromCustEnqs, ...fromLocal];
+    const seenNos = new Set();
+    const unique = [];
+    for (const enq of combined) {
+      const key = enq.enquiryNo || enq._id;
+      if (key && !seenNos.has(key)) {
+        seenNos.add(key);
+        unique.push(enq);
+      }
+    }
+    return unique;
   }, [selectedCustomer, salesData]);
 
   // Resolve related orders for selected customer
@@ -1150,6 +1202,16 @@ export default function Customers() {
                               <Edit2 size={13} />
                             </button>
                             <button
+                              className="small-btn"
+                              title="Delete Customer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteCustomer(c);
+                              }}
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                            <button
                               className={isSelected ? 'btn-purple' : 'tab-pill'}
                               style={{ padding: '5px 12px', fontSize: '11.5px', borderRadius: '14px' }}
                               onClick={(e) => {
@@ -1200,7 +1262,7 @@ export default function Customers() {
               </button>
             </div>
 
-            {/* 5 Connected Tabs: Details, Orders, Invoices, Payments, Shipments */}
+            {/* Connected Tabs: Details, Orders, Invoices, Payments, Shipments */}
             <div
               className="customer-drawer-tabs"
               style={{
@@ -1219,13 +1281,6 @@ export default function Customers() {
                 style={{ padding: '6px 8px', fontSize: '11.5px' }}
               >
                 Details
-              </button>
-              <button
-                className={`customer-drawer-tab ${drawerTab === 'Enquiries' ? 'active' : ''}`}
-                onClick={() => setDrawerTab('Enquiries')}
-                style={{ padding: '6px 8px', fontSize: '11.5px' }}
-              >
-                Enquiries ({relatedEnquiries.length})
               </button>
               <button
                 className={`customer-drawer-tab ${drawerTab === 'Orders' ? 'active' : ''}`}
@@ -1260,17 +1315,10 @@ export default function Customers() {
             {/* TAB 1: DETAILS */}
             {drawerTab === 'Details' && (
               <div className="customer-tab-content">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                  <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Buyer Information
                   </span>
-                  <button
-                    className="small-btn"
-                    onClick={() => handleOpenEditCustomer(selectedCustomer)}
-                    style={{ fontSize: '11.5px', padding: '3px 8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    <Edit2 size={12} /> Edit Profile
-                  </button>
                 </div>
 
                 <div className="customer-field-group">
@@ -1335,68 +1383,6 @@ export default function Customers() {
               </div>
             )}
 
-            {/* TAB: RELATED ENQUIRIES */}
-            {drawerTab === 'Enquiries' && (
-              <div className="customer-tab-content" style={{ fontSize: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>
-                    Commercial Enquiries ({relatedEnquiries.length})
-                  </span>
-                </div>
-
-                {relatedEnquiries.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '28px 12px', color: '#94a3b8' }}>
-                    <ClipboardList size={28} style={{ margin: '0 auto 8px', opacity: 0.5 }} />
-                    <p style={{ margin: 0 }}>No enquiries recorded yet for this buyer.</p>
-                  </div>
-                ) : (
-                  relatedEnquiries.map((enq, idx) => (
-                    <div
-                      key={enq.enquiryNo || enq._id || idx}
-                      style={{
-                        padding: '12px',
-                        borderRadius: '10px',
-                        background: '#f8fafc',
-                        border: '1px solid #e2e8f0',
-                        marginBottom: '10px'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <strong style={{ color: '#0c5a48', fontSize: '13px' }}>{enq.enquiryNo}</strong>
-                        <span
-                          style={{
-                            padding: '2px 8px',
-                            borderRadius: '999px',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            background: '#e0f2fe',
-                            color: '#0369a1'
-                          }}
-                        >
-                          {enq.status || 'Open'}
-                        </span>
-                      </div>
-                      <div style={{ color: '#1e293b', fontWeight: 600, fontSize: '12px', marginTop: '6px' }}>
-                        {enq.products?.[0]?.name || 'Commercial Consignment'}
-                        {enq.products?.[0]?.quantity ? ` · ${enq.products[0].quantity} ${enq.products[0].unit || 'MT'}` : ''}
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: '11px', marginTop: '6px' }}>
-                        <span>Destination: {enq.destination || selectedCustomer.country}</span>
-                        <strong style={{ color: '#0c5a48' }}>
-                          {resolveCurrencySymbol(enq.currency || selectedCustomer.currency)}
-                          {Number(enq.totalAmount || enq.products?.[0]?.total || 0).toLocaleString()}
-                        </strong>
-                      </div>
-                      {enq.notes && (
-                        <div style={{ fontSize: '11px', color: '#64748b', marginTop: '6px', fontStyle: 'italic', background: '#ffffff', padding: '6px 8px', borderRadius: '6px', border: '1px solid #eef2f6' }}>
-                          "{enq.notes}"
-                        </div>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
 
             {/* TAB 2: RELATED ORDERS */}
             {drawerTab === 'Orders' && (
@@ -1837,17 +1823,11 @@ export default function Customers() {
               <div className="field">
                 <label>Customer / Buyer Company *</label>
                 <input
-                  list="existing-customers-list"
-                  placeholder="Type new company or select existing..."
+                  placeholder="Enter company / buyer name..."
                   value={enquiryForm.customer}
                   onChange={(e) => handleEnquiryCustomerChange(e.target.value)}
                   required
                 />
-                <datalist id="existing-customers-list">
-                  {customers.map((c) => (
-                    <option key={c._id || c.customerId} value={c.companyName} />
-                  ))}
-                </datalist>
               </div>
 
               <div className="field">
@@ -2038,31 +2018,18 @@ export default function Customers() {
               <button
                 type="button"
                 className="secondary"
-                onClick={handlePrintDocument}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                title="Print quotation on this exact page"
+                onClick={() => setPreviewDocModal(null)}
               >
-                <Printer size={15} /> Print Document
+                Close
               </button>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  type="button"
-                  className="secondary"
-                  onClick={() => generateQuotationPdf(previewDocModal)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                >
-                  <Download size={15} /> Download PDF
-                </button>
-                <button
-                  type="button"
-                  className="primary"
-                  onClick={() => handleConvertQuotation(previewDocModal)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}
-                  title="Convert this quotation directly into a confirmed Sales Order"
-                >
-                  <ArrowRight size={15} /> Convert to Sales Order
-                </button>
-              </div>
+              <button
+                type="button"
+                className="primary"
+                onClick={() => generateQuotationPdf(previewDocModal)}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Download size={15} /> Download PDF
+              </button>
             </div>
           }
         >
